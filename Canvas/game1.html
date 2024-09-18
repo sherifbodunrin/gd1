@@ -26,6 +26,7 @@ function startGame() {
 
     myGameArea.start();
     window.addEventListener("keydown", moveGamePiece);
+    window.addEventListener("keyup", stopGamePiece);
 }
 
 var myGameArea = {
@@ -70,8 +71,7 @@ function gameObject(width, height, color, x, y, type) {
 
     this.newPos = function() {
         this.gravitySpeed += this.gravity;
-        this.x += this.speedX;
-        this.y += this.speedY + this.gravitySpeed;
+        this.y += this.gravitySpeed; // Update y position based on gravity
         this.hitBottom();
     };
 
@@ -106,7 +106,7 @@ function updateGameArea() {
             return;
         }
     }
-    
+
     myGameArea.clear();
     myGameArea.frameNo += 1;
 
@@ -129,7 +129,6 @@ function updateGameArea() {
 
     myScore.text = "SCORE: " + myGameArea.frameNo;
     myScore.update();
-
     myGamePiece.newPos();
     myGamePiece.update();
     character2.update();
@@ -144,27 +143,24 @@ function accelerate(n) {
 }
 
 function moveGamePiece(e) {
-    switch(e.key) {
-        case "ArrowUp":
-            myGamePiece.speedY = -2; // Move up
-            break;
-        case "ArrowDown":
-            myGamePiece.speedY = 2; // Move down
-            break;
-        default:
-            break;
+    if (e.key === "ArrowUp") {
+        accelerate(-0.2); // Simulate upward acceleration
+    } else if (e.key === "ArrowDown") {
+        myGamePiece.gravity = 0.05; // Normal gravity
     }
 }
 
-window.addEventListener("keyup", function(e) {
-    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-        myGamePiece.speedY = 0; // Stop moving when key is released
+function stopGamePiece(e) {
+    if (e.key === "ArrowUp") {
+        myGamePiece.gravity = 0.05; // Reset gravity when released
+    } else if (e.key === "ArrowDown") {
+        myGamePiece.gravity = 0.05; // Maintain normal gravity
     }
-});
+}
 </script>
 <br>
 <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
-<p>Use the ACCELERATE button to stay in the air</p>
+<p>Use the ACCELERATE button or Arrow Up to stay in the air</p>
 <p>How long can you stay alive?</p>
 </body>
 </html>

@@ -72,7 +72,7 @@ function startGame() {
     myObstacles = []; // Reset obstacles
     gameOver = false; // Reset game over state
     myGameArea.start();
-    backgroundMusic.play(); // Play background music
+    backgroundMusic.play().catch(err => console.error(err)); // Play background music
     window.addEventListener("keydown", controlGamePiece);
 }
 
@@ -193,7 +193,7 @@ function togglePause() {
     if (isPaused) {
         backgroundMusic.pause(); // Pause music if game is paused
     } else {
-        backgroundMusic.play(); // Resume music if game continues
+        backgroundMusic.play().catch(err => console.error(err)); // Resume music if game continues
     }
 }
 

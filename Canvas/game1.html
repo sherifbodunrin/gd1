@@ -25,6 +25,7 @@ var poleImage = new Image();
 var explosionImage = new Image(); // Explosion image
 var isPaused = false;
 var interval;
+var gameOver = false;
 
 characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png'; // Character image
 poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png'; // Pole image
@@ -35,6 +36,7 @@ function startGame() {
     myScore = new gameObject("30px", "Consolas", "white", 280, 40, "text");
     myScore.text = "";
     myObstacles = []; // Reset obstacles
+    gameOver = false; // Reset game over state
     myGameArea.start();
     window.addEventListener("keydown", controlGamePiece);
 }
@@ -102,7 +104,7 @@ function gameObject(width, height, image, x, y, type) {
 }
 
 function updateGameArea() {
-    if (isPaused) return; // Don't update if paused
+    if (isPaused || gameOver) return; // Don't update if paused or game over
 
     myGameArea.clear();
     myGameArea.frameNo += 1;
@@ -156,11 +158,12 @@ function togglePause() {
 }
 
 function displayExplosion() {
+    gameOver = true; // Set game over state
     var ctx = myGameArea.canvas.getContext("2d");
     ctx.clearRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
     ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 100, 100); // Adjust size and position
-    clearInterval(interval);
     alert("Game Over! Your score: " + myGameArea.frameNo);
+    clearInterval(interval);
 }
 </script>
 <p style="color: black;">Use the UP Arrow to jump</p>

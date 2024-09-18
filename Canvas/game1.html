@@ -5,7 +5,6 @@
 <style>
 canvas {
     border: 1px solid #d3d3d3;
-    background-color: #f1f1f1;
 }
 button {
     margin: 5px;
@@ -25,12 +24,12 @@ var poleImage = new Image();
 var isPaused = false;
 var interval;
 
-characterImage.src = 'https://textbooks.cs.ksu.edu/cis580/images/4.4.1.png'; 
-poleImage.src = 'https://cdn-icons-png.flaticon.com/512/4139/4139931.png'; 
+characterImage.src = 'https://example.com/character.png'; // Replace with your character image URL
+poleImage.src = 'https://example.com/pole.png'; // Replace with your pole image URL
 
 function startGame() {
     myGamePiece = new gameObject(30, 30, characterImage, 10, 120, "image");
-    myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
+    myScore = new gameObject("30px", "Consolas", "white", 280, 40, "text");
     myScore.text = "";
 
     myGameArea.start();
@@ -45,7 +44,8 @@ var myGameArea = {
     },
     clear: function() {
         var ctx = this.canvas.getContext("2d");
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.fillStyle = "black"; // Set background color to black
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); // Fill the canvas with black
     }
 };
 
@@ -64,7 +64,7 @@ function gameObject(width, height, image, x, y, type) {
         var ctx = myGameArea.canvas.getContext("2d");
         if (this.type === "text") {
             ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
+            ctx.fillStyle = "white"; // Change text color to white for better visibility
             ctx.fillText(this.text, this.x, this.y);
         } else {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -142,7 +142,7 @@ function everyinterval(n) {
 
 function controlGamePiece(e) {
     if (e.key === "ArrowUp" || e.key === " ") {
-        myGamePiece.gravitySpeed = myGamePiece.jumpPower;
+        myGamePiece.gravitySpeed = -2; // Adjust jump strength as needed
     }
 }
 

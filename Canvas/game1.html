@@ -7,21 +7,29 @@ canvas {
     border: 1px solid #d3d3d3;
     background-color: #f1f1f1;
 }
+button {
+    margin: 5px;
+}
 </style>
 </head>
-<body onload="startGame()">
+<body>
+<button id="startButton" onclick="startGame()">Start Game</button>
+<button id="pauseButton" onclick="togglePause()">Pause</button>
+<canvas id="gameCanvas" width="480" height="270"></canvas>
 <script>
 var myGamePiece;
 var myObstacles = [];
 var myScore;
 var character2;
+var isPaused = false;
+var interval;
 
 function startGame() {
     myGamePiece = new gameObject(30, 30, "red", 10, 120, "rect");
     character2 = new gameObject(20, 20, "yellow", 20, 150, "rect");
 
-    myGamePiece.gravity = 0.1; // Increased gravity for more realism
-    myGamePiece.jumpPower = -3; // Power of jump
+    myGamePiece.gravity = 0.1;
+    myGamePiece.jumpPower = -3;
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
     myScore.text = "";
 
@@ -30,17 +38,14 @@ function startGame() {
 }
 
 var myGameArea = {
-    canvas: document.createElement("canvas"),
+    canvas: document.getElementById("gameCanvas"),
     start: function() {
-        this.canvas.width = 480;
-        this.canvas.height = 270;
-        this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20);
+        interval = setInterval(updateGameArea, 20);
     },
     clear: function() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        var ctx = this.canvas.getContext("2d");
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 };
 
@@ -55,7 +60,7 @@ function gameObject(width, height, color, x, y, type) {
     this.text = "";
 
     this.update = function() {
-        var ctx = myGameArea.context;
+        var ctx = myGameArea.canvas.getContext("2d");
         if (this.type === "text") {
             ctx.font = this.width + " " + this.height;
             ctx.fillStyle = color;
@@ -95,31 +100,32 @@ function gameObject(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    if (isPaused) return; // Don't update if paused
+
     myGameArea.clear();
     myGameArea.frameNo += 1;
 
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 200;
-        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 50;
-        maxGap = 100; // Reduced gap for more challenge
-        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new gameObject(10, height, "green", x, 0, "rect")); // Upper obstacle
-        myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "green", x, height + gap, "rect")); // Lower obstacle
+        var x = myGameArea.canvas.width;
+        var minHeight = 20;
+        var maxHeight = 200;
+        var height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+        var minGap = 50;
+        var maxGap = 100;
+        var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+        myObstacles.push(new gameObject(10, height, "green", x, 0, "rect"));
+        myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "green", x, height + gap, "rect"));
     }
 
     for (var i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x += -1; // Move obstacles to the left
+        myObstacles[i].x += -1;
         myObstacles[i].update();
     }
 
     for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
             alert("Game Over! Your score: " + myGameArea.frameNo);
-            clearInterval(myGameArea.interval);
+            clearInterval(interval);
             return;
         }
     }
@@ -136,12 +142,16 @@ function everyinterval(n) {
 }
 
 function controlGamePiece(e) {
-    if (e.key === "ArrowUp" || e.key === " ") { // Jump with space or up arrow
-        myGamePiece.gravitySpeed = myGamePiece.jumpPower; // Jump effect
+    if (e.key === "ArrowUp" || e.key === " ") {
+        myGamePiece.gravitySpeed = myGamePiece.jumpPower;
     }
 }
+
+function togglePause() {
+    isPaused = !isPaused;
+    document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
+}
 </script>
-<br>
 <p>Use the UP arrow or SPACEBAR to jump</p>
 <p>How long can you stay alive?</p>
 </body>

@@ -128,7 +128,7 @@ function updateGameArea() {
 
     for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            displayExplosion(); // Show explosion when crash occurs
+           
             return;
         }
     }
@@ -147,6 +147,10 @@ function controlGamePiece(e) {
     if (e.key === "ArrowUp") {
         myGamePiece.gravitySpeed = -2; // Jump strength
     }
+
+     if (e.key === "ArrowDown") {
+     displayExplosion(); // Show explosion when crash occurs
+     }
     if (e.key === " ") {
         togglePause(); // Use spacebar to toggle pause
     }

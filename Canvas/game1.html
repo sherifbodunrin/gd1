@@ -10,6 +10,7 @@ canvas {
 </style>
 </head>
 <body onload="startGame()">
+<audio id="backgroundMusic" src="Music.mp3" loop></audio>
 <script>
 
 var myGamePiece;
@@ -23,7 +24,9 @@ function startGame() {
     myGamePiece.gravity = 0.05;
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
-    
+    // Start the background music
+    document.getElementById('backgroundMusic').play();
+
     myGameArea.start();
 }
 
@@ -136,9 +139,6 @@ function accelerate(n) {
 </script>
 <br>
 <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
-<audio id="backgroundMusic" src="Music.mp3" loop></audio>
-<button onclick="document.getElementById('backgroundMusic').play()">Play Music</button>
-<button onclick="document.getElementById('backgroundMusic').pause()">Pause Music</button>
 <p>Use the ACCELERATE button to stay in the air</p>
 <p>How long can you stay alive?</p>
 </body>

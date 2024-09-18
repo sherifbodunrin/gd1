@@ -26,6 +26,12 @@ function startGame() {
 
     
     myGameArea.start();
+
+     // Play background music
+    var backgroundMusic = document.getElementById('backgroundMusic');
+    backgroundMusic.play().catch(error => {
+        console.log("Playback prevented by browser. Please interact with the page.");
+    });
 }
 
 var myGameArea = {

@@ -160,9 +160,10 @@ function togglePause() {
 function displayExplosion() {
     gameOver = true; // Set game over state
     var ctx = myGameArea.canvas.getContext("2d");
-    ctx.clearRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-    ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 100, 100); // Adjust size and position
     
+    // Draw the explosion GIF without clearing the canvas
+    ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 100, 100); // Adjust size and position
+
     // Wait for the explosion GIF to finish before showing the game over message
     setTimeout(() => {
         alert("Game Over! Your score: " + myGameArea.frameNo);

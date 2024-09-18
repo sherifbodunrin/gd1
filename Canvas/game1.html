@@ -5,6 +5,7 @@
 <style>
 canvas {
     border: 1px solid #d3d3d3;
+    background-color: black; /* Set canvas background to black */
 }
 button {
     margin: 5px;
@@ -43,9 +44,7 @@ var myGameArea = {
         interval = setInterval(updateGameArea, 20);
     },
     clear: function() {
-        var ctx = this.canvas.getContext("2d");
-        ctx.fillStyle = "black"; // Set background color to black
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); // Fill the canvas with black
+        // No need to clear, as the canvas has a black background by default
     }
 };
 

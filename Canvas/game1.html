@@ -3,30 +3,44 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <style>
+body {
+    background-color: black; /* Set background for the whole page */
+    color: white; /* Default text color to white for visibility */
+    font-family: Arial, sans-serif;
+    text-align: center; /* Center the text */
+}
+
 canvas {
     border: 1px solid #d3d3d3;
     background-color: black; /* Set canvas background to black */
 }
+
 button {
     margin: 5px;
 }
+
 .story {
-    color: white; /* Set story text to white for visibility */
-    margin: 10px;
-    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid white; /* Optional: add border for visibility */
 }
 </style>
 </head>
 <body>
-<button id="startButton" onclick="startGame()">Start Game</button>
-<button id="pauseButton" onclick="togglePause()">Pause</button>
-<canvas id="gameCanvas" width="480" height="270"></canvas>
+<h2>Story</h2>
 <div class="story">
-    <h2>Story</h2>
     <p>You are in the depths of outer space, trying to escape from relentless alien pursuers! Your spaceship is equipped with only basic maneuvering capabilities. As you fly through the cosmic void, you must dodge dangerous laser poles that the aliens have set up to hinder your escape.</p>
     <p>Keep your reflexes sharp and use the UP Arrow key to jump over the lasers. With each second that passes, your score increases, proving your skill in surviving the alien onslaught. Can you outsmart the aliens and survive the dangers of space? Every decision counts!</p>
     <p>Press SPACE to pause the game at any time, but beware—every moment spent in pause is a moment the aliens could be closing in!</p>
     <p>How long can you stay alive and escape the clutches of your extraterrestrial foes?</p>
+</div>
+<button id="startButton" onclick="startGame()">Start Game</button>
+<button id="pauseButton" onclick="togglePause()">Pause</button>
+<canvas id="gameCanvas" width="480" height="270"></canvas>
+<div>
+    <p>Use the UP Arrow to jump</p>
+    <p>Press the SPACE key to pause/resume the game</p>
+    <p>How long can you stay alive?</p>
 </div>
 <script>
 var myGamePiece;
@@ -183,8 +197,8 @@ function displayExplosion() {
     }, 3000); // Adjust the timeout duration as needed (3000 ms = 3 seconds)
 }
 </script>
-<p style="color: black;">Use the UP Arrow to jump</p>
-<p style="color: black;">Press the SPACE key to pause/resume the game</p>
-<p style="color: black;">How long can you stay alive?</p>
+<p>Use the UP Arrow to jump</p>
+<p>Press the SPACE key to pause/resume the game</p>
+<p>How long can you stay alive?</p>
 </body>
 </html>

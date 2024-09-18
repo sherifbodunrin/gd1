@@ -20,16 +20,16 @@ button {
 var myGamePiece;
 var myObstacles = [];
 var myScore;
-var character2;
+var characterImage = new Image();
+var poleImage = new Image();
 var isPaused = false;
 var interval;
 
-function startGame() {
-    myGamePiece = new gameObject(30, 30, "red", 10, 120, "rect");
-    character2 = new gameObject(20, 20, "yellow", 20, 150, "rect");
+characterImage.src = 'https://textbooks.cs.ksu.edu/cis580/images/4.4.1.png'; 
+poleImage.src = 'https://cdn-icons-png.flaticon.com/512/4139/4139931.png'; 
 
-    myGamePiece.gravity = 0.1;
-    myGamePiece.jumpPower = -3;
+function startGame() {
+    myGamePiece = new gameObject(30, 30, characterImage, 10, 120, "image");
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
     myScore.text = "";
 
@@ -49,12 +49,13 @@ var myGameArea = {
     }
 };
 
-function gameObject(width, height, color, x, y, type) {
+function gameObject(width, height, image, x, y, type) {
     this.type = type;
     this.width = width;
     this.height = height;
     this.x = x;
     this.y = y;
+    this.image = image;
     this.gravity = 0.1;
     this.gravitySpeed = 0;
     this.text = "";
@@ -66,8 +67,7 @@ function gameObject(width, height, color, x, y, type) {
             ctx.fillStyle = color;
             ctx.fillText(this.text, this.x, this.y);
         } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
         }
     };
 
@@ -113,8 +113,8 @@ function updateGameArea() {
         var minGap = 50;
         var maxGap = 100;
         var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new gameObject(10, height, "green", x, 0, "rect"));
-        myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "green", x, height + gap, "rect"));
+        myObstacles.push(new gameObject(10, height, poleImage, x, 0, "image"));
+        myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, poleImage, x, height + gap, "image"));
     }
 
     for (var i = 0; i < myObstacles.length; i += 1) {
@@ -134,7 +134,6 @@ function updateGameArea() {
     myScore.update();
     myGamePiece.newPos();
     myGamePiece.update();
-    character2.update();
 }
 
 function everyinterval(n) {
@@ -142,7 +141,7 @@ function everyinterval(n) {
 }
 
 function controlGamePiece(e) {
-    if (e.key === "ArrowUp" ) {
+    if (e.key === "ArrowUp" || e.key === " ") {
         myGamePiece.gravitySpeed = myGamePiece.jumpPower;
     }
 }
@@ -152,7 +151,7 @@ function togglePause() {
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
 }
 </script>
-<p>Use the UP arrow to jump</p>
+<p>Use the UP arrow or SPACEBAR to jump</p>
 <p>How long can you stay alive?</p>
 </body>
 </html>

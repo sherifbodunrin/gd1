@@ -141,7 +141,7 @@ function everyinterval(n) {
 }
 
 function controlGamePiece(e) {
-    if (e.key === "ArrowUp" || e.key === " ") {
+    if (e.key === "ArrowUp") {
         myGamePiece.gravitySpeed = -2; // Jump strength
     }
 }
@@ -151,7 +151,8 @@ function togglePause() {
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
 }
 </script>
-<p style="color: white;">Use the UP arrow or SPACEBAR to jump</p>
-<p style="color: white;">How long can you stay alive?</p>
+<p> style="color: white;">Use the UP Arrow to jump</p>
+<p> style="color: white;">Use the SPACE key to pause the game</p>
+<p> style="color: white;">How long can you stay alive?</p>
 </body>
 </html>

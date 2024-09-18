@@ -10,12 +10,24 @@ canvas {
 button {
     margin: 5px;
 }
+.story {
+    color: white;
+    margin: 10px;
+    font-family: Arial, sans-serif;
+}
 </style>
 </head>
 <body>
 <button id="startButton" onclick="startGame()">Start Game</button>
 <button id="pauseButton" onclick="togglePause()">Pause</button>
 <canvas id="gameCanvas" width="480" height="270"></canvas>
+<div class="story">
+    <h2>Story</h2>
+    <p>You are in the depths of outer space, trying to escape from relentless alien pursuers! Your spaceship is equipped with only basic maneuvering capabilities. As you fly through the cosmic void, you must dodge dangerous laser poles that the aliens have set up to hinder your escape.</p>
+    <p>Keep your reflexes sharp and use the UP Arrow key to jump over the lasers. With each second that passes, your score increases, proving your skill in surviving the alien onslaught. Can you outsmart the aliens and survive the dangers of space? Every decision counts!</p>
+    <p>Press SPACE to pause the game at any time, but beware—every moment spent in pause is a moment the aliens could be closing in!</p>
+    <p>How long can you stay alive and escape the clutches of your extraterrestrial foes?</p>
+</div>
 <script>
 var myGamePiece;
 var myObstacles = [];

@@ -9,13 +9,14 @@ canvas {
 }
 </style>
 </head>
-<body onload="startGame()">
+<body onload="startGame()" onkeydown="controlGame(event)" onkeyup="stopControl(event)">
 <script>
 
 var myGamePiece;
 var myObstacles = [];
 var myScore;
 
+// Function to start the game
 function startGame() {
     myGamePiece = new gameObject(30, 30, "red", 10, 120);
     character2 = new gameObject(20, 20, "yellow", 20, 150);
@@ -23,10 +24,10 @@ function startGame() {
     myGamePiece.gravity = 0.05;
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
-    
     myGameArea.start();
 }
 
+// Game area setup
 var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
@@ -36,12 +37,13 @@ var myGameArea = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
-        },
+    },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
+// Game object constructor
 function gameObject(width, height, color, x, y, type) {
     this.type = type;
     this.score = 0;
@@ -94,12 +96,13 @@ function gameObject(width, height, color, x, y, type) {
     }
 }
 
+// Function to update the game area
 function updateGameArea() {
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i += 1) {
+    for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
             return;
-        } 
+        }
     }
     myGameArea.clear();
     myGameArea.frameNo += 1;
@@ -107,32 +110,58 @@ function updateGameArea() {
         x = myGameArea.canvas.width;
         minHeight = 20;
         maxHeight = 200;
-        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
         minGap = 50;
         maxGap = 200;
-        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
         myObstacles.push(new gameObject(10, height, "green", x, 0));
         myObstacles.push(new gameObject(10, x - height - gap, "green", x, height + gap));
     }
-    for (i = 0; i < myObstacles.length; i += 1) {
+    for (var i = 0; i < myObstacles.length; i += 1) {
         myObstacles[i].x += -1;
         myObstacles[i].update();
     }
-    myScore.text="SCORE: " + myGameArea.frameNo;
+    myScore.text = "SCORE: " + myGameArea.frameNo;
     myScore.update();
     myGamePiece.newPos();
     myGamePiece.update();
     character2.update();
 }
 
+// Function to check if the interval has passed
 function everyinterval(n) {
-    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
+    if ((myGameArea.frameNo / n) % 1 == 0) {
+        return true;
+    }
     return false;
 }
 
+// Function to control acceleration
 function accelerate(n) {
     myGamePiece.gravity = n;
 }
+
+// Event handlers for keyboard controls
+function controlGame(e) {
+    switch(e.key) {
+        case "ArrowUp":
+            myGamePiece.speedY = -2; // Move up
+            break;
+        case "ArrowDown":
+            myGamePiece.speedY = 2; // Move down
+            break;
+    }
+}
+
+function stopControl(e) {
+    switch(e.key) {
+        case "ArrowUp":
+        case "ArrowDown":
+            myGamePiece.speedY = 0; // Stop vertical movement
+            break;
+    }
+}
+
 </script>
 <br>
 <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>

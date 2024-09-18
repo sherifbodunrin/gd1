@@ -42,6 +42,13 @@ button {
     <p>Press the SPACE key to pause/resume the game</p>
     <p>How long can you stay alive?</p>
 </div>
+
+<!-- Audio element -->
+<audio id="backgroundMusic" loop>
+    <source src="Music.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+</audio>
+
 <script>
 var myGamePiece;
 var myObstacles = [];
@@ -52,6 +59,7 @@ var explosionImage = new Image(); // Explosion image
 var isPaused = false;
 var interval;
 var gameOver = false;
+var backgroundMusic = document.getElementById("backgroundMusic");
 
 characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png'; // Character image
 poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png'; // Pole image
@@ -64,6 +72,7 @@ function startGame() {
     myObstacles = []; // Reset obstacles
     gameOver = false; // Reset game over state
     myGameArea.start();
+    backgroundMusic.play(); // Play background music
     window.addEventListener("keydown", controlGamePiece);
 }
 
@@ -181,6 +190,11 @@ function controlGamePiece(e) {
 function togglePause() {
     isPaused = !isPaused;
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
+    if (isPaused) {
+        backgroundMusic.pause(); // Pause music if game is paused
+    } else {
+        backgroundMusic.play(); // Resume music if game continues
+    }
 }
 
 function displayExplosion() {
@@ -194,6 +208,7 @@ function displayExplosion() {
     setTimeout(() => {
         alert("Game Over! Your score: " + myGameArea.frameNo);
         clearInterval(interval);
+        backgroundMusic.pause(); // Stop music on game over
     }, 3000); // Adjust the timeout duration as needed (3000 ms = 3 seconds)
 }
 </script>

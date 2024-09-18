@@ -136,6 +136,30 @@ function everyinterval(n) {
 function accelerate(n) {
     myGamePiece.gravity = n;
 }
+
+    <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Fun Game</title>
+</head>
+<body>
+    <p>Click the button to hear the music!</p>
+    <button id="startButton">Start Game</button>
+    <audio id="backgroundMusic" src="path/to/your/music.mp3"></audio>
+
+    <script>
+        // This part waits for you to click the button
+        document.getElementById('startButton').addEventListener('click', () => {
+            const music = document.getElementById('backgroundMusic'); // Get the music toy
+            music.play().catch(error => {
+                console.error('Oops! Music didn’t play:', error); // If it doesn't play, show an error
+            });
+        });
+    </script>
+</body>
+</html>
+
 </script>
 <br>
 <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>

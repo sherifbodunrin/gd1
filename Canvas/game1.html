@@ -143,6 +143,9 @@ function accelerate(n) {
 </script>
 <br>
 <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
+<audio id="backgroundMusic" src="Canvas/Music.mp3" loop></audio>
+<button onclick="document.getElementById('backgroundMusic').play()">Play Music</button>
+<button onclick="document.getElementById('backgroundMusic').pause()">Pause Music</button>
 <p>Use the ACCELERATE button to stay in the air</p>
 <p>How long can you stay alive?</p>
 </body>

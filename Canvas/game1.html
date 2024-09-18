@@ -22,17 +22,19 @@ var myObstacles = [];
 var myScore;
 var characterImage = new Image();
 var poleImage = new Image();
+var explosionImage = new Image(); // Explosion image
 var isPaused = false;
 var interval;
 
-characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png'; // Replace with your character image URL
-poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png'; // Replace with your pole image URL
+characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png'; // Character image
+poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png'; // Pole image
+explosionImage.src = 'https://media.tenor.com/DqOx5At4J4cAAAAj/explosion.gif'; // Explosion GIF
 
 function startGame() {
     myGamePiece = new gameObject(30, 30, characterImage, 10, 120, "image");
-    myScore = new gameObject("30px", "Consolas", "white", 280, 40, "text"); // Change to white for better visibility
+    myScore = new gameObject("30px", "Consolas", "white", 280, 40, "text");
     myScore.text = "";
-
+    myObstacles = []; // Reset obstacles
     myGameArea.start();
     window.addEventListener("keydown", controlGamePiece);
 }
@@ -64,7 +66,7 @@ function gameObject(width, height, image, x, y, type) {
         var ctx = myGameArea.canvas.getContext("2d");
         if (this.type === "text") {
             ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = "white"; // Change text color to white for better visibility
+            ctx.fillStyle = "white"; // Text color
             ctx.fillText(this.text, this.x, this.y);
         } else {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -124,8 +126,7 @@ function updateGameArea() {
 
     for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            alert("Game Over! Your score: " + myGameArea.frameNo);
-            clearInterval(interval);
+            displayExplosion(); // Show explosion when crash occurs
             return;
         }
     }
@@ -152,6 +153,14 @@ function controlGamePiece(e) {
 function togglePause() {
     isPaused = !isPaused;
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
+}
+
+function displayExplosion() {
+    var ctx = myGameArea.canvas.getContext("2d");
+    ctx.clearRect(0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+    ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 100, 100); // Adjust size and position
+    clearInterval(interval);
+    alert("Game Over! Your score: " + myGameArea.frameNo);
 }
 </script>
 <p style="color: black;">Use the UP Arrow to jump</p>

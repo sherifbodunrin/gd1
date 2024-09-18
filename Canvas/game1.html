@@ -5,7 +5,7 @@
 <style>
 canvas {
     border: 1px solid #d3d3d3;
-    background-color: #f1f1f1;
+    background-color: black; /* Set canvas background to black */
 }
 button {
     margin: 5px;
@@ -30,7 +30,7 @@ poleImage.src = 'https://t4.ftcdn.net/jpg/04/59/32/67/360_F_459326746_Sbe7u3BYDy
 
 function startGame() {
     myGamePiece = new gameObject(30, 30, characterImage, 10, 120, "image");
-    myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
+    myScore = new gameObject("30px", "Consolas", "white", 280, 40, "text"); // Change to white for better visibility
     myScore.text = "";
 
     myGameArea.start();
@@ -64,7 +64,7 @@ function gameObject(width, height, image, x, y, type) {
         var ctx = myGameArea.canvas.getContext("2d");
         if (this.type === "text") {
             ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
+            ctx.fillStyle = "white"; // Change text color to white for better visibility
             ctx.fillText(this.text, this.x, this.y);
         } else {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -142,7 +142,7 @@ function everyinterval(n) {
 
 function controlGamePiece(e) {
     if (e.key === "ArrowUp" || e.key === " ") {
-        myGamePiece.gravitySpeed = myGamePiece.jumpPower;
+        myGamePiece.gravitySpeed = -2; // Jump strength
     }
 }
 
@@ -151,7 +151,7 @@ function togglePause() {
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
 }
 </script>
-<p>Use the UP arrow or SPACEBAR to jump</p>
-<p>How long can you stay alive?</p>
+<p style="color: white;">Use the UP arrow or SPACEBAR to jump</p>
+<p style="color: white;">How long can you stay alive?</p>
 </body>
 </html>

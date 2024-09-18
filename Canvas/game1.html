@@ -142,7 +142,7 @@ function everyinterval(n) {
 }
 
 function controlGamePiece(e) {
-    if (e.key === "ArrowUp" || e.key === " ") {
+    if (e.key === "ArrowUp" ) {
         myGamePiece.gravitySpeed = myGamePiece.jumpPower;
     }
 }
@@ -152,7 +152,7 @@ function togglePause() {
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
 }
 </script>
-<p>Use the UP arrow or SPACEBAR to jump</p>
+<p>Use the UP arrow to jump</p>
 <p>How long can you stay alive?</p>
 </body>
 </html>

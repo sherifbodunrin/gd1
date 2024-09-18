@@ -26,12 +26,6 @@ function startGame() {
 
     
     myGameArea.start();
-
-     // Play background music
-    var backgroundMusic = document.getElementById('backgroundMusic');
-    backgroundMusic.play().catch(error => {
-        console.log("Playback prevented by browser. Please interact with the page.");
-    });
 }
 
 var myGameArea = {
@@ -146,7 +140,6 @@ function accelerate(n) {
 <audio id="backgroundMusic" src="Canvas/Music.mp3" loop></audio>
 <button onclick="document.getElementById('backgroundMusic').play()">Play Music</button>
 <button onclick="document.getElementById('backgroundMusic').pause()">Pause Music</button>
-<p>MUSIC IS PLAYING</p>
 <p>Use the ACCELERATE button to stay in the air</p>
 <p>How long can you stay alive?</p>
 </body>

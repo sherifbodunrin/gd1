@@ -30,17 +30,23 @@ button {
 <h2>Story</h2>
 <div class="story">
     <p>You are in the depths of outer space, trying to escape from relentless alien pursuers!</p>
-    <p>Press SPACE to pause the game at any time, but beware—every moment spent in pause is a moment the aliens could be closing in!</p>
+    <p>Use the UP Arrow key to jump over the lasers and SPACE to pause/resume the game.</p>
+    <p>How long can you stay alive?</p>
 </div>
-<input type="text" id="playerName" placeholder="Enter your name" />
 <button id="startButton" onclick="startGame()">Start Game</button>
 <button id="pauseButton" onclick="togglePause()">Pause</button>
 <canvas id="gameCanvas" width="480" height="270"></canvas>
 <div>
     <p>Use the UP Arrow to jump</p>
     <p>Press the SPACE key to pause/resume the game</p>
-    <p>High Score: <span id="highScoreDisplay">0</span></p>
+    <p>How long can you stay alive?</p>
 </div>
+
+<input type="text" id="playerName" placeholder="Enter your name" />
+<button onclick="submitScore()">Submit Score</button>
+
+<h3>Leaderboard</h3>
+<div id="leaderboard"></div>
 
 <audio id="backgroundMusic" loop>
     <source src="Music.mp3" type="audio/mp3">
@@ -53,26 +59,15 @@ var myObstacles = [];
 var myScore;
 var characterImage = new Image();
 var poleImage = new Image();
-var explosionImage = new Image();
 var isPaused = false;
 var interval;
 var gameOver = false;
 var backgroundMusic = document.getElementById("backgroundMusic");
-var playerNameInput = document.getElementById("playerName");
-var highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 
-characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png';
-poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png';
-explosionImage.src = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWxidTFhb3k5aW9qdmIxN3BpNDQ4NzJ2OTB4YzZnaTRxcG45MTZjciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d4aVHC1HKnButuXC/giphy.gif';
-
-// Display the high score on load
-document.getElementById("highScoreDisplay").innerText = highScore;
+characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png'; 
+poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png'; 
 
 function startGame() {
-    if (interval) {
-        clearInterval(interval);
-    }
-
     myGamePiece = new gameObject(30, 30, characterImage, 10, 120, "image");
     myScore = new gameObject("30px", "Consolas", "white", 280, 40, "text");
     myScore.text = "";
@@ -170,10 +165,9 @@ function updateGameArea() {
 
     for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            gameOver = true;
-            clearInterval(interval);
-            backgroundMusic.pause();
-            return; // Exit the function on crash
+            myScore.text = "SCORE: " + myGameArea.frameNo;
+            gameOver = true; // Set game over state
+            return;
         }
     }
 
@@ -181,13 +175,6 @@ function updateGameArea() {
     myScore.update();
     myGamePiece.newPos();
     myGamePiece.update();
-
-    // Update high score
-    if (myGameArea.frameNo > highScore) {
-        highScore = myGameArea.frameNo;
-        localStorage.setItem('highScore', highScore); // Save high score
-        document.getElementById("highScoreDisplay").innerText = highScore;
-    }
 }
 
 function everyinterval(n) {
@@ -204,7 +191,7 @@ function controlGamePiece(e) {
     }
 
     if (e.key === "ArrowUp") {
-        myGamePiece.gravitySpeed = -2;
+        myGamePiece.gravitySpeed = -2; // Jump strength
     }
     if (e.key === " ") {
         togglePause();
@@ -222,6 +209,40 @@ function togglePause() {
             backgroundMusic.play().catch(err => console.error(err));
         }
     }
+}
+
+function submitScore() {
+    if (gameOver) {
+        const playerName = document.getElementById("playerName").value;
+        if (playerName) {
+            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            leaderboard.push({ name: playerName, score: myGameArea.frameNo });
+            leaderboard.sort((a, b) => b.score - a.score); // Sort by score
+            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+            displayLeaderboard();
+            resetGame();
+        } else {
+            alert("Please enter your name!");
+        }
+    }
+}
+
+function displayLeaderboard() {
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    let leaderboardHtml = leaderboard.map(entry => `<p>${entry.name}: ${entry.score}</p>`).join("");
+    document.getElementById("leaderboard").innerHTML = leaderboardHtml || "<p>No scores yet.</p>";
+}
+
+function resetGame() {
+    myObstacles = [];
+    myGameArea.frameNo = 0;
+    myScore.text = "";
+    gameOver = false;
+    backgroundMusic.pause();
+}
+
+window.onload = function() {
+    displayLeaderboard();
 }
 </script>
 

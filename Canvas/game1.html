@@ -59,11 +59,14 @@ var interval;
 var gameOver = false;
 var backgroundMusic = document.getElementById("backgroundMusic");
 var playerNameInput = document.getElementById("playerName");
-var highScore = 0;
+var highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
 
 characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png';
 poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png';
 explosionImage.src = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWxidTFhb3k5aW9qdmIxN3BpNDQ4NzJ2OTB4YzZnaTRxcG45MTZjciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d4aVHC1HKnButuXC/giphy.gif';
+
+// Display the high score on load
+document.getElementById("highScoreDisplay").innerText = highScore;
 
 function startGame() {
     if (interval) {
@@ -167,8 +170,10 @@ function updateGameArea() {
 
     for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            displayExplosion();
-            return;
+            gameOver = true;
+            clearInterval(interval);
+            backgroundMusic.pause();
+            return; // Exit the function on crash
         }
     }
 
@@ -180,6 +185,7 @@ function updateGameArea() {
     // Update high score
     if (myGameArea.frameNo > highScore) {
         highScore = myGameArea.frameNo;
+        localStorage.setItem('highScore', highScore); // Save high score
         document.getElementById("highScoreDisplay").innerText = highScore;
     }
 }
@@ -216,22 +222,6 @@ function togglePause() {
             backgroundMusic.play().catch(err => console.error(err));
         }
     }
-}
-
-function displayExplosion() {
-    gameOver = true;
-    var ctx = myGameArea.canvas.getContext("2d");
-    ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 100, 100);
-
-    setTimeout(() => {
-        alert("Game Over, " + playerNameInput.value + "! Your score: " + myGameArea.frameNo);
-        if (myGameArea.frameNo > highScore) {
-            highScore = myGameArea.frameNo;
-            alert("New High Score: " + highScore + " by " + playerNameInput.value);
-        }
-        clearInterval(interval);
-        backgroundMusic.pause();
-    }, 3000);
 }
 </script>
 

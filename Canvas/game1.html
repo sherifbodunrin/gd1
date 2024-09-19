@@ -66,6 +66,11 @@ poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035
 explosionImage.src = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWxidTFhb3k5aW9qdmIxN3BpNDQ4NzJ2OTB4YzZnaTRxcG45MTZjciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d4aVHC1HKnButuXC/giphy.gif'; // Explosion GIF
 
 function startGame() {
+    // Clear any existing intervals to prevent multiple game loops
+    if (interval) {
+        clearInterval(interval);
+    }
+
     myGamePiece = new gameObject(30, 30, characterImage, 10, 120, "image");
     myScore = new gameObject("30px", "Consolas", "white", 280, 40, "text");
     myScore.text = "";

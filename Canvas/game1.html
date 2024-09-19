@@ -90,6 +90,7 @@ var myGameArea = {
     canvas: document.getElementById("gameCanvas"),
     start: function() {
         this.frameNo = 0;
+        clearInterval(interval); // Clear any existing intervals
         interval = setInterval(updateGameArea, 20);
     },
     clear: function() {
@@ -173,9 +174,9 @@ function updateGameArea() {
 
     for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            myScore.text = "SCORE: " + myGameArea.frameNo;
             gameOver = true; // Set game over state
             document.getElementById("endScreen").style.display = "block"; // Show end screen
+            clearInterval(interval); // Stop the game
             return;
         }
     }

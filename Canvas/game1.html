@@ -195,10 +195,13 @@ function controlGamePiece(e) {
 function togglePause() {
     isPaused = !isPaused;
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
+
     if (isPaused) {
         backgroundMusic.pause(); // Pause music if game is paused
     } else {
-        backgroundMusic.play().catch(err => console.error(err)); // Resume music if game continues
+        if (backgroundMusic.paused) {
+            backgroundMusic.play().catch(err => console.error(err)); // Resume music if game continues
+        }
     }
 }
 

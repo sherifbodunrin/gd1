@@ -143,18 +143,19 @@ function gameObject(width, height, image, x, y, type) {
 }
 
 function updateGameArea() {
-    if (isPaused || gameOver) return; // Don't update if paused or game over
+     if (isPaused || gameOver) return; // Don't update if paused or game over
 
     myGameArea.clear();
     myGameArea.frameNo += 1;
 
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+    // Adjusted frequency and gap sizes
+    if (myGameArea.frameNo == 1 || everyinterval(100)) { // Increase frequency of pole generation
         var x = myGameArea.canvas.width;
         var minHeight = 20;
-        var maxHeight = 200;
+        var maxHeight = 100; // Lower max height for easier dodging
         var height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        var minGap = 50;
-        var maxGap = 100;
+        var minGap = 80; // Increase gap size
+        var maxGap = 120; // Increase gap size
         var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
         myObstacles.push(new gameObject(10, height, poleImage, x, 0, "image"));
         myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, poleImage, x, height + gap, "image"));

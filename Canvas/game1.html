@@ -24,6 +24,10 @@ button {
     padding: 10px;
     border: 1px solid white;
 }
+
+#endScreen {
+    display: none; /* Initially hidden */
+}
 </style>
 </head>
 <body>
@@ -42,8 +46,11 @@ button {
     <p>How long can you stay alive?</p>
 </div>
 
-<input type="text" id="playerName" placeholder="Enter your name" />
-<button onclick="submitScore()">Submit Score</button>
+<div id="endScreen">
+    <h3>Input Final Score!</h3>
+    <input type="text" id="playerName" placeholder="Enter your name" />
+    <button onclick="submitScore()">Submit Score</button>
+</div>
 
 <h3>Leaderboard</h3>
 <div id="leaderboard"></div>
@@ -73,6 +80,7 @@ function startGame() {
     myScore.text = "";
     myObstacles = [];
     gameOver = false;
+    document.getElementById("endScreen").style.display = "none"; // Hide end screen
     myGameArea.start();
     backgroundMusic.play().catch(err => console.error(err));
     window.addEventListener("keydown", controlGamePiece);
@@ -167,6 +175,7 @@ function updateGameArea() {
         if (myGamePiece.crashWith(myObstacles[i])) {
             myScore.text = "SCORE: " + myGameArea.frameNo;
             gameOver = true; // Set game over state
+            document.getElementById("endScreen").style.display = "block"; // Show end screen
             return;
         }
     }
@@ -229,7 +238,9 @@ function submitScore() {
 
 function displayLeaderboard() {
     const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    let leaderboardHtml = leaderboard.map(entry => `<p>${entry.name}: ${entry.score}</p>`).join("");
+    leaderboard.sort((a, b) => b.score - a.score); // Sort by score
+    let topScores = leaderboard.slice(0, 5); // Get top 5 scores
+    let leaderboardHtml = topScores.map(entry => `<p>${entry.name}: ${entry.score}</p>`).join("");
     document.getElementById("leaderboard").innerHTML = leaderboardHtml || "<p>No scores yet.</p>";
 }
 
@@ -239,6 +250,7 @@ function resetGame() {
     myScore.text = "";
     gameOver = false;
     backgroundMusic.pause();
+    document.getElementById("playerName").value = ""; // Clear name input
 }
 
 window.onload = function() {

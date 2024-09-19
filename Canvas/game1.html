@@ -66,7 +66,6 @@ poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035
 explosionImage.src = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWxidTFhb3k5aW9qdmIxN3BpNDQ4NzJ2OTB4YzZnaTRxcG45MTZjciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d4aVHC1HKnButuXC/giphy.gif'; // Explosion GIF
 
 function startGame() {
-    // Clear any existing intervals to prevent multiple game loops
     if (interval) {
         clearInterval(interval);
     }
@@ -184,18 +183,26 @@ function everyinterval(n) {
 }
 
 function controlGamePiece(e) {
+    if (isPaused) {
+        if (e.key === " ") {
+            togglePause(); // Use spacebar to toggle pause
+            e.preventDefault(); // Prevent default action of space bar
+        }
+        return; // Prevent any other controls if paused
+    }
+
     if (e.key === "ArrowUp") {
         myGamePiece.gravitySpeed = -2; // Jump strength
     }
     if (e.key === " ") {
         togglePause(); // Use spacebar to toggle pause
+        e.preventDefault(); // Prevent default action of space bar
     }
 }
 
 function togglePause() {
     isPaused = !isPaused;
     document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
-
     if (isPaused) {
         backgroundMusic.pause(); // Pause music if game is paused
     } else {

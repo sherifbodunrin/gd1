@@ -82,9 +82,15 @@ function startGame() {
     gameOver = false;
     document.getElementById("endScreen").style.display = "none"; // Hide end screen
     myGameArea.start();
-    backgroundMusic.play().catch(err => console.error(err));
+    
+    // Play background music only after user interaction
+    backgroundMusic.play().catch(err => {
+        console.error("Error playing music: ", err);
+    });
+
     window.addEventListener("keydown", controlGamePiece);
 }
+
 
 var myGameArea = {
     canvas: document.getElementById("gameCanvas"),

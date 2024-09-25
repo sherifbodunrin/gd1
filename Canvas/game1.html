@@ -66,7 +66,9 @@
         var interval;
         var gameOver = false;
         var myMusic;
-
+        var explosionImage = new Image();
+        
+        explosionImage.src = 'https://www.onlygfx.com/wp-content/uploads/2018/02/starburst-explosion-2-3.png';
         characterImage.src = 'https://clipart-library.com/images/8T68RMeac.png'; 
         poleImage.src = 'https://res.cloudinary.com/mirukusheku/image/upload/v1495140035/Red_laser-ConvertImage_votu8o.png'; 
 
@@ -153,41 +155,47 @@
         }
 
         function updateGameArea() {
-            if (isPaused || gameOver) return;
+           if (isPaused || gameOver) {
+        if (gameOver) {
+            var ctx = myGameArea.canvas.getContext("2d");
+            ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 60, 60); // Adjust size and position as needed
+        }
+        return;
+    }
 
-            myGameArea.clear();
-            myGameArea.frameNo += 1;
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
 
-            if (myGameArea.frameNo == 1 || everyinterval(150)) {
-                var x = myGameArea.canvas.width;
-                var minHeight = 20;
-                var maxHeight = 200;
-                var height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-                var minGap = 50;
-                var maxGap = 100;
-                var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-                myObstacles.push(new gameObject(10, height, poleImage, x, 0, "image"));
-                myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, poleImage, x, height + gap, "image"));
-            }
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        var x = myGameArea.canvas.width;
+        var minHeight = 20;
+        var maxHeight = 200;
+        var height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+        var minGap = 50;
+        var maxGap = 100;
+        var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+        myObstacles.push(new gameObject(10, height, poleImage, x, 0, "image"));
+        myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, poleImage, x, height + gap, "image"));
+    }
 
-            for (var i = 0; i < myObstacles.length; i += 1) {
-                myObstacles[i].x += -1;
-                myObstacles[i].update();
-            }
+    for (var i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x += -1;
+        myObstacles[i].update();
+    }
 
-            for (var i = 0; i < myObstacles.length; i += 1) {
-                if (myGamePiece.crashWith(myObstacles[i])) {
-                    gameOver = true; // Set game over state
-                    document.getElementById("endScreen").style.display = "block"; // Show end screen
-                    clearInterval(interval); // Stop the game
-                    return;
-                }
-            }
+    for (var i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+            gameOver = true; // Set game over state
+            document.getElementById("endScreen").style.display = "block"; // Show end screen
+            clearInterval(interval); // Stop the game
+            return;
+        }
+    }
 
-            myScore.text = "SCORE: " + myGameArea.frameNo;
-            myScore.update();
-            myGamePiece.newPos();
-            myGamePiece.update();
+    myScore.text = "SCORE: " + myGameArea.frameNo;
+    myScore.update();
+    myGamePiece.newPos();
+    myGamePiece.update();
         }
 
         function everyinterval(n) {

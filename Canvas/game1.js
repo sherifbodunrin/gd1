@@ -22,7 +22,6 @@ function startGame() {
     document.getElementById("endScreen").style.display = "none"; // Hide end screen
     myGameArea.start();
 
-    // Play background music
     myMusic = new Audio('alienbgm.mp3'); // Adjust path as necessary
     myMusic.loop = true; // Loop the audio
     myMusic.play().catch(err => {
@@ -36,7 +35,7 @@ var myGameArea = {
     canvas: document.getElementById("gameCanvas"),
     start: function() {
         this.frameNo = 0;
-        clearInterval(interval); // Clear any existing intervals
+        clearInterval(interval);
         interval = setInterval(updateGameArea, 20);
     },
     clear: function() {
@@ -97,10 +96,10 @@ function gameObject(width, height, image, x, y, type) {
 
 function updateGameArea() {
     if (gameOver) {
-        myGameArea.clear(); // Clear the canvas
+        myGameArea.clear();
         var ctx = myGameArea.canvas.getContext("2d");
-        ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 60, 60); // Adjust size and position as needed
-        return; // Exit the function
+        ctx.drawImage(explosionImage, myGamePiece.x - 15, myGamePiece.y - 15, 60, 60);
+        return;
     }
 
     if (isPaused) return;
@@ -108,7 +107,7 @@ function updateGameArea() {
     myGameArea.clear();
     myGameArea.frameNo += 1;
 
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+    if (myGameArea.frameNo === 1 || everyinterval(150)) {
         var x = myGameArea.canvas.width;
         var minHeight = 20;
         var maxHeight = 200;
@@ -127,9 +126,9 @@ function updateGameArea() {
 
     for (var i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
-            gameOver = true; // Set game over state
-            document.getElementById("endScreen").style.display = "block"; // Show end screen
-            clearInterval(interval); // Stop the game
+            gameOver = true;
+            document.getElementById("endScreen").style.display = "block";
+            clearInterval(interval);
             return;
         }
     }
@@ -174,4 +173,39 @@ function togglePause() {
     }
 }
 
-// Other game-related functions (submitScore, displayLeaderboard, resetGame) can remain the same.
+function submitScore() {
+    if (gameOver) {
+        const playerName = document.getElementById("playerName").value;
+        if (playerName) {
+            let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            leaderboard.push({ name: playerName, score: myGameArea.frameNo });
+            leaderboard.sort((a, b) => b.score - a.score); // Sort by score
+            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+            displayLeaderboard();
+            resetGame();
+        } else {
+            alert("Please enter your name!");
+        }
+    }
+}
+
+function displayLeaderboard() {
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    leaderboard.sort((a, b) => b.score - a.score);
+    let topScores = leaderboard.slice(0, 5); // Get top 5 scores
+    let leaderboardHtml = topScores.map(entry => `<p>${entry.name}: ${entry.score}</p>`).join("");
+    document.getElementById("leaderboard").innerHTML = leaderboardHtml || "<p>No scores yet.</p>";
+}
+
+function resetGame() {
+    myObstacles = [];
+    myGameArea.frameNo = 0;
+    myScore.text = "";
+    gameOver = false;
+    myMusic.currentTime = 0; // Reset music
+    document.getElementById("playerName").value = ""; // Clear name input
+}
+
+window.onload = function() {
+    displayLeaderboard();
+};

@@ -22,14 +22,29 @@ function startGame() {
     document.getElementById("endScreen").style.display = "none"; // Hide end screen
     myGameArea.start();
 
-    myMusic = new Audio('alienbgm.mp3'); // Adjust path as necessary
-    myMusic.loop = true; // Loop the audio
-    myMusic.play().catch(err => {
-        console.error("Error playing music: ", err);
-    });
-
+    myMusic = new sound('alienbgm.mp3'); // Adjust path as necessary
+ 
     window.addEventListener("keydown", controlGamePiece);
 }
+
+    function sound(src, type) {
+            this.type = type;
+            this.sound = document.createElement("audio");
+            this.sound.src = src;
+            this.sound.setAttribute("preload", "auto");
+            this.sound.setAttribute("controls", "none");
+            if (this.type == "bgm") {
+                this.sound.setAttribute("loop", "true");
+            }
+            this.sound.style.display = "none";
+            document.body.appendChild(this.sound);
+            this.play = function () {
+                this.sound.play();
+            }
+            this.stop = function () {
+                this.sound.pause();
+            }
+        }
 
 var myGameArea = {
     canvas: document.getElementById("gameCanvas"),

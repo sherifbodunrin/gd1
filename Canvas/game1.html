@@ -102,8 +102,8 @@
 
             // Play background music only after user interaction
            // myMusic = new Audio('https://raw.githubusercontent.com/sherifbodunrin/sherifbodunrin.github.io/main/Canvas/alienbgm.mp3');
-            const myMusic = new sound('alienbgm.mp3');
-         
+            myMusic = new sound('alienbgm.mp3');
+            myMusic.play();
             window.addEventListener("keydown", controlGamePiece);
         }
 

@@ -81,8 +81,6 @@
             document.getElementById("endScreen").style.display = "none"; // Hide end screen
             myGameArea.start();
 
-            // Play background music only after user interaction
-           // myMusic = new Audio('https://raw.githubusercontent.com/sherifbodunrin/sherifbodunrin.github.io/main/Canvas/alienbgm.mp3');
             myMusic = new Audio('alienbgm.mp3');
             myMusic.loop = true; // Loop the audio
             myMusic.play().catch(err => {
@@ -163,7 +161,7 @@
                 return; // Exit the function
             }
 
-            if (isPaused) return;
+            if (isPaused) return; // Don't update if paused
 
             myGameArea.clear();
             myGameArea.frameNo += 1;
@@ -219,18 +217,6 @@
             if (e.key === " ") {
                 togglePause();
                 e.preventDefault();
-            }
-        }
-
-        function togglePause() {
-            isPaused = !isPaused;
-            document.getElementById("pauseButton").innerText = isPaused ? "Continue" : "Pause";
-            if (isPaused) {
-                myMusic.pause();
-            } else {
-                myMusic.play().catch(err => {
-                    console.error("Error playing music: ", err);
-                });
             }
         }
 

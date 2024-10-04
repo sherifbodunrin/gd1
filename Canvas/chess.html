@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chessboard with Piece Images</title>
+  <!-- Load React and ReactDOM libraries -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Load Babel for JSX support -->
+  <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
+</head>
+<body>
+  <!-- The root div where the React app will be rendered -->
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react,stage-3">
+    // Model: Starting state of the chessboard in a 2D array
+    const initialGameState = [
+      ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'], // Black pieces
+      ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'], // Black pawns
+      ['', '', '', '', '', '', '', ''],          // Empty rows
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'], // White pawns
+      ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']  // White pieces
+    ];
+
+    // Mapping of chess pieces to their respective image URLs
+    const pieceImages = {
+      'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg', // Black rook
+      'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg', // Black knight
+      'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg', // Black bishop
+      'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg', // Black queen
+      'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg', // Black king
+      'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg', // Black pawn
+      'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg', // White rook
+      'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg', // White knight
+      'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg', // White bishop
+      'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg', // White queen
+      'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg', // White king
+      'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'  // White pawn
+    };
+
+    function Game() {
+      // State for managing the chess game
+      const [game, setGame] = React.useState(initialGameState); // Current game state
+      const [selectedSquare, setSelectedSquare] = React.useState(null); // Currently selected square
+      const [step, setStep] = React.useState(0); // Move counter
+
+      // Handle square click for moving pieces
+      function handleClick(row, col) {
+        setStep(step + 1); // Increment the move counter
+        
+        if (selectedSquare) {
+          // If a square is already selected, move the piece
+          const newGame = game.map(row => row.slice()); // Create a copy of the game state
+          const [selectedRow, selectedCol] = selectedSquare;
+
+          // Move the piece to the new location
+          newGame[row][col] = newGame[selectedRow][selectedCol]; // Move the piece
+          newGame[selectedRow][selectedCol] = ''; // Empty the original square
+          setGame(newGame); // Update the game state
+          setSelectedSquare(null); // Deselect the square
+        } else {
+          // If no square is selected, select the clicked piece
+          if (game[row][col]) {
+            setSelectedSquare([row, col]); // Select the square
+          }
+        }
+      }
+
+      return (
+        <div>
+          {/* Render the Board component and pass necessary props */}
+          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} stepl={step} />
+        </div>
+      );
+    }
+
+    // View: Board component to display the chessboard
+    function Board({ game, onSquareClick, selectedSquare, stepl }) {
+      return (
+        <div>
+          {/* Display the number of moves taken */}
+          <button>{stepl}</button>
+          
+          {game.map((row, rowIndex) => (
+            <div key={rowIndex} style={{ display: 'flex' }}>
+              {row.map((value, colIndex) => (
+                <Square
+                  key={colIndex} // Unique key for each square
+                  value={value} // The piece in the square
+                  onClick={() => onSquareClick(rowIndex, colIndex)} // Handle click
+                  isLight={(rowIndex + colIndex) % 2 === 0} // Determine square color
+                  isSelected={selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex} // Check if the square is selected
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Component for each individual square on the board
+    function Square({ value, onClick, isLight, isSelected }) {
+      // Style for the square
+      const squareStyle = {
+        width: '80px',
+        height: '80px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        cursor: 'pointer',
+        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'), // Color based on selection and light/dark
+        border: '1px solid #999'
+      };
+
+      // Function to display the piece image or an empty square
+      const pieceDisplay = () => {
+        if (value) {
+          return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />; // Show piece image
+        }
+        return null; // Return nothing for empty squares
+      };
+
+      return (
+        <button style={squareStyle} onClick={onClick}>
+          {pieceDisplay()} {/* Display the piece or empty square */}
+        </button>
+      );
+    }
+
+    // Render the Game component into the root div
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Game />);
+  </script>
+</body>
+</html>

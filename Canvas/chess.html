@@ -52,14 +52,16 @@
         const targetPiece = game[endRow][endCol];
         if (targetPiece && piece.toLowerCase() === targetPiece.toLowerCase()) return false; // Can't capture own piece
 
+        const direction = piece === 'P' ? -1 : 1; // Pawns move up or down
+        const startRowLimit = piece === 'P' ? 6 : 1; // Starting row for each color
+
         switch (piece.toLowerCase()) {
           case 'p': // Pawn
-            const direction = piece === 'P' ? -1 : 1;
-            if (startCol === endCol) {
+            if (startCol === endCol) { // Moving straight
               if (targetPiece) return false; // Can't move to a square with a piece
-              if (endRow === startRow + direction) return true;
-              if (endRow === startRow + direction * 2 && (startRow === 1 || startRow === 6) && !game[startRow + direction][startCol]) {
-                return endRow === startRow + direction * 2;
+              if (endRow === startRow + direction) return true; // Move forward 1
+              if (endRow === startRow + direction * 2 && startRow === startRowLimit && !game[startRow + direction][startCol]) {
+                return true; // Move forward 2
               }
             } else if (Math.abs(startCol - endCol) === 1 && endRow === startRow + direction && targetPiece) {
               return true; // Capture

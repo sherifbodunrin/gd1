@@ -61,7 +61,95 @@
         return !gameState.some(row => row.includes('K')) || !gameState.some(row => row.includes('k'));
       }
 
-  
+      function validateMove(piece, startRow, startCol, endRow, endCol) {
+        const targetPiece = game[endRow][endCol];
+        const isWhitePiece = piece === piece.toUpperCase();
+        const isBlackPiece = piece === piece.toLowerCase();
+
+        // Can't capture own piece
+        if ((isWhitePiece && targetPiece && targetPiece === targetPiece.toUpperCase()) || 
+            (isBlackPiece && targetPiece && targetPiece === targetPiece.toLowerCase())) {
+          return false;
+        }
+
+        const direction = isWhitePiece ? -1 : 1; // Pawns move up or down based on color
+
+        switch (piece.toLowerCase()) {
+          case 'p': // Pawn
+            if (startCol === endCol) { // Moving straight
+              if (targetPiece) return false; // Can't move to a square with a piece
+              if (endRow === startRow + direction) return true; // Move forward 1
+              if (endRow === startRow + direction * 2 && startRow === (isWhitePiece ? 6 : 1) && !game[startRow + direction][startCol]) {
+                return true; // Move forward 2
+              }
+            } else if (Math.abs(startCol - endCol) === 1 && endRow === startRow + direction && targetPiece) {
+              return true; // Capture
+            }
+            break;
+
+          case 'r': // Rook
+            if (startRow === endRow || startCol === endCol) {
+              const stepRow = (endRow - startRow) ? (endRow - startRow) / Math.abs(endRow - startRow) : 0;
+              const stepCol = (endCol - startCol) ? (endCol - startCol) / Math.abs(endCol - startCol) : 0;
+              let r = startRow + stepRow;
+              let c = startCol + stepCol;
+              while (r !== endRow || c !== endCol) {
+                if (game[r][c]) return false; // Path is blocked
+                r += stepRow;
+                c += stepCol;
+              }
+              return true;
+            }
+            break;
+
+          case 'n': // Knight
+            if ((Math.abs(startRow - endRow) === 2 && Math.abs(startCol - endCol) === 1) ||
+                (Math.abs(startRow - endRow) === 1 && Math.abs(startCol - endCol) === 2)) {
+              return true;
+            }
+            break;
+
+          case 'b': // Bishop
+            if (Math.abs(startRow - endRow) === Math.abs(startCol - endCol)) {
+              const stepRow = (endRow - startRow) / Math.abs(endRow - startRow);
+              const stepCol = (endCol - startCol) / Math.abs(endCol - startCol);
+              let r = startRow + stepRow;
+              let c = startCol + stepCol;
+              while (r !== endRow || c !== endCol) {
+                if (game[r][c]) return false; // Path is blocked
+                r += stepRow;
+                c += stepCol;
+              }
+              return true;
+            }
+            break;
+
+          case 'q': // Queen
+            if (Math.abs(startRow - endRow) === Math.abs(startCol - endCol) || startRow === endRow || startCol === endCol) {
+              const stepRow = (endRow - startRow) ? (endRow - startRow) / Math.abs(endRow - startRow) : 0;
+              const stepCol = (endCol - startCol) ? (endCol - startCol) / Math.abs(endCol - startCol) : 0;
+              let r = startRow + stepRow;
+              let c = startCol + stepCol;
+              while (r !== endRow || c !== endCol) {
+                if (game[r][c]) return false; // Path is blocked
+                r += stepRow;
+                c += stepCol;
+              }
+              return true;
+            }
+            break;
+
+          case 'k': // King
+            if (Math.abs(startRow - endRow) <= 1 && Math.abs(startCol - endCol) <= 1) {
+              return true;
+            }
+            break;
+
+          default:
+            break;
+        }
+        return false; // Invalid move
+      }
 
       function handleClick(row, col) {
         if (gameOver) return;

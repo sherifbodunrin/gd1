@@ -43,6 +43,7 @@
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [gameOver, setGameOver] = React.useState(false);
+      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
 
       function isKingCaptured(gameState) {
         return !gameState.some(row => row.includes('K')) || !gameState.some(row => row.includes('k'));
@@ -50,10 +51,16 @@
 
       function validateMove(piece, startRow, startCol, endRow, endCol) {
         const targetPiece = game[endRow][endCol];
-        if (targetPiece && piece.toLowerCase() === targetPiece.toLowerCase()) return false; // Can't capture own piece
+        const isWhitePiece = piece === piece.toUpperCase();
+        const isBlackPiece = piece === piece.toLowerCase();
 
-        const direction = piece === 'P' ? -1 : 1; // Pawns move up or down
-        const startRowLimit = piece === 'P' ? 6 : 1; // Starting row for each color
+        if ((isWhitePiece && targetPiece && targetPiece === targetPiece.toUpperCase()) || 
+            (isBlackPiece && targetPiece && targetPiece === targetPiece.toLowerCase())) {
+          return false; // Can't capture own piece
+        }
+
+        const direction = isWhitePiece ? -1 : 1; // Pawns move up or down based on color
+        const startRowLimit = isWhitePiece ? 6 : 1; // Starting row for each color
 
         switch (piece.toLowerCase()) {
           case 'p': // Pawn
@@ -145,6 +152,7 @@
             newGame[row][col] = piece; // Move piece to new position
             newGame[selectedRow][selectedCol] = ''; // Empty the original position
             setGame(newGame);
+            setIsWhiteTurn(!isWhiteTurn); // Switch turn
 
             // Check for game over
             if (isKingCaptured(newGame)) {
@@ -156,7 +164,7 @@
             alert('Invalid move!');
           }
         } else {
-          if (piece) {
+          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
             setSelectedSquare([row, col]);
           }
         }
@@ -164,6 +172,7 @@
 
       return (
         <div>
+          <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
         </div>
       );

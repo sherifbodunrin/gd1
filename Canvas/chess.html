@@ -12,7 +12,7 @@
 <body>
   <div id="root"></div>
 
-  <script type="text/babel" data-presets="react,stage-3">
+  <script type="text/babel">
     const initialGameState = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -58,14 +58,16 @@
             if (startCol === endCol) {
               if (targetPiece) return false; // Can't move to a square with a piece
               if (endRow === startRow + direction) return true;
-              if (endRow === startRow + direction * 2 && (startRow === 1 || startRow === 6) && !game[startRow + direction][startCol]) return true;
+              if (endRow === startRow + direction * 2 && (startRow === 1 || startRow === 6) && !game[startRow + direction][startCol]) {
+                return endRow === startRow + direction * 2;
+              }
             } else if (Math.abs(startCol - endCol) === 1 && endRow === startRow + direction && targetPiece) {
               return true; // Capture
             }
             break;
+
           case 'r': // Rook
             if (startRow === endRow || startCol === endCol) {
-              // Check path is clear
               const stepRow = (endRow - startRow) ? (endRow - startRow) / Math.abs(endRow - startRow) : 0;
               const stepCol = (endCol - startCol) ? (endCol - startCol) / Math.abs(endCol - startCol) : 0;
               let r = startRow + stepRow;
@@ -78,12 +80,14 @@
               return true;
             }
             break;
+
           case 'n': // Knight
             if ((Math.abs(startRow - endRow) === 2 && Math.abs(startCol - endCol) === 1) ||
                 (Math.abs(startRow - endRow) === 1 && Math.abs(startCol - endCol) === 2)) {
               return true;
             }
             break;
+
           case 'b': // Bishop
             if (Math.abs(startRow - endRow) === Math.abs(startCol - endCol)) {
               const stepRow = (endRow - startRow) / Math.abs(endRow - startRow);
@@ -98,6 +102,7 @@
               return true;
             }
             break;
+
           case 'q': // Queen
             if (Math.abs(startRow - endRow) === Math.abs(startCol - endCol) || startRow === endRow || startCol === endCol) {
               const stepRow = (endRow - startRow) ? (endRow - startRow) / Math.abs(endRow - startRow) : 0;
@@ -112,11 +117,13 @@
               return true;
             }
             break;
+
           case 'k': // King
             if (Math.abs(startRow - endRow) <= 1 && Math.abs(startCol - endCol) <= 1) {
               return true;
             }
             break;
+
           default:
             break;
         }
@@ -181,33 +188,4 @@
     }
 
     function Square({ value, onClick, isLight, isSelected }) {
-      const squareStyle = {
-        width: '80px',
-        height: '80px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        cursor: 'pointer',
-        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'),
-        border: '1px solid #999'
-      };
-
-      const pieceDisplay = () => {
-        if (value) {
-          return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />;
-        }
-        return null;
-      };
-
-      return (
-        <button style={squareStyle} onClick={onClick}>
-          {pieceDisplay()}
-        </button>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<Game />);
-  </script>
-</body>
-</html>
+      const squareStyle =

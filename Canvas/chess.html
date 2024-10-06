@@ -40,80 +40,72 @@
     };
 
     function Game() {
-  const [game, setGame] = React.useState(initialGameState);
-  const [selectedSquare, setSelectedSquare] = React.useState(null);
-  const [gameOver, setGameOver] = React.useState(false);
-  const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
-  const [textToSpeechEnabled, setTextToSpeechEnabled] = React.useState(true);
+      const [game, setGame] = React.useState(initialGameState);
+      const [selectedSquare, setSelectedSquare] = React.useState(null);
+      const [gameOver, setGameOver] = React.useState(false);
+      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
+      const [textToSpeechEnabled, setTextToSpeechEnabled] = React.useState(true);
 
-  const resetGame = () => {
-    setGame(initialGameState);
-    setGameOver(false);
-    setIsWhiteTurn(true);
-    setSelectedSquare(null);
-  };
+      const resetGame = () => {
+        setGame(initialGameState);
+        setGameOver(false);
+        setIsWhiteTurn(true);
+        setSelectedSquare(null);
+      };
 
-  const speak = (text) => {
-    if (textToSpeechEnabled) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      window.speechSynthesis.speak(utterance);
-    }
-  };
+      const speak = (text) => {
+        if (textToSpeechEnabled) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.speak(utterance);
+        }
+      };
 
       function isKingCaptured(gameState) {
         return !gameState.some(row => row.includes('K')) || !gameState.some(row => row.includes('k'));
       }
 
-    function validateMove(piece, startRow, startCol, endRow, endCol) {
-    // Allow any piece to be moved freely for testing purposes
-    return true; // Just return true for all moves
-  }
+      function handleClick(row, col) {
+        if (gameOver) return;
+        const piece = game[row][col];
 
-  function handleClick(row, col) {
-  if (gameOver) return;
-  const piece = game[row][col];
+        if (selectedSquare) {
+          const [selectedRow, selectedCol] = selectedSquare;
 
-  if (selectedSquare) {
-    const [selectedRow, selectedCol] = selectedSquare;
+          const newGame = game.map(r => r.slice());
+          newGame[row][col] = piece; // Move piece to new position
+          newGame[selectedRow][selectedCol] = ''; // Empty the original position
+          setGame(newGame);
+          speak(`${piece.toUpperCase()} moved from ${String.fromCharCode(selectedCol + 97)}${8 - selectedRow} to ${String.fromCharCode(col + 97)}${8 - row}`);
+          setIsWhiteTurn(!isWhiteTurn); // Switch turn
 
-    // Validate move
-    if (validateMove(piece, selectedRow, selectedCol, row, col)) {
-      const newGame = game.map(r => r.slice());
-      newGame[row][col] = piece; // Move piece to new position
-      newGame[selectedRow][selectedCol] = ''; // Empty the original position
-      setGame(newGame);
-      speak(`${piece.toUpperCase()} moved from ${String.fromCharCode(selectedCol + 97)}${8 - selectedRow} to ${String.fromCharCode(col + 97)}${8 - row}`);
-      setIsWhiteTurn(!isWhiteTurn); // Switch turn
-
-      // Check for game over
-      if (isKingCaptured(newGame)) {
-        alert(`${piece.toUpperCase()} has been captured! Game over.`);
-        setGameOver(true);
+          // Check for game over
+          if (isKingCaptured(newGame)) {
+            alert(`${piece.toUpperCase()} has been captured! Game over.`);
+            setGameOver(true);
+          }
+          setSelectedSquare(null);
+        } else {
+          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+            setSelectedSquare([row, col]);
+          }
+        }
       }
-      setSelectedSquare(null);
-    }
-  } else {
-    if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
-      setSelectedSquare([row, col]);
-    }
-  }
-}
-      
-  const toggleTextToSpeech = () => {
-    setTextToSpeechEnabled(prev => !prev);
-  };
 
-  return (
-    <div>
-      <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
-      <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-      <button onClick={resetGame} style={{ marginTop: '20px' }}>Restart Game</button>
-      <button onClick={toggleTextToSpeech} style={{ marginTop: '20px' }}>
-        {textToSpeechEnabled ? "Disable" : "Enable"} Text-to-Speech
-      </button>
-    </div>
-  );
-}
+      const toggleTextToSpeech = () => {
+        setTextToSpeechEnabled(prev => !prev);
+      };
+
+      return (
+        <div>
+          <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
+          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+          <button onClick={resetGame} style={{ marginTop: '20px' }}>Restart Game</button>
+          <button onClick={toggleTextToSpeech} style={{ marginTop: '20px' }}>
+            {textToSpeechEnabled ? "Disable" : "Enable"} Text-to-Speech
+          </button>
+        </div>
+      );
+    }
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (

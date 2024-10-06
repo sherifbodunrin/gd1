@@ -53,22 +53,15 @@
           const newGame = game.map(row => row.slice());
           const [selectedRow, selectedCol] = selectedSquare;
 
-          // Prevent self-capture
-          if (newGame[row][col] && (isWhiteTurn === (newGame[row][col] === newGame[row][col].toUpperCase()))) {
-            return; // Prevent moving onto own piece
+          // Move the piece regardless of the color of the piece in the destination square
+          newGame[row][col] = newGame[selectedRow][selectedCol];
+          newGame[selectedRow][selectedCol] = '';
+          setGame(newGame);
+          if (isSpeechEnabled) {
+            speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
           }
-
-          // Only move if it's the correct player's turn and piece is valid
-          if ((isWhiteTurn && isSelectedPieceWhite) || (!isWhiteTurn && !isSelectedPieceWhite)) {
-            newGame[row][col] = newGame[selectedRow][selectedCol];
-            newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
-            if (isSpeechEnabled) {
-              speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
-            }
-            setSelectedSquare(null);
-            setIsWhiteTurn(!isWhiteTurn); // Toggle turn
-          }
+          setSelectedSquare(null);
+          setIsWhiteTurn(!isWhiteTurn); // Toggle turn
         } else {
           // Select the piece only if it belongs to the current player
           if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
@@ -118,7 +111,6 @@
                   onClick={() => onSquareClick(rowIndex, colIndex)}
                   isLight={(rowIndex + colIndex) % 2 === 0}
                   isSelected={selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex}
-                  isClickable={value !== ''} // Allow clicking only on squares with pieces
                 />
               ))}
             </div>
@@ -127,14 +119,14 @@
       );
     }
 
-    function Square({ value, onClick, isLight, isSelected, isClickable }) {
+    function Square({ value, onClick, isLight, isSelected }) {
       const squareStyle = {
         width: '80px',
         height: '80px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        cursor: isClickable ? 'pointer' : 'not-allowed',
+        cursor: 'pointer',
         backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'),
         border: '1px solid #999'
       };
@@ -147,7 +139,7 @@
       };
 
       return (
-        <button style={squareStyle} onClick={isClickable ? onClick : null}>
+        <button style={squareStyle} onClick={onClick}>
           {pieceDisplay()}
         </button>
       );

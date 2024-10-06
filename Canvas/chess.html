@@ -13,7 +13,6 @@
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react,stage-3">
-    // Model: Starting state of the chessboard in 2D array
     const initialGameState = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -44,51 +43,70 @@
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
-      
-      // Handle square click for moving pieces
-     function handleClick(row, col) {
-  const piece = game[row][col];
-  
-  // Determine if the piece is white or black
-  const isSelectedPieceWhite = piece === piece.toUpperCase();
+      const [isSpeechEnabled, setIsSpeechEnabled] = React.useState(true);
 
-  if (selectedSquare) {
-    const newGame = game.map(row => row.slice());
-    const [selectedRow, selectedCol] = selectedSquare;
+      function handleClick(row, col) {
+        const piece = game[row][col];
+        const isSelectedPieceWhite = piece === piece.toUpperCase();
+        
+        if (selectedSquare) {
+          const newGame = game.map(row => row.slice());
+          const [selectedRow, selectedCol] = selectedSquare;
 
-    // Only move if it's the correct player's turn
-    if ((isWhiteTurn && isSelectedPieceWhite) || (!isWhiteTurn && !isSelectedPieceWhite)) {
-      // Move the piece
-      newGame[row][col] = newGame[selectedRow][selectedCol];
-      newGame[selectedRow][selectedCol] = '';
-      setGame(newGame);
-      speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
-      setSelectedSquare(null);
-      setIsWhiteTurn(!isWhiteTurn); // Toggle turn
-    }
-  } else {
-    // Select the piece only if it belongs to the current player
-    if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
-      setSelectedSquare([row, col]);
-    }
-  }
-}
+          // Prevent self-capture
+          if (newGame[row][col] && (isWhiteTurn === (newGame[row][col] === newGame[row][col].toUpperCase()))) {
+            return; // Prevent moving onto own piece
+          }
 
+          // Only move if it's the correct player's turn
+          if ((isWhiteTurn && isSelectedPieceWhite) || (!isWhiteTurn && !isSelectedPieceWhite)) {
+            newGame[row][col] = newGame[selectedRow][selectedCol];
+            newGame[selectedRow][selectedCol] = '';
+            setGame(newGame);
+            if (isSpeechEnabled) {
+              speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
+            }
+            setSelectedSquare(null);
+            setIsWhiteTurn(!isWhiteTurn); // Toggle turn
+          }
+        } else {
+          // Select the piece only if it belongs to the current player
+          if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
+            setSelectedSquare([row, col]);
+          }
+        }
+      }
 
       const speak = (text) => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        window.speechSynthesis.speak(utterance);
+        if (isSpeechEnabled) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.speak(utterance);
+        }
+      };
+
+      const restartGame = () => {
+        setGame(initialGameState);
+        setSelectedSquare(null);
+        setIsWhiteTurn(true);
+      };
+
+      const toggleSpeech = () => {
+        setIsSpeechEnabled(!isSpeechEnabled);
       };
 
       return (
         <div>
           <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
-          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} isWhiteTurn={isWhiteTurn} />
+          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+          <div>
+            <button onClick={restartGame}>Restart Game</button>
+            <button onClick={toggleSpeech}>{isSpeechEnabled ? "Disable Speech" : "Enable Speech"}</button>
+          </div>
         </div>
       );
     }
 
-    function Board({ game, onSquareClick, selectedSquare, isWhiteTurn }) {
+    function Board({ game, onSquareClick, selectedSquare }) {
       return (
         <div>
           {game.map((row, rowIndex) => (
@@ -100,7 +118,7 @@
                   onClick={() => onSquareClick(rowIndex, colIndex)}
                   isLight={(rowIndex + colIndex) % 2 === 0}
                   isSelected={selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex}
-                  isClickable={isWhiteTurn === (value === value.toUpperCase())}
+                  isClickable={!!value} // Allow clicking only on squares with pieces
                 />
               ))}
             </div>

@@ -69,38 +69,36 @@
     return true; // Just return true for all moves
   }
 
-       function handleClick(row, col) {
-    if (gameOver) return;
-    const piece = game[row][col];
+  function handleClick(row, col) {
+  if (gameOver) return;
+  const piece = game[row][col];
 
-    if (selectedSquare) {
-      const [selectedRow, selectedCol] = selectedSquare;
+  if (selectedSquare) {
+    const [selectedRow, selectedCol] = selectedSquare;
 
-      // Validate move
-      if (validateMove(piece, selectedRow, selectedCol, row, col)) {
-        const newGame = game.map(r => r.slice());
-        newGame[row][col] = piece; // Move piece to new position
-        newGame[selectedRow][selectedCol] = ''; // Empty the original position
-        setGame(newGame);
-        speak(`${piece.toUpperCase()} moved from ${String.fromCharCode(selectedCol + 97)}${8 - selectedRow} to ${String.fromCharCode(col + 97)}${8 - row}`);
-        setIsWhiteTurn(!isWhiteTurn); // Switch turn
+    // Validate move
+    if (validateMove(piece, selectedRow, selectedCol, row, col)) {
+      const newGame = game.map(r => r.slice());
+      newGame[row][col] = piece; // Move piece to new position
+      newGame[selectedRow][selectedCol] = ''; // Empty the original position
+      setGame(newGame);
+      speak(`${piece.toUpperCase()} moved from ${String.fromCharCode(selectedCol + 97)}${8 - selectedRow} to ${String.fromCharCode(col + 97)}${8 - row}`);
+      setIsWhiteTurn(!isWhiteTurn); // Switch turn
 
-        // Check for game over
-        if (isKingCaptured(newGame)) {
-          alert(`${piece.toUpperCase()} has been captured! Game over.`);
-          setGameOver(true);
-        }
-        setSelectedSquare(null);
-      } else {
-        alert('Invalid move!');
+      // Check for game over
+      if (isKingCaptured(newGame)) {
+        alert(`${piece.toUpperCase()} has been captured! Game over.`);
+        setGameOver(true);
       }
-    } else {
-      if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
-        setSelectedSquare([row, col]);
-      }
+      setSelectedSquare(null);
+    }
+  } else {
+    if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+      setSelectedSquare([row, col]);
     }
   }
-
+}
+      
   const toggleTextToSpeech = () => {
     setTextToSpeechEnabled(prev => !prev);
   };

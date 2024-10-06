@@ -58,7 +58,7 @@
             return; // Prevent moving onto own piece
           }
 
-          // Only move if it's the correct player's turn
+          // Only move if it's the correct player's turn and piece is valid
           if ((isWhiteTurn && isSelectedPieceWhite) || (!isWhiteTurn && !isSelectedPieceWhite)) {
             newGame[row][col] = newGame[selectedRow][selectedCol];
             newGame[selectedRow][selectedCol] = '';
@@ -118,7 +118,7 @@
                   onClick={() => onSquareClick(rowIndex, colIndex)}
                   isLight={(rowIndex + colIndex) % 2 === 0}
                   isSelected={selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex}
-                  isClickable={!!value} // Allow clicking only on squares with pieces
+                  isClickable={value !== ''} // Allow clicking only on squares with pieces
                 />
               ))}
             </div>

@@ -61,7 +61,7 @@
         return !gameState.some(row => row.includes('K')) || !gameState.some(row => row.includes('k'));
       }
 
-      function validateMove(piece, startRow, startCol, endRow, endCol) {
+     function validateMove(piece, startRow, startCol, endRow, endCol) {
         const targetPiece = game[endRow][endCol];
         const isWhitePiece = piece === piece.toUpperCase();
         const isBlackPiece = piece === piece.toLowerCase();

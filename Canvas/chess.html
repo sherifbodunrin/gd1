@@ -46,36 +46,34 @@
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       
       // Handle square click for moving pieces
-      function handleClick(row, col) {
-        const piece = game[row][col];
-        const isSelectedPieceWhite = piece === piece.toUpperCase();
+     function handleClick(row, col) {
+  const piece = game[row][col];
+  
+  // Determine if the piece is white or black
+  const isSelectedPieceWhite = piece === piece.toUpperCase();
 
-        if (selectedSquare) {
-          const newGame = game.map(row => row.slice());
-          const [selectedRow, selectedCol] = selectedSquare;
+  if (selectedSquare) {
+    const newGame = game.map(row => row.slice());
+    const [selectedRow, selectedCol] = selectedSquare;
 
-          // Check if the move is valid for the current turn
-          if (isWhiteTurn && isSelectedPieceWhite) {
-            newGame[row][col] = newGame[selectedRow][selectedCol];
-            newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
-            speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
-            setSelectedSquare(null);
-            setIsWhiteTurn(false);
-          } else if (!isWhiteTurn && !isSelectedPieceWhite) {
-            newGame[row][col] = newGame[selectedRow][selectedCol];
-            newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
-            speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
-            setSelectedSquare(null);
-            setIsWhiteTurn(true);
-          }
-        } else {
-          if (piece && (isWhiteTurn === (piece === piece.toUpperCase()))) {
-            setSelectedSquare([row, col]);
-          }
-        }
-      }
+    // Only move if it's the correct player's turn
+    if ((isWhiteTurn && isSelectedPieceWhite) || (!isWhiteTurn && !isSelectedPieceWhite)) {
+      // Move the piece
+      newGame[row][col] = newGame[selectedRow][selectedCol];
+      newGame[selectedRow][selectedCol] = '';
+      setGame(newGame);
+      speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
+      setSelectedSquare(null);
+      setIsWhiteTurn(!isWhiteTurn); // Toggle turn
+    }
+  } else {
+    // Select the piece only if it belongs to the current player
+    if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
+      setSelectedSquare([row, col]);
+    }
+  }
+}
+
 
       const speak = (text) => {
         const utterance = new SpeechSynthesisUtterance(text);

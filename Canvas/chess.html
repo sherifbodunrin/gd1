@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessboard with Basic Game Logic</title>
+  <title>Chessboard with Piece Images</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
@@ -12,7 +12,8 @@
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
+  <script type="text/babel" data-presets="react,stage-3">
+    // Model: Starting state of the chessboard in 2D array
     const initialGameState = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -24,6 +25,7 @@
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
 
+    // Mapping of chess pieces to their respective image URLs
     const pieceImages = {
       'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
       'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
@@ -42,74 +44,44 @@
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
-      const [gameOver, setGameOver] = React.useState(false);
-      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
-      const [textToSpeechEnabled, setTextToSpeechEnabled] = React.useState(true);
-
-      const resetGame = () => {
-        setGame(initialGameState);
-        setGameOver(false);
-        setIsWhiteTurn(true);
-        setSelectedSquare(null);
-      };
-
-      const speak = (text) => {
-        if (textToSpeechEnabled) {
-          const utterance = new SpeechSynthesisUtterance(text);
-          window.speechSynthesis.speak(utterance);
-        }
-      };
-
-      function isKingCaptured(gameState) {
-        return !gameState.some(row => row.includes('K')) || !gameState.some(row => row.includes('k'));
-      }
-
+      
+      const [step, setStep] = React.useState(0);
+      
+      // Handle square click for moving pieces
       function handleClick(row, col) {
-        if (gameOver) return;
-        const piece = game[row][col];
-
+        
+        setStep(step+1);
+        
         if (selectedSquare) {
+          const newGame = game.map(row => row.slice());
           const [selectedRow, selectedCol] = selectedSquare;
 
-          const newGame = game.map(r => r.slice());
-          newGame[row][col] = piece; // Move piece to new position
-          newGame[selectedRow][selectedCol] = ''; // Empty the original position
+          // Move the piece to the new location
+          newGame[row][col] = newGame[selectedRow][selectedCol];
+          newGame[selectedRow][selectedCol] = '';
           setGame(newGame);
-          speak(`${piece.toUpperCase()} moved from ${String.fromCharCode(selectedCol + 97)}${8 - selectedRow} to ${String.fromCharCode(col + 97)}${8 - row}`);
-          setIsWhiteTurn(!isWhiteTurn); // Switch turn
-
-          // Check for game over
-          if (isKingCaptured(newGame)) {
-            alert(`${piece.toUpperCase()} has been captured! Game over.`);
-            setGameOver(true);
-          }
           setSelectedSquare(null);
         } else {
-          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+          if (game[row][col]) {
             setSelectedSquare([row, col]);
           }
         }
       }
 
-      const toggleTextToSpeech = () => {
-        setTextToSpeechEnabled(prev => !prev);
-      };
-
       return (
         <div>
-          <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
-          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-          <button onClick={resetGame} style={{ marginTop: '20px' }}>Restart Game</button>
-          <button onClick={toggleTextToSpeech} style={{ marginTop: '20px' }}>
-            {textToSpeechEnabled ? "Disable" : "Enable"} Text-to-Speech
-          </button>
+          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} stepl={step}/>
         </div>
       );
     }
 
-    function Board({ game, onSquareClick, selectedSquare }) {
+    // View: Board and buttons reflecting the game state
+    function Board({ game, onSquareClick, selectedSquare, stepl }) {
       return (
         <div>
+          
+          <button> {stepl}  </button>
+          
           {game.map((row, rowIndex) => (
             <div key={rowIndex} style={{ display: 'flex' }}>
               {row.map((value, colIndex) => (
@@ -131,21 +103,31 @@
       const squareStyle = {
         width: '80px',
         height: '80px',
-        backgroundColor: isLight ? '#eee' : '#ddd',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: isSelected ? '2px solid blue' : '1px solid #999',
+        cursor: 'pointer',
+        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'),
+        border: '1px solid #999'
+      };
+
+      // Display the piece image or an empty square
+      const pieceDisplay = () => {
+        if (value) {
+          return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />;
+        }
+        return null;
       };
 
       return (
-        <div style={squareStyle} onClick={onClick}>
-          {value && <img src={pieceImages[value]} alt={value} style={{ width: '70%', height: '70%' }} />}
-        </div>
+        <button style={squareStyle} onClick={onClick}>
+          {pieceDisplay()}
+        </button>
       );
     }
 
-    ReactDOM.render(<Game />, document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Game />);
   </script>
 </body>
 </html>

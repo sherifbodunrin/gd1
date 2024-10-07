@@ -320,22 +320,23 @@
           }
         }
       };
-
-      function handleClick(row, col) {
+function handleClick(row, col) {
   if (selectedSquare) {
     const [selectedRow, selectedCol] = selectedSquare;
 
     if (validateMove(selectedRow, selectedCol, row, col)) {
       const newGame = game.map(r => r.slice());
       const movedPiece = newGame[selectedRow][selectedCol];
-      newGame[row][col] = movedPiece;
-      newGame[selectedRow][selectedCol] = '';
-      setGame(newGame);
+      newGame[row][col] = movedPiece; // Move piece to new square
+      newGame[selectedRow][selectedCol] = ''; // Clear original square
+      setGame(newGame); // Update state
+
       const move = `${movedPiece} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
       setMoveLog(log => [...log, move]);
       announcePiece(movedPiece);
       speak(move);
 
+      // Check for checkmate after the move
       if (isCheckmate(false)) {
         const winner = "Black";
         setGameOverMessage(`${winner} wins by checkmate!`);
@@ -343,7 +344,7 @@
         return; // End game
       }
 
-      setIsWhiteTurn(false); // Toggle turn to bot
+      setIsWhiteTurn(false); // Toggle to bot's turn
       makeBotMove(); // Bot makes its move
     } else {
       alert("Invalid move!");
@@ -361,46 +362,6 @@
   }
 }
 
-
-
-      return (
-        <div className="game-container">
-          <div>
-            <h1>Grand Royal Chess</h1>
-            {!isGameStarted && (
-              <button onClick={startGame}>Start Game</button>
-            )}
-            {isGameStarted && (
-              <>
-                <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
-                <div>
-                  <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-                </div>
-                <div className="controls">
-                  <button onClick={startGame}>Restart Game</button>
-                  <button onClick={surrenderGame}>Surrender</button>
-                  <button onClick={() => setIsTTSOn(prev => !prev)}>
-                    {isTTSOn ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
-                  </button>
-                  {currentPiece && (
-                    <button onClick={() => announcePiece(currentPiece)}>
-                      Announce Piece
-                    </button>
-                  )}
-                </div>
-                {gameOverMessage && <h3>{gameOverMessage}</h3>}
-              </>
-            )}
-          </div>
-          <div className="move-log">
-            <h3>Move Log</h3>
-            {moveLog.map((move, index) => (
-              <div key={index}>{move}</div>
-            ))}
-          </div>
-        </div>
-      );
-    }
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (

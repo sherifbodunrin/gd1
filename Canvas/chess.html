@@ -59,30 +59,25 @@
         // Basic movement rules
         switch (piece.toLowerCase()) {
           case 'p':
-            // Pawns
             const direction = isMovingWhite ? -1 : 1;
             const startRow = isMovingWhite ? 6 : 1;
             const hasMoved = (isMovingWhite && fromRow < 6) || (!isMovingWhite && fromRow > 1);
 
             if (toCol === fromCol && targetPiece === '') {
-              // Move forward
               if (toRow === fromRow + direction) return true;
               if (!hasMoved && toRow === fromRow + 2 * direction && game[fromRow + direction][fromCol] === '') return true;
             } else if (Math.abs(toCol - fromCol) === 1 && toRow === fromRow + direction) {
-              // Capture diagonally
               return !!targetPiece;
             }
             break;
 
           case 'r':
-            // Rooks
             if (toRow === fromRow || toCol === fromCol) {
               return isPathClear(fromRow, fromCol, toRow, toCol);
             }
             break;
 
           case 'n':
-            // Knights
             if ((Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 1) ||
                 (Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 2)) {
               return true;
@@ -90,21 +85,18 @@
             break;
 
           case 'b':
-            // Bishops
             if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol)) {
               return isPathClear(fromRow, fromCol, toRow, toCol);
             }
             break;
 
           case 'q':
-            // Queens
             if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol) || toRow === fromRow || toCol === fromCol) {
               return isPathClear(fromRow, fromCol, toRow, toCol);
             }
             break;
 
           case 'k':
-            // Kings
             if (Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1) {
               return true;
             }
@@ -191,4 +183,51 @@
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
         <div>
-          {
+          {game.map((row, rowIndex) => (
+            <div key={rowIndex} style={{ display: 'flex' }}>
+              {row.map((value, colIndex) => (
+                <Square
+                  key={colIndex}
+                  value={value}
+                  onClick={() => onSquareClick(rowIndex, colIndex)}
+                  isLight={(rowIndex + colIndex) % 2 === 0}
+                  isSelected={selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function Square({ value, onClick, isLight, isSelected }) {
+      const squareStyle = {
+        width: '80px',
+        height: '80px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        cursor: 'pointer',
+        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'),
+        border: '1px solid #999'
+      };
+
+      const pieceDisplay = () => {
+        if (value) {
+          return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />;
+        }
+        return null;
+      };
+
+      return (
+        <button style={squareStyle} onClick={onClick}>
+          {pieceDisplay()}
+        </button>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Game />);
+  </script>
+</body>
+</html>

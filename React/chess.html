@@ -74,13 +74,12 @@
     };
 
     function Game() {
-      const [game, setGame] = React.useState([]);
+      const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       const [moveLog, setMoveLog] = React.useState([]);
       const [gameOverMessage, setGameOverMessage] = React.useState("");
       const [isGameStarted, setIsGameStarted] = React.useState(false);
-      const [currentPiece, setCurrentPiece] = React.useState("");
       const [isTTSOn, setIsTTSOn] = React.useState(true);
 
       const startGame = () => {
@@ -281,6 +280,49 @@
         speak(`${winner} wins by surrender!`);
       };
 
+      const getRandomValidMove = () => {
+        const currentPlayerPieces = game.flatMap((row, rowIndex) =>
+          row.map((piece, colIndex) => 
+            piece && (isWhiteTurn === (piece === piece.toUpperCase())) ? { row: rowIndex, col: colIndex } : null
+          )
+        ).filter(Boolean);
+
+        for (const { row, col } of currentPlayerPieces) {
+          for (let targetRow = 0; targetRow < 8; targetRow++) {
+            for (let targetCol = 0; targetCol < 8; targetCol++) {
+              if (validateMove(row, col, targetRow, targetCol)) {
+                return { from: { row, col }, to: { row: targetRow, col: targetCol } };
+              }
+            }
+          }
+        }
+        return null; // No valid moves
+      };
+
+      const botMove = () => {
+        if (!isWhiteTurn) {
+          const move = getRandomValidMove();
+          if (move) {
+            const newGame = game.map(r => r.slice());
+            newGame[move.to.row][move.to.col] = newGame[move.from.row][move.from.col];
+            newGame[move.from.row][move.from.col] = '';
+            setGame(newGame);
+            const movedPiece = newGame[move.to.row][move.to.col];
+            const moveDescription = `${movedPiece} moved to ${String.fromCharCode(97 + move.to.col)}${8 - move.to.row}`;
+            setMoveLog(log => [...log, moveDescription]);
+            announcePiece(movedPiece); // Announce the piece
+            speak(moveDescription); // Speak the move
+
+            if (isCheckmate(true)) {
+              setGameOverMessage("White wins by checkmate!");
+              speak("White wins by checkmate!");
+              return; // End game
+            }
+          }
+          setIsWhiteTurn(true); // Toggle turn
+        }
+      };
+
       function handleClick(row, col) {
         if (selectedSquare) {
           const [selectedRow, selectedCol] = selectedSquare;
@@ -296,26 +338,19 @@
             announcePiece(movedPiece); // Announce the piece
             speak(move); // Speak the move
 
-            if (isCheckmate(!isWhiteTurn)) {
-              const winner = isWhiteTurn ? "Black" : "White";
+            if (isCheckmate(false)) {
+              const winner = "Black";
               setGameOverMessage(`${winner} wins by checkmate!`);
               speak(`${winner} wins by checkmate!`);
               return; // End game
             }
 
-            // Check for automatic checkmate if no valid moves for the king
-            if (isCheckmate(isWhiteTurn)) {
-              const winner = isWhiteTurn ? "Black" : "White";
-              setGameOverMessage(`${winner} wins by checkmate!`);
-              speak(`${winner} wins by checkmate!`);
-              return; // End game
-            }
-
-            setIsWhiteTurn(!isWhiteTurn); // Toggle turn
+            setIsWhiteTurn(false); // Toggle turn
+            setSelectedSquare(null); // Deselect
+            botMove(); // Trigger bot move
           } else {
             alert("Invalid move!");
           }
-          setSelectedSquare(null); // Deselect
         } else {
           const piece = game[row][col];
           const isSelectedPieceWhite = piece === piece.toUpperCase();
@@ -323,7 +358,6 @@
           // Select piece only if it belongs to the current player
           if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
             setSelectedSquare([row, col]);
-            setCurrentPiece(piece); // Save current piece for announcement
           }
         }
       }
@@ -347,11 +381,6 @@
                   <button onClick={() => setIsTTSOn(prev => !prev)}>
                     {isTTSOn ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
                   </button>
-                  {currentPiece && (
-                    <button onClick={() => announcePiece(currentPiece)}>
-                      Announce Piece
-                    </button>
-                  )}
                 </div>
                 {gameOverMessage && <h3>{gameOverMessage}</h3>}
               </>

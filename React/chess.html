@@ -420,4 +420,28 @@
       );
     }
 
-    function Square({ value, onClick, isLight, isSelected
+    function Square({ value, onClick, isLight, isSelected }) {
+      return (
+        <div
+          onClick={onClick}
+          style={{
+            width: '60px',
+            height: '60px',
+            backgroundColor: isLight ? '#eee' : '#888',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: isSelected ? '3px solid yellow' : 'none',
+            cursor: 'pointer',
+          }}
+        >
+          {value && <img src={pieceImages[value]} alt={pieceNames[value]} style={{ width: '50px' }} />}
+        </div>
+      );
+    }
+
+    const rootElement = document.getElementById("root");
+    ReactDOM.render(<Game />, rootElement);
+  </script>
+</body>
+</html>

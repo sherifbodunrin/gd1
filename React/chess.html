@@ -36,6 +36,21 @@
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
 
+    const pieceNames = {
+      'r': "rook",
+      'n': "knight",
+      'b': "bishop",
+      'q': "queen",
+      'k': "king",
+      'p': "pawn",
+      'R': "rook",
+      'N': "knight",
+      'B': "bishop",
+      'Q': "queen",
+      'K': "king",
+      'P': "pawn"
+    };
+
     const pieceImages = {
       'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
       'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
@@ -52,11 +67,34 @@
     };
 
     function Game() {
-      const [game, setGame] = React.useState(initialGameState);
+      const [game, setGame] = React.useState([]);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       const [moveLog, setMoveLog] = React.useState([]);
       const [gameOverMessage, setGameOverMessage] = React.useState("");
+      const [isGameStarted, setIsGameStarted] = React.useState(false);
+      const [currentPiece, setCurrentPiece] = React.useState("");
+
+      const startGame = () => {
+        setGame(initialGameState);
+        setSelectedSquare(null);
+        setIsWhiteTurn(true);
+        setMoveLog([]);
+        setGameOverMessage("");
+        setIsGameStarted(true);
+        speak("Welcome to Grand Royal Chess! White goes first.");
+      };
+
+      const speak = (text) => {
+        const msg = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(msg);
+      };
+
+      const announcePiece = (piece) => {
+        if (piece) {
+          speak(pieceNames[piece.toLowerCase()]);
+        }
+      };
 
       const validateMove = (fromRow, fromCol, toRow, toCol) => {
         const piece = game[fromRow][fromCol];
@@ -152,7 +190,7 @@
         for (let row = 0; row < 8; row++) {
           for (let col = 0; col < 8; col++) {
             const piece = gameState[row][col];
-            if (piece && opponentPieces.includes(piece.toLowerCase())) {
+            if (opponentPieces.includes(piece)) {
               if (validateMove(row, col, kingRow.row, kingRow.col)) {
                 return true; // King is in check
               }
@@ -224,17 +262,23 @@
 
           if (validateMove(selectedRow, selectedCol, row, col)) {
             const newGame = game.map(r => r.slice());
-            newGame[row][col] = newGame[selectedRow][selectedCol];
+            const movedPiece = newGame[selectedRow][selectedCol];
+            newGame[row][col] = movedPiece;
             newGame[selectedRow][selectedCol] = '';
             setGame(newGame);
-            const move = `${newGame[row][col]} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
+            const move = `${movedPiece} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
             setMoveLog(log => [...log, move]);
+            announcePiece(movedPiece); // Announce the piece
+            speak(move); // Speak the move
 
             if (isCheckmate(!isWhiteTurn)) {
-              setGameOverMessage(`${isWhiteTurn ? "Black" : "White"} wins by checkmate!`);
+              const winner = isWhiteTurn ? "Black" : "White";
+              setGameOverMessage(`${winner} wins by checkmate!`);
+              speak(`${winner} wins by checkmate!`);
               return; // End game
             } else if (isStalemate(!isWhiteTurn)) {
               setGameOverMessage("Stalemate! The game is drawn.");
+              speak("Stalemate! The game is drawn.");
             }
 
             setIsWhiteTurn(!isWhiteTurn); // Toggle turn
@@ -249,29 +293,32 @@
           // Select piece only if it belongs to the current player
           if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
             setSelectedSquare([row, col]);
+            setCurrentPiece(piece); // Save current piece for announcement
           }
         }
       }
 
-      const restartGame = () => {
-        setGame(initialGameState);
-        setSelectedSquare(null);
-        setIsWhiteTurn(true);
-        setMoveLog([]);
-        setGameOverMessage("");
-      };
-
       return (
-        <div style={{ display: 'flex' }}>
-          <div>
-            <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
-            <h1>Grand Royal Chess</h1>
-            <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-            <div>
-              <button onClick={restartGame}>Restart Game</button>
-            </div>
-            {gameOverMessage && <h3>{gameOverMessage}</h3>}
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <h1>Grand Royal Chess</h1>
+          {!isGameStarted && (
+            <button onClick={startGame}>Start Game</button>
+          )}
+          {isGameStarted && (
+            <>
+              <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
+              <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+              <div>
+                <button onClick={startGame}>Restart Game</button>
+                {currentPiece && (
+                  <button onClick={() => announcePiece(currentPiece)}>
+                    Announce Piece
+                  </button>
+                )}
+              </div>
+              {gameOverMessage && <h3>{gameOverMessage}</h3>}
+            </>
+          )}
           <div className="move-log">
             <h3>Move Log</h3>
             {moveLog.map((move, index) => (

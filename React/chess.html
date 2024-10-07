@@ -322,44 +322,46 @@
       };
 
       function handleClick(row, col) {
-        if (selectedSquare) {
-          const [selectedRow, selectedCol] = selectedSquare;
+  if (selectedSquare) {
+    const [selectedRow, selectedCol] = selectedSquare;
 
-          if (validateMove(selectedRow, selectedCol, row, col)) {
-            const newGame = game.map(r => r.slice());
-            const movedPiece = newGame[selectedRow][selectedCol];
-            newGame[row][col] = movedPiece;
-            newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
-            const move = `${movedPiece} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
-            setMoveLog(log => [...log, move]);
-            announcePiece(movedPiece); // Announce the piece
-            speak(move); // Speak the move
+    if (validateMove(selectedRow, selectedCol, row, col)) {
+      const newGame = game.map(r => r.slice());
+      const movedPiece = newGame[selectedRow][selectedCol];
+      newGame[row][col] = movedPiece;
+      newGame[selectedRow][selectedCol] = '';
+      setGame(newGame);
+      const move = `${movedPiece} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
+      setMoveLog(log => [...log, move]);
+      announcePiece(movedPiece);
+      speak(move);
 
-            if (isCheckmate(false)) {
-              const winner = "Black";
-              setGameOverMessage(`${winner} wins by checkmate!`);
-              speak(`${winner} wins by checkmate!`);
-              return; // End game
-            }
-
-            setIsWhiteTurn(false); // Toggle turn to bot
-            makeBotMove(); // Bot makes its move
-          } else {
-            alert("Invalid move!");
-          }
-          setSelectedSquare(null); // Deselect
-        } else {
-          const piece = game[row][col];
-          const isSelectedPieceWhite = piece === piece.toUpperCase();
-
-          // Select piece only if it belongs to the current player
-          if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
-            setSelectedSquare([row, col]);
-            setCurrentPiece(piece); // Save current piece for announcement
-          }
-        }
+      if (isCheckmate(false)) {
+        const winner = "Black";
+        setGameOverMessage(`${winner} wins by checkmate!`);
+        speak(`${winner} wins by checkmate!`);
+        return; // End game
       }
+
+      setIsWhiteTurn(false); // Toggle turn to bot
+      makeBotMove(); // Bot makes its move
+    } else {
+      alert("Invalid move!");
+    }
+    setSelectedSquare(null); // Deselect
+  } else {
+    const piece = game[row][col];
+    const isSelectedPieceWhite = piece === piece.toUpperCase();
+
+    // Select piece only if it belongs to the current player
+    if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
+      setSelectedSquare([row, col]);
+      setCurrentPiece(piece); // Save current piece for announcement
+    }
+  }
+}
+
+
 
       return (
         <div className="game-container">
@@ -420,25 +422,25 @@
       );
     }
 
-    function Square({ value, onClick, isLight, isSelected }) {
-      return (
-        <div
-          onClick={onClick}
-          style={{
-            width: '60px',
-            height: '60px',
-            backgroundColor: isLight ? '#eee' : '#888',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: isSelected ? '3px solid yellow' : 'none',
-            cursor: 'pointer',
-          }}
-        >
-          {value && <img src={pieceImages[value]} alt={pieceNames[value]} style={{ width: '50px' }} />}
-        </div>
-      );
-    }
+   function Square({ value, onClick, isLight, isSelected }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        width: '60px',
+        height: '60px',
+        backgroundColor: isLight ? 'orange' : 'purple', // Changed back to orange and purple
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: isSelected ? '3px solid yellow' : 'none',
+        cursor: 'pointer',
+      }}
+    >
+      {value && <img src={pieceImages[value]} alt={pieceNames[value]} style={{ width: '50px' }} />}
+    </div>
+  );
+}
 
     const rootElement = document.getElementById("root");
     ReactDOM.render(<Game />, rootElement);

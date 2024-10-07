@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessboard with Piece Images</title>
+  <title>Grand Royal Chess</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
@@ -18,6 +18,9 @@
       padding-left: 10px;
       max-height: 400px;
       overflow-y: auto;
+    }
+    h2, h3 {
+      text-align: center;
     }
   </style>
 </head>
@@ -267,7 +270,8 @@
       return (
         <div style={{ display: 'flex' }}>
           <div>
-            <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
+            <h2>Grand Royal Chess</h2>
+            <h3>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h3>
             <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
             <div>
               <button onClick={restartGame}>Restart Game</button>
@@ -313,7 +317,7 @@
         justifyContent: 'center',
         alignItems: 'center',
         cursor: 'pointer',
-        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'),
+        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#FFA500' : '#800080'), // Orange and Purple
         border: '1px solid #999'
       };
 

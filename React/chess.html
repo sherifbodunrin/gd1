@@ -44,18 +44,9 @@
     ];
 
     const pieceNames = {
-      'r': "rook",
-      'n': "knight",
-      'b': "bishop",
-      'q': "queen",
-      'k': "king",
-      'p': "pawn",
-      'R': "rook",
-      'N': "knight",
-      'B': "bishop",
-      'Q': "queen",
-      'K': "king",
-      'P': "pawn"
+      'r': "rook", 'n': "knight", 'b': "bishop", 'q': "queen",
+      'k': "king", 'p': "pawn", 'R': "rook", 'N': "knight",
+      'B': "bishop", 'Q': "queen", 'K': "king", 'P': "pawn"
     };
 
     const pieceImages = {
@@ -291,6 +282,8 @@
         }
 
         if (validMoves.length > 0) {
+          // Here we can implement a more intelligent bot strategy. 
+          // For now, it will choose a random valid move.
           const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
           makeMove(randomMove.fromRow, randomMove.fromCol, randomMove.toRow, randomMove.toCol);
         }

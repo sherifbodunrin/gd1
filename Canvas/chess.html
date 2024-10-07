@@ -112,7 +112,7 @@
 
           case 'k':
             if (Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1) {
-              return true;
+              return !isInCheckAfterMove(fromRow, fromCol, toRow, toCol); // Prevent moving into check
             }
             break;
 
@@ -120,6 +120,13 @@
             return false;
         }
         return false; // Invalid move
+      };
+
+      const isInCheckAfterMove = (fromRow, fromCol, toRow, toCol) => {
+        const newGame = game.map(r => r.slice());
+        newGame[toRow][toCol] = newGame[fromRow][fromCol];
+        newGame[fromRow][fromCol] = '';
+        return isInCheck(isWhiteTurn); // Check if the move puts the king in check
       };
 
       const isPathClear = (fromRow, fromCol, toRow, toCol) => {
@@ -233,6 +240,8 @@
             }
 
             setIsWhiteTurn(!isWhiteTurn); // Toggle turn
+          } else {
+            alert("Invalid move! Your king would be in check.");
           }
           setSelectedSquare(null); // Deselect
         } else {

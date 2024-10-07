@@ -223,15 +223,16 @@
             const newGame = game.map(r => r.slice());
             newGame[row][col] = newGame[selectedRow][selectedCol];
             newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
             const move = `${newGame[row][col]} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
             setMoveLog(log => [...log, move]);
             speak(move);
 
             if (isCheckmate(!isWhiteTurn)) {
               setGameOverMessage(`${isWhiteTurn ? "Black" : "White"} wins by checkmate!`);
+              speak(`${isWhiteTurn ? "Black" : "White"} wins by checkmate!`);
             } else if (isStalemate(!isWhiteTurn)) {
               setGameOverMessage("Stalemate! The game is drawn.");
+              speak("Stalemate! The game is drawn.");
             }
 
             setIsWhiteTurn(!isWhiteTurn); // Toggle turn

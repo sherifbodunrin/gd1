@@ -45,25 +45,114 @@
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       const [isSpeechEnabled, setIsSpeechEnabled] = React.useState(true);
 
-      function handleClick(row, col) {
-        const piece = game[row][col];
-        const isSelectedPieceWhite = piece === piece.toUpperCase();
+      const validateMove = (fromRow, fromCol, toRow, toCol) => {
+        const piece = game[fromRow][fromCol];
+        const targetPiece = game[toRow][toCol];
         
+        if (piece === '') return false; // No piece to move
+        
+        const isMovingWhite = piece === piece.toUpperCase();
+        const isTargetEmptyOrOpponent = !targetPiece || (isMovingWhite !== (targetPiece === targetPiece.toUpperCase()));
+
+        if (!isTargetEmptyOrOpponent) return false; // Can't capture own piece
+
+        // Basic movement rules
+        switch (piece.toLowerCase()) {
+          case 'p':
+            // Pawns
+            const direction = isMovingWhite ? -1 : 1;
+            const startRow = isMovingWhite ? 6 : 1;
+            const hasMoved = (isMovingWhite && fromRow < 6) || (!isMovingWhite && fromRow > 1);
+
+            if (toCol === fromCol && targetPiece === '') {
+              // Move forward
+              if (toRow === fromRow + direction) return true;
+              if (!hasMoved && toRow === fromRow + 2 * direction && game[fromRow + direction][fromCol] === '') return true;
+            } else if (Math.abs(toCol - fromCol) === 1 && toRow === fromRow + direction) {
+              // Capture diagonally
+              return !!targetPiece;
+            }
+            break;
+
+          case 'r':
+            // Rooks
+            if (toRow === fromRow || toCol === fromCol) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
+            }
+            break;
+
+          case 'n':
+            // Knights
+            if ((Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 1) ||
+                (Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 2)) {
+              return true;
+            }
+            break;
+
+          case 'b':
+            // Bishops
+            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol)) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
+            }
+            break;
+
+          case 'q':
+            // Queens
+            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol) || toRow === fromRow || toCol === fromCol) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
+            }
+            break;
+
+          case 'k':
+            // Kings
+            if (Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1) {
+              return true;
+            }
+            break;
+
+          default:
+            return false;
+        }
+        return false; // Invalid move
+      };
+
+      const isPathClear = (fromRow, fromCol, toRow, toCol) => {
+        const rowDirection = toRow === fromRow ? 0 : (toRow > fromRow ? 1 : -1);
+        const colDirection = toCol === fromCol ? 0 : (toCol > fromCol ? 1 : -1);
+
+        let currentRow = fromRow + rowDirection;
+        let currentCol = fromCol + colDirection;
+
+        while (currentRow !== toRow || currentCol !== toCol) {
+          if (game[currentRow][currentCol] !== '') {
+            return false; // Path is blocked
+          }
+          currentRow += rowDirection;
+          currentCol += colDirection;
+        }
+        return true; // Path is clear
+      };
+
+      function handleClick(row, col) {
         if (selectedSquare) {
-          const newGame = game.map(row => row.slice());
           const [selectedRow, selectedCol] = selectedSquare;
 
-          // Move the piece regardless of the color of the piece in the destination square
-          newGame[row][col] = newGame[selectedRow][selectedCol];
-          newGame[selectedRow][selectedCol] = '';
-          setGame(newGame);
-          if (isSpeechEnabled) {
-            speak(`${piece} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
+          if (validateMove(selectedRow, selectedCol, row, col)) {
+            const newGame = game.map(r => r.slice());
+            newGame[row][col] = newGame[selectedRow][selectedCol];
+            newGame[selectedRow][selectedCol] = '';
+            setGame(newGame);
+            if (isSpeechEnabled) {
+              speak(`${newGame[row][col]} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
+            }
+            setIsWhiteTurn(!isWhiteTurn); // Toggle turn
           }
-          setSelectedSquare(null);
-          setIsWhiteTurn(!isWhiteTurn); // Toggle turn
+          setSelectedSquare(null); // Deselect
         } else {
-          // Select the piece only if it belongs to the current player
+          const piece = game[row][col];
+          const isSelectedPieceWhite = piece === piece.toUpperCase();
+          
+          // Select piece only if it belongs to the current player
           if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
             setSelectedSquare([row, col]);
           }
@@ -102,51 +191,4 @@
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
         <div>
-          {game.map((row, rowIndex) => (
-            <div key={rowIndex} style={{ display: 'flex' }}>
-              {row.map((value, colIndex) => (
-                <Square
-                  key={colIndex}
-                  value={value}
-                  onClick={() => onSquareClick(rowIndex, colIndex)}
-                  isLight={(rowIndex + colIndex) % 2 === 0}
-                  isSelected={selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    function Square({ value, onClick, isLight, isSelected }) {
-      const squareStyle = {
-        width: '80px',
-        height: '80px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        cursor: 'pointer',
-        backgroundColor: isSelected ? '#ffeb3b' : (isLight ? '#f0d9b5' : '#b58863'),
-        border: '1px solid #999'
-      };
-
-      const pieceDisplay = () => {
-        if (value) {
-          return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />;
-        }
-        return null;
-      };
-
-      return (
-        <button style={squareStyle} onClick={onClick}>
-          {pieceDisplay()}
-        </button>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<Game />);
-  </script>
-</body>
-</html>
+          {

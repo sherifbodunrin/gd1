@@ -8,6 +8,18 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .move-log {
+      margin-left: 20px;
+      border-left: 1px solid #ccc;
+      padding-left: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -44,11 +56,13 @@
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       const [isSpeechEnabled, setIsSpeechEnabled] = React.useState(true);
+      const [moveLog, setMoveLog] = React.useState([]);
+      const [gameOverMessage, setGameOverMessage] = React.useState("");
 
       const validateMove = (fromRow, fromCol, toRow, toCol) => {
         const piece = game[fromRow][fromCol];
         const targetPiece = game[toRow][toCol];
-        
+
         if (piece === '') return false; // No piece to move
         
         const isMovingWhite = piece === piece.toUpperCase();
@@ -125,6 +139,79 @@
         return true; // Path is clear
       };
 
+      const isInCheck = (isWhite) => {
+        const kingRow = isWhite ? findKing('K') : findKing('k');
+        const opponentPieces = isWhite ? 'rnbq' : 'RNBQ';
+
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const piece = game[row][col];
+            if (piece && opponentPieces.includes(piece.toLowerCase())) {
+              if (validateMove(row, col, kingRow.row, kingRow.col)) {
+                return true; // King is in check
+              }
+            }
+          }
+        }
+        return false; // King is safe
+      };
+
+      const findKing = (king) => {
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            if (game[row][col] === king) {
+              return { row, col };
+            }
+          }
+        }
+        return null;
+      };
+
+      const isCheckmate = (isWhite) => {
+        if (!isInCheck(isWhite)) return false;
+
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const piece = game[row][col];
+            if (piece && (isWhite === (piece === piece.toUpperCase()))) {
+              for (let targetRow = 0; targetRow < 8; targetRow++) {
+                for (let targetCol = 0; targetCol < 8; targetCol++) {
+                  if (validateMove(row, col, targetRow, targetCol)) {
+                    const newGame = game.map(r => r.slice());
+                    newGame[targetRow][targetCol] = newGame[row][col];
+                    newGame[row][col] = '';
+                    if (!isInCheck(isWhite)) {
+                      return false; // There is a valid move, not checkmate
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        return true; // No valid moves, checkmate
+      };
+
+      const isStalemate = (isWhite) => {
+        if (isInCheck(isWhite)) return false; // Can't be stalemate if in check
+
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const piece = game[row][col];
+            if (piece && (isWhite === (piece === piece.toUpperCase()))) {
+              for (let targetRow = 0; targetRow < 8; targetRow++) {
+                for (let targetCol = 0; targetCol < 8; targetCol++) {
+                  if (validateMove(row, col, targetRow, targetCol)) {
+                    return false; // There is a valid move, not stalemate
+                  }
+                }
+              }
+            }
+          }
+        }
+        return true; // No valid moves, stalemate
+      };
+
       function handleClick(row, col) {
         if (selectedSquare) {
           const [selectedRow, selectedCol] = selectedSquare;
@@ -134,16 +221,23 @@
             newGame[row][col] = newGame[selectedRow][selectedCol];
             newGame[selectedRow][selectedCol] = '';
             setGame(newGame);
-            if (isSpeechEnabled) {
-              speak(`${newGame[row][col]} moved to ${String.fromCharCode(97 + col)}${8 - row}`);
+            const move = `${newGame[row][col]} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
+            setMoveLog(log => [...log, move]);
+            speak(move);
+
+            if (isCheckmate(!isWhiteTurn)) {
+              setGameOverMessage(`${isWhiteTurn ? "Black" : "White"} wins by checkmate!`);
+            } else if (isStalemate(!isWhiteTurn)) {
+              setGameOverMessage("Stalemate! The game is drawn.");
             }
+
             setIsWhiteTurn(!isWhiteTurn); // Toggle turn
           }
           setSelectedSquare(null); // Deselect
         } else {
           const piece = game[row][col];
           const isSelectedPieceWhite = piece === piece.toUpperCase();
-          
+
           // Select piece only if it belongs to the current player
           if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
             setSelectedSquare([row, col]);
@@ -162,6 +256,8 @@
         setGame(initialGameState);
         setSelectedSquare(null);
         setIsWhiteTurn(true);
+        setMoveLog([]);
+        setGameOverMessage("");
       };
 
       const toggleSpeech = () => {
@@ -169,12 +265,21 @@
       };
 
       return (
-        <div>
-          <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
-          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+        <div style={{ display: 'flex' }}>
           <div>
-            <button onClick={restartGame}>Restart Game</button>
-            <button onClick={toggleSpeech}>{isSpeechEnabled ? "Disable Speech" : "Enable Speech"}</button>
+            <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
+            <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+            <div>
+              <button onClick={restartGame}>Restart Game</button>
+              <button onClick={toggleSpeech}>{isSpeechEnabled ? "Disable Speech" : "Enable Speech"}</button>
+            </div>
+            {gameOverMessage && <h3>{gameOverMessage}</h3>}
+          </div>
+          <div className="move-log">
+            <h3>Move Log</h3>
+            {moveLog.map((move, index) => (
+              <div key={index}>{move}</div>
+            ))}
           </div>
         </div>
       );

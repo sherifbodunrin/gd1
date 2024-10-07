@@ -185,30 +185,30 @@
       };
 
       const isCheckmate = (isWhite) => {
-        if (!isInCheck(isWhite, game)) return false;
+  if (!isInCheck(isWhite, game)) return false; // Not checkmate if king is not in check
 
-        const kingRow = findKing(isWhite ? 'K' : 'k', game);
-        const kingMoves = [
-          { row: kingRow.row + 1, col: kingRow.col },
-          { row: kingRow.row - 1, col: kingRow.col },
-          { row: kingRow.row, col: kingRow.col + 1 },
-          { row: kingRow.row, col: kingRow.col - 1 },
-          { row: kingRow.row + 1, col: kingRow.col + 1 },
-          { row: kingRow.row + 1, col: kingRow.col - 1 },
-          { row: kingRow.row - 1, col: kingRow.col + 1 },
-          { row: kingRow.row - 1, col: kingRow.col - 1 },
-        ];
+  const kingRow = findKing(isWhite ? 'K' : 'k', game);
+  const kingMoves = [
+    { row: kingRow.row + 1, col: kingRow.col },
+    { row: kingRow.row - 1, col: kingRow.col },
+    { row: kingRow.row, col: kingRow.col + 1 },
+    { row: kingRow.row, col: kingRow.col - 1 },
+    { row: kingRow.row + 1, col: kingRow.col + 1 },
+    { row: kingRow.row + 1, col: kingRow.col - 1 },
+    { row: kingRow.row - 1, col: kingRow.col + 1 },
+    { row: kingRow.row - 1, col: kingRow.col - 1 },
+  ];
 
-        const canMoveKing = kingMoves.some(({ row, col }) => {
-          return row >= 0 && row < 8 && col >= 0 && col < 8 &&
-            !isInCheck(isWhite, moveKing(kingRow.row, kingRow.col, row, col));
-        });
+  // Check if king can move to any adjacent square
+  const canMoveKing = kingMoves.some(({ row, col }) => {
+    return row >= 0 && row < 8 && col >= 0 && col < 8 &&
+      !isInCheck(isWhite, moveKing(kingRow.row, kingRow.col, row, col));
+  });
 
-        if (canMoveKing) return false; // King can move out of check
+  // If the king can't move, it's checkmate
+  return !canMoveKing; // Return true if king can't move
+};
 
-        // If no valid king moves, it’s checkmate
-        return true; // No valid moves, checkmate
-      };
 
       const moveKing = (fromRow, fromCol, toRow, toCol) => {
         const newGame = game.map(r => r.slice());
@@ -238,42 +238,45 @@
       };
 
       function handleClick(row, col) {
-        if (selectedSquare) {
-          const [selectedRow, selectedCol] = selectedSquare;
+  if (selectedSquare) {
+    const [selectedRow, selectedCol] = selectedSquare;
 
-          if (validateMove(selectedRow, selectedCol, row, col)) {
-            const newGame = game.map(r => r.slice());
-            newGame[row][col] = newGame[selectedRow][selectedCol];
-            newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
-            const move = `${newGame[row][col]} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
-            setMoveLog(log => [...log, move]);
-            speak(pieceName(newGame[row][col]));
+    if (validateMove(selectedRow, selectedCol, row, col)) {
+      const newGame = game.map(r => r.slice());
+      const movedPiece = newGame[selectedRow][selectedCol];
+      newGame[row][col] = movedPiece;
+      newGame[selectedRow][selectedCol] = '';
+      setGame(newGame);
+      const move = `${movedPiece} moved to ${String.fromCharCode(97 + col)}${8 - row}`;
+      setMoveLog(log => [...log, move]);
+      announcePiece(movedPiece); // Announce the piece
+      speak(move); // Speak the move
 
-            if (isCheckmate(!isWhiteTurn)) {
-              const winner = isWhiteTurn ? "Black" : "White";
-              setGameOverMessage(`${winner} wins by checkmate!`);
-              speak(`${winner} wins by checkmate!`);
-              return; // End game
-            } else if (isStalemate(!isWhiteTurn)) {
-              setGameOverMessage("Stalemate! The game is drawn.");
-            }
-
-            setIsWhiteTurn(!isWhiteTurn); // Toggle turn
-          } else {
-            alert("Invalid move!");
-          }
-          setSelectedSquare(null); // Deselect
-        } else {
-          const piece = game[row][col];
-          const isSelectedPieceWhite = piece === piece.toUpperCase();
-
-          // Select piece only if it belongs to the current player
-          if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
-            setSelectedSquare([row, col]);
-          }
-        }
+      // Check for checkmate
+      if (isCheckmate(!isWhiteTurn)) {
+        const winner = isWhiteTurn ? "Black" : "White";
+        setGameOverMessage(`${winner} wins by checkmate!`);
+        speak(`${winner} wins by checkmate!`);
+        return; // End game
       }
+
+      setIsWhiteTurn(!isWhiteTurn); // Toggle turn
+    } else {
+      alert("Invalid move!");
+    }
+    setSelectedSquare(null); // Deselect
+  } else {
+    const piece = game[row][col];
+    const isSelectedPieceWhite = piece === piece.toUpperCase();
+
+    // Select piece only if it belongs to the current player
+    if (piece && (isWhiteTurn === isSelectedPieceWhite)) {
+      setSelectedSquare([row, col]);
+      setCurrentPiece(piece); // Save current piece for announcement
+    }
+  }
+}
+
 
       const pieceName = (piece) => {
         const names = {

@@ -195,154 +195,94 @@
       const isInCheck = (isWhite, gameState) => {
         const king = isWhite ? 'K' : 'k';
         const kingRow = findKing(king, gameState);
-        if (!kingRow) return false; // King not found
+        return isAttacked(kingRow[0], kingRow[1], isWhite, gameState);
+      };
 
-        // Check for threats from opponent's pieces
-        for (let row = 0; row < gameState.length; row++) {
-          for (let col = 0; col < gameState[row].length; col++) {
-            const piece = gameState[row][col];
-            if ((isWhite && piece === piece.toUpperCase()) || (!isWhite && piece === piece.toLowerCase())) {
-              if (canMoveTo(gameState, row, col, kingRow[0], kingRow[1])) {
-                return true; // King is in check
-              }
-            }
+      const findKing = (king, gameState) => {
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            if (gameState[row][col] === king) return [row, col];
+          }
+        }
+        return null;
+      };
+
+      const isAttacked = (row, col, isWhite, gameState) => {
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const piece = gameState[r][c];
+            if (piece === '') continue;
+
+            const isPieceWhite = piece === piece.toUpperCase();
+            if (isPieceWhite === isWhite) continue;
+
+            if (validateMove(r, c, row, col)) return true; // The piece can attack the king
           }
         }
         return false; // King is safe
       };
 
-      const findKing = (king, gameState) => {
-        for (let row = 0; row < gameState.length; row++) {
-          for (let col = 0; col < gameState[row].length; col++) {
-            if (gameState[row][col] === king) {
-              return [row, col];
+      const makeMove = (fromRow, fromCol, toRow, toCol) => {
+        if (validateMove(fromRow, fromCol, toRow, toCol)) {
+          const newGame = game.map(r => r.slice());
+          const movedPiece = newGame[fromRow][fromCol];
+          newGame[toRow][toCol] = movedPiece;
+          newGame[fromRow][fromCol] = '';
+
+          setGame(newGame);
+          setIsWhiteTurn(!isWhiteTurn);
+          setMoveLog(log => [...log, `${movedPiece} from (${fromRow},${fromCol}) to (${toRow},${toCol})`]);
+          announcePiece(movedPiece);
+
+          if (isInCheck(!isWhiteTurn, newGame)) {
+            setGameOverMessage(`Check! ${isWhiteTurn ? 'Black' : 'White'} is in check!`);
+          }
+
+          if (isCheckmate(newGame, !isWhiteTurn)) {
+            setGameOverMessage(`${isWhiteTurn ? 'White' : 'Black'} wins by checkmate!`);
+            speak(`Game over! ${isWhiteTurn ? 'Black' : 'White'} wins!`);
+          } else {
+            if (!isWhiteTurn) {
+              setTimeout(botMove, 500); // Allow some time before bot moves
             }
           }
         }
-        return null; // King not found
       };
 
-      const canMoveTo = (gameState, fromRow, fromCol, toRow, toCol) => {
-        const piece = gameState[fromRow][fromCol];
-        const targetPiece = gameState[toRow][toCol];
+      const isCheckmate = (gameState, isWhite) => {
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const piece = gameState[r][c];
+            if ((isWhite && piece === piece.toUpperCase()) || (!isWhite && piece === piece.toLowerCase())) {
+              for (let newR = 0; newR < 8; newR++) {
+                for (let newC = 0; newC < 8; newC++) {
+                  if (validateMove(r, c, newR, newC)) {
+                    const newGameState = gameState.map(row => row.slice());
+                    newGameState[newR][newC] = piece;
+                    newGameState[r][c] = '';
 
-        if (piece === '') return false; // No piece to move
-
-        const isMovingWhite = piece === piece.toUpperCase();
-        const isTargetEmptyOrOpponent = !targetPiece || (isMovingWhite !== (targetPiece === targetPiece.toUpperCase()));
-
-        if (!isTargetEmptyOrOpponent) return false; // Can't capture own piece
-
-        // Basic movement rules
-        switch (piece.toLowerCase()) {
-          case 'p':
-            const direction = isMovingWhite ? -1 : 1;
-            const startRow = isMovingWhite ? 6 : 1;
-            const hasMoved = (isMovingWhite && fromRow < 6) || (!isMovingWhite && fromRow > 1);
-
-            if (toCol === fromCol && targetPiece === '') {
-              if (toRow === fromRow + direction) return true;
-              if (!hasMoved && toRow === fromRow + 2 * direction && gameState[fromRow + direction][fromCol] === '') return true;
-            } else if (Math.abs(toCol - fromCol) === 1 && toRow === fromRow + direction) {
-              return !!targetPiece;
-            }
-            break;
-
-          case 'r':
-            if (toRow === fromRow || toCol === fromCol) {
-              return isPathClear(fromRow, fromCol, toRow, toCol);
-            }
-            break;
-
-          case 'n':
-            if ((Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 1) ||
-                (Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 2)) {
-              return true;
-            }
-            break;
-
-          case 'b':
-            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol)) {
-              return isPathClear(fromRow, fromCol, toRow, toCol);
-            }
-            break;
-
-          case 'q':
-            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol) || toRow === fromRow || toCol === fromCol) {
-              return isPathClear(fromRow, fromCol, toRow, toCol);
-            }
-            break;
-
-          case 'k':
-            if (Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1) {
-              return !isInCheckAfterMove(fromRow, fromCol, toRow, toCol); // Prevent moving into check
-            }
-            break;
-
-          default:
-            return false;
-        }
-        return false; // Invalid move
-      };
-
-      const handleSquareClick = (row, col) => {
-        if (gameOverMessage) return; // Game is over
-        const piece = game[row][col];
-
-        if (selectedSquare) {
-          const [selectedRow, selectedCol] = selectedSquare;
-
-          if (validateMove(selectedRow, selectedCol, row, col)) {
-            // Move the piece
-            const newGame = game.map(r => r.slice());
-            newGame[row][col] = newGame[selectedRow][selectedCol];
-            newGame[selectedRow][selectedCol] = '';
-
-            const pieceMoved = newGame[row][col];
-            setGame(newGame);
-            setIsWhiteTurn(!isWhiteTurn);
-            setSelectedSquare(null);
-
-            // Log the move
-            const moveNotation = `${pieceMoved.toUpperCase()} from ${selectedRow + 1},${selectedCol + 1} to ${row + 1},${col + 1}`;
-            setMoveLog(prev => [...prev, moveNotation]);
-            announcePiece(pieceMoved);
-
-            // Check for checkmate or stalemate
-            if (isInCheck(!isWhiteTurn, newGame)) {
-              if (isInCheck(isWhiteTurn, newGame)) {
-                setGameOverMessage("Checkmate! " + (isWhiteTurn ? "Black" : "White") + " wins.");
-              } else {
-                setGameOverMessage("Stalemate! The game is a draw.");
-              }
-            } else {
-              // If it's black's turn, let the bot make a move
-              if (!isWhiteTurn) {
-                setTimeout(() => {
-                  makeBotMove(newGame);
-                }, 1000); // Delay for bot move
+                    if (!isInCheck(isWhite, newGameState)) {
+                      return false; // Found a valid move, not checkmate
+                    }
+                  }
+                }
               }
             }
           }
-
-          setSelectedSquare(null);
-        } else {
-          if (piece && (isWhiteTurn && piece === piece.toUpperCase() || !isWhiteTurn && piece === piece.toLowerCase())) {
-            setSelectedSquare([row, col]);
-          }
         }
+        return true; // No valid moves, it's checkmate
       };
 
-      const makeBotMove = (currentGame) => {
-        // For simplicity, we will make a random move for the bot
-        const validMoves = [];
-        for (let row = 0; row < currentGame.length; row++) {
-          for (let col = 0; col < currentGame[row].length; col++) {
-            if (isWhiteTurn === (currentGame[row][col] === currentGame[row][col].toLowerCase())) {
-              for (let targetRow = 0; targetRow < currentGame.length; targetRow++) {
-                for (let targetCol = 0; targetCol < currentGame[targetRow].length; targetCol++) {
-                  if (validateMove(row, col, targetRow, targetCol)) {
-                    validMoves.push({ from: [row, col], to: [targetRow, targetCol] });
+      const botMove = () => {
+        let validMoves = [];
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const piece = game[r][c];
+            if (piece && piece === piece.toLowerCase()) { // Only consider black pieces
+              for (let newR = 0; newR < 8; newR++) {
+                for (let newC = 0; newC < 8; newC++) {
+                  if (validateMove(r, c, newR, newC)) {
+                    validMoves.push({ fromRow: r, fromCol: c, toRow: newR, toCol: newC });
                   }
                 }
               }
@@ -352,70 +292,79 @@
 
         if (validMoves.length > 0) {
           const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-          const [fromRow, fromCol] = randomMove.from;
-          const [toRow, toCol] = randomMove.to;
+          makeMove(randomMove.fromRow, randomMove.fromCol, randomMove.toRow, randomMove.toCol);
+        }
+      };
 
-          const newGame = currentGame.map(r => r.slice());
-          newGame[toRow][toCol] = newGame[fromRow][fromCol];
-          newGame[fromRow][fromCol] = '';
-
-          const pieceMoved = newGame[toRow][toCol];
-          setGame(newGame);
-          setIsWhiteTurn(!isWhiteTurn);
-
-          // Log the bot move
-          const moveNotation = `${pieceMoved.toUpperCase()} from ${fromRow + 1},${fromCol + 1} to ${toRow + 1},${toCol + 1}`;
-          setMoveLog(prev => [...prev, moveNotation]);
-          announcePiece(pieceMoved);
-
-          // Check for checkmate or stalemate
-          if (isInCheck(isWhiteTurn, newGame)) {
-            if (isInCheck(!isWhiteTurn, newGame)) {
-              setGameOverMessage("Checkmate! " + (isWhiteTurn ? "Black" : "White") + " wins.");
-            } else {
-              setGameOverMessage("Stalemate! The game is a draw.");
-            }
+      const handleSquareClick = (row, col) => {
+        if (gameOverMessage) return; // Can't move if the game is over
+        if (selectedSquare) {
+          const [fromRow, fromCol] = selectedSquare;
+          makeMove(fromRow, fromCol, row, col);
+          setSelectedSquare(null);
+        } else {
+          const piece = game[row][col];
+          const isPieceWhite = piece === piece.toUpperCase();
+          if (isWhiteTurn === isPieceWhite && piece !== '') {
+            setSelectedSquare([row, col]);
           }
         }
       };
 
       return (
         <div className="game-container">
-          <div className="chess-board">
-            {game.map((row, rowIndex) => (
-              <div key={rowIndex} style={{ display: 'flex' }}>
-                {row.map((piece, colIndex) => (
-                  <div
-                    key={colIndex}
-                    onClick={() => handleSquareClick(rowIndex, colIndex)}
-                    style={{
-                      width: 60,
-                      height: 60,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: (selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex) ? 'lightblue' : (rowIndex + colIndex) % 2 === 0 ? 'white' : 'gray',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {piece && <img src={pieceImages[piece]} alt={pieceNames[piece]} style={{ width: '80%', height: '80%' }} />}
-                  </div>
-                ))}
-              </div>
-            ))}
+          <div>
+            <h1>Grand Royal Chess</h1>
+            <div className="board">
+              {game.map((row, rowIndex) => (
+                <div key={rowIndex} style={{ display: 'flex' }}>
+                  {row.map((piece, colIndex) => (
+                    <div
+                      key={colIndex}
+                      style={{
+                        width: 60,
+                        height: 60,
+                        backgroundColor: (rowIndex + colIndex) % 2 === 0 ? '#fff' : '#ccc',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        border: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? '2px solid blue' : 'none',
+                      }}
+                      onClick={() => handleSquareClick(rowIndex, colIndex)}
+                    >
+                      {piece && <img src={pieceImages[piece]} alt={pieceNames[piece]} style={{ width: '40px', height: '40px' }} />}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            {gameOverMessage && <h2>{gameOverMessage}</h2>}
+            <div className="controls">
+              <button onClick={startGame}>Start New Game</button>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={isTTSOn}
+                  onChange={(e) => setIsTTSOn(e.target.checked)}
+                />
+                Text-to-Speech
+              </label>
+            </div>
           </div>
           <div className="move-log">
             <h3>Move Log</h3>
-            <div>{moveLog.map((move, index) => <div key={index}>{move}</div>)}</div>
-            {gameOverMessage && <div style={{ fontWeight: 'bold', color: 'red' }}>{gameOverMessage}</div>}
-          </div>
-          <div className="controls">
-            {!isGameOver && <button onClick={() => setGame(initialGame)}>Restart Game</button>}
+            <ul>
+              {moveLog.map((move, index) => (
+                <li key={index}>{move}</li>
+              ))}
+            </ul>
           </div>
         </div>
       );
-    };
+    }
 
-    export default ChessGame;
-
-This code provides a basic implementation of a chess game using React. It includes features like piece movement validation, turn-taking, move logging, and simple AI for the black pieces. The code structure is designed to be clear and maintainable, allowing for further enhancements and optimizations.
+    ReactDOM.render(<Game />, document.getElementById('root'));
+  </script>
+</body>
+</html>

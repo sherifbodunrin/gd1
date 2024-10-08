@@ -36,8 +36,6 @@
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
 
-    const moveNotation = `${newGame[row][col]}${String.fromCharCode(97 + fromCol)}${8 - fromRow}-${String.fromCharCode(97 + col)}${8 - row}`;
-
     const pieceImages = {
       'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
       'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
@@ -59,29 +57,8 @@
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       const [moveLog, setMoveLog] = React.useState([]);
       const [gameOverMessage, setGameOverMessage] = React.useState("");
-      const [isGameStarted, setIsGameStarted] = React.useState(false);
       const [isTTSOn, setIsTTSOn] = React.useState(false); // Text-to-Speech toggle
 
-      const startGame = () => {
-        setIsGameStarted(true);
-        setGame(initialGameState);
-        setMoveLog([]);
-        setGameOverMessage("");
-      };
-  
-      const toggleTTS = () => {
-  setIsTTSOn(!isTTSOn);
-};
-
-return (
-  <div>
-    {/* Other components remain the same */}
-    <button onClick={toggleTTS}>
-      {isTTSOn ? 'Turn TTS Off' : 'Turn TTS On'}
-    </button>
-  </div>
-);
-      
       const validateMove = (fromRow, fromCol, toRow, toCol) => {
         const piece = game[fromRow][fromCol];
         const targetPiece = game[toRow][toCol];
@@ -190,37 +167,50 @@ return (
             }
           }
         }
-        return false;
+        return false; // King is safe
       };
 
       const findKing = (king, gameState) => {
         for (let row = 0; row < 8; row++) {
           for (let col = 0; col < 8; col++) {
             if (gameState[row][col] === king) {
-              return { row, col };
+              return { row, col }; // Return the king's position
             }
           }
         }
-        return null;
+        return null; // King not found
       };
 
-      const makeMove = (row, col) => {
+      const handleSquareClick = (row, col) => {
         if (selectedSquare) {
           const [fromRow, fromCol] = selectedSquare;
+
           if (validateMove(fromRow, fromCol, row, col)) {
             const newGame = game.map(r => r.slice());
             newGame[row][col] = newGame[fromRow][fromCol];
             newGame[fromRow][fromCol] = '';
+
             setGame(newGame);
-            const move = `${game[fromRow][fromCol]} from (${fromRow}, ${fromCol}) to (${row}, ${col})`;
-            setMoveLog([...moveLog, move]);
-            announceMove(move);
+            const moveNotation = `${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
+            setMoveLog([...moveLog, moveNotation]);
+            announceMove(moveNotation); // Call TTS after the move
             setIsWhiteTurn(!isWhiteTurn);
+            setSelectedSquare(null);
+          } else {
+            setSelectedSquare(null); // Reset selected square if the move is invalid
           }
-          setSelectedSquare(null);
         } else {
-          setSelectedSquare([row, col]);
+          if (game[row][col] !== '' && (isWhiteTurn === (game[row][col] === game[row][col].toUpperCase()))) {
+            setSelectedSquare([row, col]);
+          }
         }
+      };
+
+      const restartGame = () => {
+        setGame(initialGameState);
+        setMoveLog([]);
+        setGameOverMessage("");
+        setIsWhiteTurn(true);
       };
 
       const announceMove = (move) => {
@@ -230,79 +220,39 @@ return (
         }
       };
 
-      const toggleTTS = () => {
-        setIsTTSOn(!isTTSOn);
-      };
-
-      const renderSquare = (row, col) => {
-        return (
-          <div
-            key={`${row}-${col}`}
-            onClick={() => makeMove(row, col)}
-            style={{
-              width: '60px',
-              height: '60px',
-              display: 'inline-block',
-              backgroundColor: (row + col) % 2 === 0 ? '#eee' : '#ddd',
-              textAlign: 'center',
-              lineHeight: '60px',
-              fontSize: '24px',
-              cursor: 'pointer'
-            }}
-          >
-            {game[row][col] && (
-              <img
-                src={pieceImages[game[row][col]]}
-                alt={game[row][col]}
-                style={{ width: '50%', height: 'auto' }}
-              />
-            )}
-          </div>
-        );
-      };
-
-      const renderBoard = () => {
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
-            {game.map((row, rowIndex) => (
-              <div key={rowIndex} style={{ display: 'flex' }}>
-                {row.map((_, colIndex) => renderSquare(rowIndex, colIndex))}
-              </div>
-            ))}
-          </div>
-        );
-      };
-
       return (
-        <div>
-          {!isGameStarted ? (
-            <div>
-              <h1>Welcome to Grand Royal Chess</h1>
-              <p>
-                The game will begin shortly. Click the button below to start!
-              </p>
-              <button onClick={startGame}>Start Game</button>
-            </div>
-          ) : (
-            <>
-              <h1>Grand Royal Chess</h1>
-              <button onClick={toggleTTS}>
-                {isTTSOn ? "Turn TTS Off" : "Turn TTS On"}
-              </button>
-              <div style={{ display: 'flex' }}>
-                <div>{renderBoard()}</div>
-                <div className="move-log">
-                  <h3>Move Log</h3>
-                  <ul>
-                    {moveLog.map((move, index) => (
-                      <li key={index}>{move}</li>
-                    ))}
-                  </ul>
-                </div>
+        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', width: '320px', height: '320px', marginBottom: '20px' }}>
+            {game.map((row, rowIndex) => row.map((piece, colIndex) => (
+              <div key={`${rowIndex}-${colIndex}`}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: (rowIndex + colIndex) % 2 === 0 ? '#f0d9b5' : '#b58863',
+                  cursor: 'pointer',
+                  border: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? '2px solid red' : 'none'
+                }}
+                onClick={() => handleSquareClick(rowIndex, colIndex)}
+              >
+                {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '30px', height: '30px' }} />}
               </div>
-              {gameOverMessage && <h2>{gameOverMessage}</h2>}
-            </>
-          )}
+            )))}
+          </div>
+          <div className="move-log">
+            <h3>Move Log:</h3>
+            {moveLog.map((move, index) => <div key={index}>{move}</div>)}
+            {gameOverMessage && <div style={{ fontWeight: 'bold', color: 'red' }}>{gameOverMessage}</div>}
+          </div>
+          <div>
+            <button onClick={restartGame}>Restart Game</button>
+            <label>
+              <input type="checkbox" checked={isTTSOn} onChange={() => setIsTTSOn(!isTTSOn)} />
+              Text-to-Speech
+            </label>
+          </div>
         </div>
       );
     }

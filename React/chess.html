@@ -60,6 +60,13 @@
       const [isGameStarted, setIsGameStarted] = React.useState(false);
       const [isTTSOn, setIsTTSOn] = React.useState(false); // Text-to-Speech toggle
 
+      const startGame = () => {
+        setIsGameStarted(true);
+        setGame(initialGameState);
+        setMoveLog([]);
+        setGameOverMessage("");
+      };
+
       const validateMove = (fromRow, fromCol, toRow, toCol) => {
         const piece = game[fromRow][fromCol];
         const targetPiece = game[toRow][toCol];
@@ -179,89 +186,107 @@
             }
           }
         }
-        return null; // King not found
+        return null;
       };
 
-      const handleSquareClick = (row, col) => {
-        if (gameOverMessage) return;
-
-        const piece = game[row][col];
-        if (!selectedSquare && piece && (isWhiteTurn === (piece === piece.toUpperCase()))) {
-          setSelectedSquare({ row, col });
-        } else if (selectedSquare) {
-          const { row: fromRow, col: fromCol } = selectedSquare;
+      const makeMove = (row, col) => {
+        if (selectedSquare) {
+          const [fromRow, fromCol] = selectedSquare;
           if (validateMove(fromRow, fromCol, row, col)) {
             const newGame = game.map(r => r.slice());
             newGame[row][col] = newGame[fromRow][fromCol];
             newGame[fromRow][fromCol] = '';
             setGame(newGame);
-            const moveNotation = `${newGame[row][col]}${String.fromCharCode(97 + fromCol)}${8 - fromRow}-${String.fromCharCode(97 + col)}${8 - row}`;
-            setMoveLog([...moveLog, moveNotation]);
+            const move = `${game[fromRow][fromCol]} from (${fromRow}, ${fromCol}) to (${row}, ${col})`;
+            setMoveLog([...moveLog, move]);
+            announceMove(move);
             setIsWhiteTurn(!isWhiteTurn);
           }
           setSelectedSquare(null);
+        } else {
+          setSelectedSquare([row, col]);
         }
       };
 
       const announceMove = (move) => {
-        if (isTTSOn && 'speechSynthesis' in window) {
-          const msg = new SpeechSynthesisUtterance(move);
-          window.speechSynthesis.speak(msg);
+        if (isTTSOn) {
+          const utterance = new SpeechSynthesisUtterance(move);
+          speechSynthesis.speak(utterance);
         }
       };
 
-      const restartGame = () => {
-        setGame(initialGameState);
-        setSelectedSquare(null);
-        setIsWhiteTurn(true);
-        setMoveLog([]);
-        setGameOverMessage("");
+      const toggleTTS = () => {
+        setIsTTSOn(!isTTSOn);
       };
 
       const renderSquare = (row, col) => {
-        const piece = game[row][col];
-        const isSelected = selectedSquare && selectedSquare.row === row && selectedSquare.col === col;
-        const isEvenSquare = (row + col) % 2 === 0;
-        const tileColor = isEvenSquare ? 'purple' : 'yellow'; // Change tile colors
-
         return (
-          <button
+          <div
             key={`${row}-${col}`}
+            onClick={() => makeMove(row, col)}
             style={{
               width: '60px',
               height: '60px',
-              backgroundColor: isSelected ? 'green' : tileColor,
-              border: 'none',
-              outline: 'none',
-              position: 'relative',
+              display: 'inline-block',
+              backgroundColor: (row + col) % 2 === 0 ? '#eee' : '#ddd',
+              textAlign: 'center',
+              lineHeight: '60px',
+              fontSize: '24px',
+              cursor: 'pointer'
             }}
-            onClick={() => handleSquareClick(row, col)}
           >
-            {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '100%', height: '100%' }} />}
-          </button>
+            {game[row][col] && (
+              <img
+                src={pieceImages[game[row][col]]}
+                alt={game[row][col]}
+                style={{ width: '50%', height: 'auto' }}
+              />
+            )}
+          </div>
+        );
+      };
+
+      const renderBoard = () => {
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
+            {game.map((row, rowIndex) => (
+              <div key={rowIndex} style={{ display: 'flex' }}>
+                {row.map((_, colIndex) => renderSquare(rowIndex, colIndex))}
+              </div>
+            ))}
+          </div>
         );
       };
 
       return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 60px)', gridTemplateRows: 'repeat(8, 60px)' }}>
-              {game.map((row, rowIndex) => row.map((_, colIndex) => renderSquare(rowIndex, colIndex)))}
-            </div>
-            <div className="move-log">
-              <h3>Move Log</h3>
-              <ol>
-                {moveLog.map((move, index) => (
-                  <li key={index}>{move}</li>
-                ))}
-              </ol>
-            </div>
-          </div>
-          {gameOverMessage && (
+        <div>
+          {!isGameStarted ? (
             <div>
-              <h2>{gameOverMessage}</h2>
-              <button onClick={restartGame}>Restart</button> {/* Restart button */}
+              <h1>Welcome to Grand Royal Chess</h1>
+              <p>
+                The game will begin shortly. Click the button below to start!
+              </p>
+              <button onClick={startGame}>Start Game</button>
             </div>
+          ) : (
+            <>
+              <h1>Grand Royal Chess</h1>
+              <button onClick={toggleTTS}>
+                {isTTSOn ? "Turn TTS Off" : "Turn TTS On"}
+              </button>
+              <div style={{ display: 'flex' }}>
+                <div>{renderBoard()}</div>
+                <div className="move-log">
+                  <h3>Move Log</h3>
+                  <ul>
+                    {moveLog.map((move, index) => (
+                      <li key={index}>{move}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              {gameOverMessage && <h2>{gameOverMessage}</h2>}
+            </>
           )}
         </div>
       );

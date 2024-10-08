@@ -36,6 +36,8 @@
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
 
+    const moveNotation = `${newGame[row][col]}${String.fromCharCode(97 + fromCol)}${8 - fromRow}-${String.fromCharCode(97 + col)}${8 - row}`;
+
     const pieceImages = {
       'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
       'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
@@ -66,7 +68,20 @@
         setMoveLog([]);
         setGameOverMessage("");
       };
+  
+      const toggleTTS = () => {
+  setIsTTSOn(!isTTSOn);
+};
 
+return (
+  <div>
+    {/* Other components remain the same */}
+    <button onClick={toggleTTS}>
+      {isTTSOn ? 'Turn TTS Off' : 'Turn TTS On'}
+    </button>
+  </div>
+);
+      
       const validateMove = (fromRow, fromCol, toRow, toCol) => {
         const piece = game[fromRow][fromCol];
         const targetPiece = game[toRow][toCol];

@@ -192,161 +192,51 @@
         let currentCol = fromCol + colDirection;
 
         while (currentRow !== toRow || currentCol !== toCol) {
-          if (game[currentRow][currentCol] !== '') {
-            return false; // Path is blocked
-          }
+          if (game[currentRow][currentCol] !== '') return false;
           currentRow += rowDirection;
           currentCol += colDirection;
         }
-        return true; // Path is clear
-      };
 
-      const isInCheck = (isWhite, gameState) => {
-        const king = isWhite ? 'K' : 'k';
-        let kingRow, kingCol;
-
-        for (let row = 0; row < 8; row++) {
-          for (let col = 0; col < 8; col++) {
-            if (gameState[row][col] === king) {
-              kingRow = row;
-              kingCol = col;
-              break;
-            }
-          }
-        }
-
-        // Check all opponent pieces to see if any can attack the king
-        for (let row = 0; row < 8; row++) {
-          for (let col = 0; col < 8; col++) {
-            const piece = gameState[row][col];
-            if (piece && (piece === piece.toUpperCase()) !== isWhite && validateMove(row, col, kingRow, kingCol)) {
-              return true; // King is in check
-            }
-          }
-        }
-        return false; // King is not in check
+        return true;
       };
 
       const makeMove = (fromRow, fromCol, toRow, toCol) => {
-        const piece = game[fromRow][fromCol];
-        const targetPiece = game[toRow][toCol];
+        if (validateMove(fromRow, fromCol, toRow, toCol)) {
+          const newGame = game.map(r => r.slice());
+          newGame[toRow][toCol] = newGame[fromRow][fromCol];
+          newGame[fromRow][fromCol] = '';
 
-        if (!validateMove(fromRow, fromCol, toRow, toCol)) {
-          return;
-        }
+          const piece = game[fromRow][fromCol];
+          const moveNotation = `${piece.toUpperCase()} ${fromRow},${fromCol} to ${toRow},${toCol}`;
+          setMoveLog([...moveLog, moveNotation]);
 
-        const newGame = game.map(row => row.slice());
-        newGame[toRow][toCol] = piece;
-        newGame[fromRow][fromCol] = '';
+          setGame(newGame);
+          setSelectedSquare(null);
+          setIsWhiteTurn(!isWhiteTurn);
 
-        setGame(newGame);
-        setIsWhiteTurn(!isWhiteTurn);
-
-        const moveDescription = `${pieceNames[piece.toLowerCase()]} from ${String.fromCharCode(65 + fromCol)}${8 - fromRow} to ${String.fromCharCode(65 + toCol)}${8 - toRow}`;
-        const capture = targetPiece ? `, capturing ${pieceNames[targetPiece.toLowerCase()]}` : '';
-        const check = isInCheck(!isWhiteTurn, newGame) ? ', check!' : '';
-        const fullDescription = moveDescription + capture + check;
-
-        setMoveLog([...moveLog, fullDescription]);
-        speak(fullDescription);
-
-        if (isInCheckmate(!isWhiteTurn, newGame)) {
-          setGameOverMessage(isWhiteTurn ? "White wins!" : "Black wins!");
-          speak(gameOverMessage);
-        } else if (!isWhiteTurn) {
-          setTimeout(botMove, 500); // Black's move after a short delay
-        }
-      };
-
-      const isInCheckmate = (isWhite, gameState) => {
-        // Checkmate occurs when the king is in check and has no valid moves
-        if (!isInCheck(isWhite, gameState)) {
-          return false; // Not in check, so not checkmate
-        }
-
-        // Check if any valid moves are available to escape check
-        for (let row = 0; row < 8; row++) {
-          for (let col = 0; col < 8; col++) {
-            const piece = gameState[row][col];
-            if (piece && (piece === piece.toUpperCase()) === isWhite) {
-              for (let newRow = 0; newRow < 8; newRow++) {
-                for (let newCol = 0; newCol < 8; newCol++) {
-                  if (validateMove(row, col, newRow, newCol)) {
-                    const gameCopy = gameState.map(r => r.slice());
-                    gameCopy[newRow][newCol] = piece;
-                    gameCopy[row][col] = '';
-                    if (!isInCheck(isWhite, gameCopy)) {
-                      return false; // Valid move found to escape check
-                    }
-                  }
-                }
-              }
-            }
+          // Trigger bot move if it's black's turn after the player's move
+          if (!isWhiteTurn) {
+            setTimeout(botMove, 500); // Delay AI move slightly
           }
-        }
 
-        return true; // No valid moves, checkmate!
-      };
-
-      const isAttacked = (row, col, isWhite, gameState) => {
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < 8; c++) {
-            const piece = gameState[r][c];
-            if (piece && (piece === piece.toUpperCase()) !== isWhite && validateMove(r, c, row, col)) {
-              return true; // Square is attacked by opponent
-            }
-          }
-        }
-        return false; // Square is not attacked
-      };
-
-      const handleSquareClick = (row, col) => {
-        const selectedPiece = game[row][col];
-        if (!selectedSquare) {
-          if (selectedPiece && (selectedPiece === selectedPiece.toUpperCase()) === isWhiteTurn) {
-            setSelectedSquare({ row, col });
-            announcePiece(selectedPiece);
+          if (isInCheck(!isWhiteTurn, newGame)) {
+            speak("Check!");
           }
         } else {
-          const { row: fromRow, col: fromCol } = selectedSquare;
-          makeMove(fromRow, fromCol, row, col);
-          setSelectedSquare(null);
+          speak("Invalid move");
         }
       };
 
       const botMove = () => {
-        let bestMove = null;
-        let bestScore = -Infinity; // Bot is trying to maximize score
-
-        // Loop through all pieces
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < 8; c++) {
-            const piece = game[r][c];
-            if (piece && piece === piece.toLowerCase()) { // Only consider black pieces
-              for (let newR = 0; newR < 8; newR++) {
-                for (let newC = 0; newC < 8; newC++) {
-                  if (validateMove(r, c, newR, newC)) {
-                    const targetPiece = game[newR][newC];
-                    let moveScore = 0;
-
-                    // Capture score based on the value of the target piece
-                    if (targetPiece && targetPiece !== '') {
-                      moveScore += pieceValues[targetPiece.toLowerCase()] || 0;
-                    }
-
-                    // Check if the move leaves the bot's piece in danger
-                    const gameCopy = game.map(row => row.slice());
-                    gameCopy[newR][newC] = piece; // Move the piece in the copied board
-                    gameCopy[r][c] = ''; // Clear the original square
-                    if (isAttacked(newR, newC, false, gameCopy)) {
-                      moveScore -= pieceValues[piece]; // Penalize if the piece will be captured
-                    }
-
-                    // Update the best move based on score
-                    if (moveScore > bestScore) {
-                      bestScore = moveScore;
-                      bestMove = { fromRow: r, fromCol: c, toRow: newR, toCol: newC };
-                    }
+        const availableMoves = [];
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const piece = game[row][col];
+            if (piece && piece === piece.toLowerCase()) { // AI moves only black pieces
+              for (let targetRow = 0; targetRow < 8; targetRow++) {
+                for (let targetCol = 0; targetCol < 8; targetCol++) {
+                  if (validateMove(row, col, targetRow, targetCol)) {
+                    availableMoves.push([row, col, targetRow, targetCol]);
                   }
                 }
               }
@@ -354,60 +244,108 @@
           }
         }
 
-        // Execute the best move
-        if (bestMove) {
-          makeMove(bestMove.fromRow, bestMove.fromCol, bestMove.toRow, bestMove.toCol);
+        if (availableMoves.length === 0) {
+          setGameOverMessage("Black has no valid moves. Game over!");
+          speak("Black has no valid moves. Game over!");
+          return;
+        }
+
+        const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        makeMove(randomMove[0], randomMove[1], randomMove[2], randomMove[3]);
+      };
+
+      const handleSquareClick = (row, col) => {
+        if (!isGameStarted || gameOverMessage) return;
+        const piece = game[row][col];
+
+        if (selectedSquare) {
+          const [fromRow, fromCol] = selectedSquare;
+          makeMove(fromRow, fromCol, row, col);
+        } else {
+          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+            setSelectedSquare([row, col]);
+            announcePiece(piece);
+          }
         }
       };
 
-      const renderSquare = (row, col) => {
-        const piece = game[row][col];
-        const isSelected = selectedSquare && selectedSquare.row === row && selectedSquare.col === col;
-        return (
-          <div
-            key={`${row}-${col}`}
-            onClick={() => handleSquareClick(row, col)}
-            style={{
-              width: '50px',
-              height: '50px',
-              backgroundColor: (row + col) % 2 === 0 ? '#fff' : '#999',
-              border: isSelected ? '2px solid red' : '1px solid black',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              cursor: 'pointer'
-            }}
-          >
-            {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '40px', height: '40px' }} />}
-          </div>
-        );
+      const isInCheck = (isWhiteTurn, gameState) => {
+        const kingPiece = isWhiteTurn ? 'K' : 'k';
+        let kingPosition = null;
+
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            if (gameState[row][col] === kingPiece) {
+              kingPosition = [row, col];
+              break;
+            }
+          }
+          if (kingPosition) break;
+        }
+
+        if (!kingPosition) return false; // King is missing, should not happen
+
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const piece = gameState[row][col];
+            if (piece && ((isWhiteTurn && piece === piece.toLowerCase()) || (!isWhiteTurn && piece === piece.toUpperCase()))) {
+              if (validateMove(row, col, kingPosition[0], kingPosition[1])) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
       };
 
       return (
         <div>
           <h1>Grand Royal Chess</h1>
+          {gameOverMessage && <h2>{gameOverMessage}</h2>}
           <div className="game-container">
             <div>
-              {gameOverMessage && <h2>{gameOverMessage}</h2>}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 50px)', gridTemplateRows: 'repeat(8, 50px)' }}>
-                {game.map((row, rowIndex) => row.map((_, colIndex) => renderSquare(rowIndex, colIndex)))}
-              </div>
+              <table>
+                <tbody>
+                  {game.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((piece, colIndex) => (
+                        <td
+                          key={colIndex}
+                          onClick={() => handleSquareClick(rowIndex, colIndex)}
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            textAlign: "center",
+                            backgroundColor: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? "yellow" : (rowIndex + colIndex) % 2 === 0 ? "white" : "gray",
+                          }}
+                        >
+                          {piece && (
+                            <img
+                              src={pieceImages[piece]}
+                              alt={pieceNames[piece.toLowerCase()]}
+                              style={{ width: "100%", height: "auto" }}
+                            />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               <div className="controls">
                 <button onClick={startGame}>Start Game</button>
                 <label>
-                  <input
-                    type="checkbox"
-                    checked={isTTSOn}
-                    onChange={() => setIsTTSOn(!isTTSOn)}
-                  />
+                  <input type="checkbox" checked={isTTSOn} onChange={() => setIsTTSOn(!isTTSOn)} />
                   Text-to-Speech
                 </label>
               </div>
             </div>
             <div className="move-log">
-              <h3>Move Log</h3>
+              <h2>Move Log</h2>
               <ul>
-                {moveLog.map((move, index) => <li key={index}>{move}</li>)}
+                {moveLog.map((move, index) => (
+                  <li key={index}>{move}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -415,7 +353,7 @@
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<Game />);
+    ReactDOM.render(<Game />, document.getElementById("root"));
   </script>
 </body>
 </html>

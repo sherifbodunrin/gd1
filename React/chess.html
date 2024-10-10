@@ -205,6 +205,7 @@
       const handleSquareClick = (row, col) => {
         if (selectedSquare) {
           const [fromRow, fromCol] = selectedSquare;
+          const pieceMoved = game[fromRow][fromCol];
 
           if (validateMove(fromRow, fromCol, row, col)) {
             const newGame = game.map(r => r.slice());
@@ -212,9 +213,14 @@
             newGame[fromRow][fromCol] = '';
 
             setGame(newGame);
-            const moveNotation = `${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
+            const pieceName = pieceMoved.toLowerCase() === 'p' ? 'Pawn' :
+                              pieceMoved.toLowerCase() === 'r' ? 'Rook' :
+                              pieceMoved.toLowerCase() === 'n' ? 'Knight' :
+                              pieceMoved.toLowerCase() === 'b' ? 'Bishop' :
+                              pieceMoved.toLowerCase() === 'q' ? 'Queen' : 'King';
+            const moveNotation = `${pieceName} moved from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
             setMoveLog([...moveLog, moveNotation]);
-            announceMove(moveNotation);
+            announceMove(moveNotation, pieceName);
             setIsWhiteTurn(!isWhiteTurn);
             setSelectedSquare(null);
           } else {
@@ -239,9 +245,9 @@
         setIsGameStarted(true); // Start the game
       };
 
-      const announceMove = (move) => {
+      const announceMove = (move, pieceName) => {
         if (isTTSOn) {
-          const utterance = new SpeechSynthesisUtterance(move);
+          const utterance = new SpeechSynthesisUtterance(`${pieceName} ${move}`);
           speechSynthesis.speak(utterance);
         }
       };

@@ -29,13 +29,13 @@
     .chess-board {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
-      width: 320px;
-      height: 320px;
+      width: 480px; /* Increased size */
+      height: 480px; /* Increased size */
       margin-bottom: 20px;
     }
     .chess-square {
-      width: 40px;
-      height: 40px;
+      width: 60px; /* Increased size */
+      height: 60px; /* Increased size */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -80,14 +80,30 @@
       const [moveLog, setMoveLog] = React.useState([]);
       const [gameOverMessage, setGameOverMessage] = React.useState("");
       const [isTTSOn, setIsTTSOn] = React.useState(false);
-      const [isGameStarted, setIsGameStarted] = React.useState(false); // New state for game start
+      const [isGameStarted, setIsGameStarted] = React.useState(false);
+      const [timeLeft, setTimeLeft] = React.useState(300); // 5 minutes in seconds
+      const [timerInterval, setTimerInterval] = React.useState(null);
+
+      React.useEffect(() => {
+        if (isGameStarted && timeLeft > 0) {
+          const interval = setInterval(() => {
+            setTimeLeft(prevTime => prevTime - 1);
+          }, 1000);
+          setTimerInterval(interval);
+          return () => clearInterval(interval);
+        }
+        if (timeLeft === 0) {
+          setGameOverMessage(`${isWhiteTurn ? "Black" : "White"} wins by timeout!`);
+          clearInterval(timerInterval);
+        }
+      }, [isGameStarted, timeLeft, isWhiteTurn]);
 
       const validateMove = (fromRow, fromCol, toRow, toCol) => {
         const piece = game[fromRow][fromCol];
         const targetPiece = game[toRow][toCol];
 
         if (piece === '') return false;
-        
+
         const isMovingWhite = piece === piece.toUpperCase();
         const isTargetEmptyOrOpponent = !targetPiece || (isMovingWhite !== (targetPiece === targetPiece.toUpperCase()));
 
@@ -223,6 +239,7 @@
             announceMove(moveNotation, pieceName);
             setIsWhiteTurn(!isWhiteTurn);
             setSelectedSquare(null);
+            setTimeLeft(300); // Reset timer for next player
           } else {
             setSelectedSquare(null);
           }
@@ -238,7 +255,9 @@
         setMoveLog([]);
         setGameOverMessage("");
         setIsWhiteTurn(true);
-        setIsGameStarted(false); // Reset game start state
+        setIsGameStarted(false);
+        setTimeLeft(300); // Reset timer
+        clearInterval(timerInterval);
       };
 
       const startGame = () => {
@@ -261,7 +280,7 @@
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-              <h2>{gameOverMessage || `Current Turn: ${isWhiteTurn ? 'White' : 'Black'}`}</h2>
+              <h2>{gameOverMessage || `Current Turn: ${isWhiteTurn ? 'White' : 'Black'} | Time Left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}`}</h2>
               <div className="chess-board">
                 {game.map((row, rowIndex) => row.map((piece, colIndex) => (
                   <div key={`${rowIndex}-${colIndex}`}
@@ -272,7 +291,7 @@
                     }}
                     onClick={() => handleSquareClick(rowIndex, colIndex)}
                   >
-                    {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '30px', height: '30px' }} />}
+                    {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '40px', height: '40px' }} />}
                   </div>
                 )))}
               </div>

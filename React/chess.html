@@ -2,23 +2,51 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grand Royal Chess</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
   <style>
-    body { font-family: Arial, sans-serif; }
-    .move-log { margin-left: 20px; border-left: 1px solid #ccc; padding-left: 10px; max-height: 400px; overflow-y: auto; }
-    .start-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-    .chess-board { display: grid; grid-template-columns: repeat(8, 1fr); width: 480px; height: 480px; margin-bottom: 20px; }
-    .chess-square { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .move-log {
+      margin-left: 20px;
+      border-left: 1px solid #ccc;
+      padding-left: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .chess-board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      width: 480px; /* Increased size */
+      height: 480px; /* Increased size */
+      margin-bottom: 20px;
+    }
+    .chess-square {
+      width: 60px; /* Increased size */
+      height: 60px; /* Increased size */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
+  <script type="text/babel" data-presets="react,stage-3">
     const initialGameState = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -53,18 +81,19 @@
       const [gameOverMessage, setGameOverMessage] = React.useState("");
       const [isTTSOn, setIsTTSOn] = React.useState(false);
       const [isGameStarted, setIsGameStarted] = React.useState(false);
-      const [timeLeft, setTimeLeft] = React.useState(300);
+      const [timeLeft, setTimeLeft] = React.useState(300); // 5 minutes in seconds
       const [timerInterval, setTimerInterval] = React.useState(null);
-      const [isInCheck, setIsInCheck] = React.useState(false);
 
       React.useEffect(() => {
         if (isGameStarted && timeLeft > 0) {
-          const interval = setInterval(() => setTimeLeft(prevTime => prevTime - 1), 1000);
+          const interval = setInterval(() => {
+            setTimeLeft(prevTime => prevTime - 1);
+          }, 1000);
           setTimerInterval(interval);
           return () => clearInterval(interval);
         }
         if (timeLeft === 0) {
-          setGameOverMessage(`${isWhiteTurn ? "Black" : "White"} wins by timeout!`);
+          setGameOverMessage(${isWhiteTurn ? "Black" : "White"} wins by timeout!);
           clearInterval(timerInterval);
         }
       }, [isGameStarted, timeLeft, isWhiteTurn]);
@@ -73,16 +102,68 @@
         const piece = game[fromRow][fromCol];
         const targetPiece = game[toRow][toCol];
 
-        if (!piece) return false;
+        if (piece === '') return false;
 
         const isMovingWhite = piece === piece.toUpperCase();
         const isTargetEmptyOrOpponent = !targetPiece || (isMovingWhite !== (targetPiece === targetPiece.toUpperCase()));
+
         if (!isTargetEmptyOrOpponent) return false;
 
-        // Handle special cases for each piece
-        // Add your piece validation logic here...
+        if (targetPiece === 'k' || targetPiece === 'K') {
+          setGameOverMessage(isWhiteTurn ? "White wins by checkmate!" : "Black wins by checkmate!");
+          announceMove("Checkmate!");
+          return true;
+        }
 
-        return true; // Default return
+        switch (piece.toLowerCase()) {
+          case 'p':
+            const direction = isMovingWhite ? -1 : 1;
+            const startRow = isMovingWhite ? 6 : 1;
+            const hasMoved = (isMovingWhite && fromRow < 6) || (!isMovingWhite && fromRow > 1);
+
+            if (toCol === fromCol && targetPiece === '') {
+              if (toRow === fromRow + direction) return true;
+              if (!hasMoved && toRow === fromRow + 2 * direction && game[fromRow + direction][fromCol] === '') return true;
+            } else if (Math.abs(toCol - fromCol) === 1 && toRow === fromRow + direction) {
+              return !!targetPiece;
+            }
+            break;
+
+          case 'r':
+            if (toRow === fromRow || toCol === fromCol) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
+            }
+            break;
+
+          case 'n':
+            if ((Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 1) ||
+                (Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 2)) {
+              return true;
+            }
+            break;
+
+          case 'b':
+            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol)) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
+            }
+            break;
+
+          case 'q':
+            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol) || toRow === fromRow || toCol === fromCol) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
+            }
+            break;
+
+          case 'k':
+            if (Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1) {
+              return !isInCheckAfterMove(fromRow, fromCol, toRow, toCol);
+            }
+            break;
+
+          default:
+            return false;
+        }
+        return false;
       };
 
       const isInCheckAfterMove = (fromRow, fromCol, toRow, toCol) => {
@@ -92,13 +173,41 @@
         return isInCheck(isWhiteTurn, newGame);
       };
 
-      const isInCheck = (isWhite, gameState) => {
-        const kingPosition = findKingPosition(isWhite, gameState);
-        return isUnderAttack(kingPosition.row, kingPosition.col, !isWhite, gameState);
+      const isPathClear = (fromRow, fromCol, toRow, toCol) => {
+        const rowDirection = toRow === fromRow ? 0 : (toRow > fromRow ? 1 : -1);
+        const colDirection = toCol === fromCol ? 0 : (toCol > fromCol ? 1 : -1);
+
+        let currentRow = fromRow + rowDirection;
+        let currentCol = fromCol + colDirection;
+
+        while (currentRow !== toRow || currentCol !== toCol) {
+          if (game[currentRow][currentCol] !== '') {
+            return false;
+          }
+          currentRow += rowDirection;
+          currentCol += colDirection;
+        }
+        return true;
       };
 
-      const findKingPosition = (isWhite, gameState) => {
-        const king = isWhite ? 'K' : 'k';
+      const isInCheck = (isWhite, gameState) => {
+        const kingRow = isWhite ? findKing('K', gameState) : findKing('k', gameState);
+        const opponentPieces = isWhite ? 'rnbq' : 'RNBQ';
+
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const piece = gameState[row][col];
+            if (piece && opponentPieces.includes(piece.toLowerCase())) {
+              if (validateMove(row, col, kingRow.row, kingRow.col)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      };
+
+      const findKing = (king, gameState) => {
         for (let row = 0; row < 8; row++) {
           for (let col = 0; col < 8; col++) {
             if (gameState[row][col] === king) {
@@ -109,55 +218,58 @@
         return null;
       };
 
-      const isUnderAttack = (row, col, isWhite, gameState) => {
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < 8; c++) {
-            const piece = gameState[r][c];
-            if (piece && (isWhite !== (piece === piece.toUpperCase()))) {
-              if (validateMove(r, c, row, col)) {
-                return true;
-              }
-            }
-          }
-        }
-        return false;
-      };
-
       const handleSquareClick = (row, col) => {
         if (selectedSquare) {
           const [fromRow, fromCol] = selectedSquare;
+          const pieceMoved = game[fromRow][fromCol];
+
           if (validateMove(fromRow, fromCol, row, col)) {
             const newGame = game.map(r => r.slice());
             newGame[row][col] = newGame[fromRow][fromCol];
             newGame[fromRow][fromCol] = '';
 
             setGame(newGame);
-            setIsInCheck(isInCheckAfterMove(fromRow, fromCol, row, col));
-
-            const moveDescription = `${game[fromRow][fromCol]} from ${fromRow},${fromCol} to ${row},${col}`;
-            setMoveLog(log => [...log, moveDescription]);
+            const pieceName = pieceMoved.toLowerCase() === 'p' ? 'Pawn' :
+                              pieceMoved.toLowerCase() === 'r' ? 'Rook' :
+                              pieceMoved.toLowerCase() === 'n' ? 'Knight' :
+                              pieceMoved.toLowerCase() === 'b' ? 'Bishop' :
+                              pieceMoved.toLowerCase() === 'q' ? 'Queen' : 'King';
+            const moveNotation = ${pieceName} moved from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row};
+            setMoveLog([...moveLog, moveNotation]);
+            announceMove(moveNotation, pieceName);
             setIsWhiteTurn(!isWhiteTurn);
+            setSelectedSquare(null);
+            setTimeLeft(300); // Reset timer for next player
           } else {
             setSelectedSquare(null);
           }
         } else {
-          if (game[row][col] && (isWhiteTurn === (game[row][col] === game[row][col].toUpperCase()))) {
+          if (game[row][col] !== '' && (isWhiteTurn === (game[row][col] === game[row][col].toUpperCase()))) {
             setSelectedSquare([row, col]);
           }
         }
       };
 
-      const startGame = () => {
+      const restartGame = () => {
         setGame(initialGameState);
-        setIsGameStarted(true);
         setMoveLog([]);
         setGameOverMessage("");
-        setTimeLeft(300);
         setIsWhiteTurn(true);
-        setIsInCheck(false);
+        setIsGameStarted(false);
+        setTimeLeft(300); // Reset timer
+        clearInterval(timerInterval);
       };
 
-      const checkMessage = isInCheck ? <div style={{ color: 'red', fontWeight: 'bold' }}>Warning: Your king is in check!</div> : null;
+      const startGame = () => {
+        setIsGameStarted(true); // Start the game
+      };
+
+      const announceMove = (move, pieceName) => {
+        if (isTTSOn) {
+          const utterance = new SpeechSynthesisUtterance(${pieceName} ${move});
+          speechSynthesis.speak(utterance);
+        }
+      };
 
       return (
         <div>
@@ -168,22 +280,32 @@
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-              <h2>{gameOverMessage || `Current Turn: ${isWhiteTurn ? 'White' : 'Black'} | Time Left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}`}</h2>
-              {checkMessage}
+              <h2>{gameOverMessage || Current Turn: ${isWhiteTurn ? 'White' : 'Black'} | Time Left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}}</h2>
               <div className="chess-board">
-                {game.map((row, rowIndex) =>
-                  row.map((piece, colIndex) => (
-                    <div key={`${rowIndex}-${colIndex}`} className="chess-square" style={{ backgroundColor: (rowIndex + colIndex) % 2 === 0 ? '#eee' : '#aaa' }} onClick={() => handleSquareClick(rowIndex, colIndex)}>
-                      {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '80%', height: '80%' }} />}
-                    </div>
-                  ))
-                )}
+                {game.map((row, rowIndex) => row.map((piece, colIndex) => (
+                  <div key={${rowIndex}-${colIndex}}
+                    className="chess-square"
+                    style={{
+                      backgroundColor: (rowIndex + colIndex) % 2 === 0 ? 'purple' : 'yellow',
+                      border: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? '2px solid red' : 'none'
+                    }}
+                    onClick={() => handleSquareClick(rowIndex, colIndex)}
+                  >
+                    {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '40px', height: '40px' }} />}
+                  </div>
+                )))}
               </div>
               <div className="move-log">
-                <h3>Move Log</h3>
-                <ul>
-                  {moveLog.map((move, index) => <li key={index}>{move}</li>)}
-                </ul>
+                <h3>Move Log:</h3>
+                {moveLog.map((move, index) => <div key={index}>{move}</div>)}
+                {gameOverMessage && <div style={{ fontWeight: 'bold', color: 'red' }}>{gameOverMessage}</div>}
+              </div>
+              <div>
+                <button onClick={restartGame}>Restart Game</button>
+                <label>
+                  <input type="checkbox" checked={isTTSOn} onChange={() => setIsTTSOn(!isTTSOn)} />
+                  Text-to-Speech
+                </label>
               </div>
             </div>
           )}
@@ -191,7 +313,7 @@
       );
     }
 
-    ReactDOM.render(<Game />, document.getElementById("root"));
+    ReactDOM.render(<Game />, document.getElementById('root'));
   </script>
 </body>
 </html>

@@ -57,27 +57,25 @@
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       const [moveLog, setMoveLog] = React.useState([]);
       const [gameOverMessage, setGameOverMessage] = React.useState("");
-      const [isTTSOn, setIsTTSOn] = React.useState(false); // Text-to-Speech toggle
+      const [isTTSOn, setIsTTSOn] = React.useState(false);
 
       const validateMove = (fromRow, fromCol, toRow, toCol) => {
         const piece = game[fromRow][fromCol];
         const targetPiece = game[toRow][toCol];
 
-        if (piece === '') return false; // No piece to move
-        
+        if (piece === '') return false;
+
         const isMovingWhite = piece === piece.toUpperCase();
         const isTargetEmptyOrOpponent = !targetPiece || (isMovingWhite !== (targetPiece === targetPiece.toUpperCase()));
 
-        if (!isTargetEmptyOrOpponent) return false; // Can't capture own piece
+        if (!isTargetEmptyOrOpponent) return false;
 
-        // Check if a king is captured
         if (targetPiece === 'k' || targetPiece === 'K') {
           setGameOverMessage(isWhiteTurn ? "White wins by checkmate!" : "Black wins by checkmate!");
           announceMove("Checkmate!");
           return true;
         }
 
-        // Basic movement rules
         switch (piece.toLowerCase()) {
           case 'p':
             const direction = isMovingWhite ? -1 : 1;
@@ -119,21 +117,21 @@
 
           case 'k':
             if (Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1) {
-              return !isInCheckAfterMove(fromRow, fromCol, toRow, toCol); // Prevent moving into check
+              return !isInCheckAfterMove(fromRow, fromCol, toRow, toCol);
             }
             break;
 
           default:
             return false;
         }
-        return false; // Invalid move
+        return false;
       };
 
       const isInCheckAfterMove = (fromRow, fromCol, toRow, toCol) => {
         const newGame = game.map(r => r.slice());
         newGame[toRow][toCol] = newGame[fromRow][fromCol];
         newGame[fromRow][fromCol] = '';
-        return isInCheck(isWhiteTurn, newGame); // Check if the move puts the king in check
+        return isInCheck(isWhiteTurn, newGame);
       };
 
       const isPathClear = (fromRow, fromCol, toRow, toCol) => {
@@ -145,12 +143,12 @@
 
         while (currentRow !== toRow || currentCol !== toCol) {
           if (game[currentRow][currentCol] !== '') {
-            return false; // Path is blocked
+            return false;
           }
           currentRow += rowDirection;
           currentCol += colDirection;
         }
-        return true; // Path is clear
+        return true;
       };
 
       const isInCheck = (isWhite, gameState) => {
@@ -162,23 +160,23 @@
             const piece = gameState[row][col];
             if (piece && opponentPieces.includes(piece.toLowerCase())) {
               if (validateMove(row, col, kingRow.row, kingRow.col)) {
-                return true; // King is in check
+                return true;
               }
             }
           }
         }
-        return false; // King is safe
+        return false;
       };
 
       const findKing = (king, gameState) => {
         for (let row = 0; row < 8; row++) {
           for (let col = 0; col < 8; col++) {
             if (gameState[row][col] === king) {
-              return { row, col }; // Return the king's position
+              return { row, col };
             }
           }
         }
-        return null; // King not found
+        return null;
       };
 
       const handleSquareClick = (row, col) => {
@@ -193,65 +191,59 @@
             setGame(newGame);
             const moveNotation = `${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
             setMoveLog([...moveLog, moveNotation]);
-            announceMove(moveNotation); // Call TTS after the move
             setIsWhiteTurn(!isWhiteTurn);
-            setSelectedSquare(null);
-          } else {
-            setSelectedSquare(null); // Reset selected square if the move is invalid
+            setGameOverMessage("");
+            announceMove(moveNotation);
           }
+          setSelectedSquare(null);
         } else {
-          if (game[row][col] !== '' && (isWhiteTurn === (game[row][col] === game[row][col].toUpperCase()))) {
-            setSelectedSquare([row, col]);
-          }
+          setSelectedSquare([row, col]);
         }
-      };
-
-      const restartGame = () => {
-        setGame(initialGameState);
-        setMoveLog([]);
-        setGameOverMessage("");
-        setIsWhiteTurn(true);
       };
 
       const announceMove = (move) => {
         if (isTTSOn) {
           const utterance = new SpeechSynthesisUtterance(move);
-          speechSynthesis.speak(utterance);
+          window.speechSynthesis.speak(utterance);
         }
       };
 
       return (
-        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', width: '320px', height: '320px', marginBottom: '20px' }}>
-            {game.map((row, rowIndex) => row.map((piece, colIndex) => (
-              <div key={`${rowIndex}-${colIndex}`}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: (rowIndex + colIndex) % 2 === 0 ? '#f0d9b5' : '#b58863',
-                  cursor: 'pointer',
-                  border: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? '2px solid red' : 'none'
-                }}
-                onClick={() => handleSquareClick(rowIndex, colIndex)}
-              >
-                {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '30px', height: '30px' }} />}
-              </div>
-            )))}
-          </div>
-          <div className="move-log">
-            <h3>Move Log:</h3>
-            {moveLog.map((move, index) => <div key={index}>{move}</div>)}
-            {gameOverMessage && <div style={{ fontWeight: 'bold', color: 'red' }}>{gameOverMessage}</div>}
-          </div>
-          <div>
-            <button onClick={restartGame}>Restart Game</button>
-            <label>
-              <input type="checkbox" checked={isTTSOn} onChange={() => setIsTTSOn(!isTTSOn)} />
-              Text-to-Speech
-            </label>
+        <div>
+          <h2>{gameOverMessage || `Current Turn: ${isWhiteTurn ? 'White' : 'Black'}`}</h2>
+          <div style={{ display: 'flex' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', width: '320px' }}>
+              {game.map((row, rowIndex) => 
+                row.map((piece, colIndex) => {
+                  const isSelected = selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex;
+                  const isWhiteSquare = (rowIndex + colIndex) % 2 === 0;
+                  const backgroundColor = isSelected ? 'lightgreen' : (isWhiteSquare ? 'purple' : 'yellow');
+                  return (
+                    <div
+                      key={`${rowIndex}-${colIndex}`}
+                      onClick={() => handleSquareClick(rowIndex, colIndex)}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        backgroundColor,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        border: '1px solid #ccc'
+                      }}
+                    >
+                      {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '30px', height: '30px' }} />}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div className="move-log">
+              <h3>Move Log</h3>
+              <ul>
+                {moveLog.map((move, index) => <li key={index}>{move}</li>)}
+              </ul>
+            </div>
           </div>
         </div>
       );

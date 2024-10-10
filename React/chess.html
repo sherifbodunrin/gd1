@@ -29,17 +29,40 @@
     .chess-board {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
-      width: 480px; /* Increased size */
-      height: 480px; /* Increased size */
+      width: 480px; /* Size of the board */
+      height: 480px; /* Size of the board */
       margin-bottom: 20px;
+      position: relative;
     }
     .chess-square {
-      width: 60px; /* Increased size */
-      height: 60px; /* Increased size */
+      width: 60px; /* Size of squares */
+      height: 60px; /* Size of squares */
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .highlight-move {
+      background-color: rgba(255, 255, 0, 0.5); /* Highlight color for possible moves */
+    }
+    .selected {
+      background-color: rgba(0, 255, 0, 0.7); /* Color for the selected square */
+    }
+    .notation {
+      position: absolute;
+      font-weight: bold;
+      color: #000;
+    }
+    .notation-row {
+      left: 10px;
+      top: 20px;
+      transform: translateY(-50%);
+    }
+    .notation-col {
+      bottom: 10px;
+      left: 20px;
+      transform: translateX(-50%);
     }
   </style>
 </head>
@@ -76,6 +99,7 @@
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
+      const [possibleMoves, setPossibleMoves] = React.useState([]);
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
       const [moveLog, setMoveLog] = React.useState([]);
       const [gameOverMessage, setGameOverMessage] = React.useState("");
@@ -239,15 +263,33 @@
             announceMove(moveNotation, pieceName);
             setIsWhiteTurn(!isWhiteTurn);
             setSelectedSquare(null);
+            setPossibleMoves([]); // Reset possible moves
             setTimeLeft(300); // Reset timer for next player
           } else {
             setSelectedSquare(null);
+            setPossibleMoves([]);
           }
         } else {
           if (game[row][col] !== '' && (isWhiteTurn === (game[row][col] === game[row][col].toUpperCase()))) {
             setSelectedSquare([row, col]);
+            setPossibleMoves(getPossibleMoves(row, col)); // Get possible moves
           }
         }
+      };
+
+      const getPossibleMoves = (row, col) => {
+        const piece = game[row][col];
+        const possibleMoves = [];
+        
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            if (validateMove(row, col, r, c)) {
+              possibleMoves.push([r, c]);
+            }
+          }
+        }
+        
+        return possibleMoves;
       };
 
       const restartGame = () => {
@@ -281,19 +323,32 @@
           ) : (
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               <h2>{gameOverMessage || `Current Turn: ${isWhiteTurn ? 'White' : 'Black'} | Time Left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}`}</h2>
-              <div className="chess-board">
-                {game.map((row, rowIndex) => row.map((piece, colIndex) => (
-                  <div key={`${rowIndex}-${colIndex}`}
-                    className="chess-square"
-                    style={{
-                      backgroundColor: (rowIndex + colIndex) % 2 === 0 ? 'purple' : 'yellow',
-                      border: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? '2px solid red' : 'none'
-                    }}
-                    onClick={() => handleSquareClick(rowIndex, colIndex)}
-                  >
-                    {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '40px', height: '40px' }} />}
-                  </div>
-                )))}
+              <div style={{ position: 'relative' }}>
+                <div className="chess-board">
+                  {game.map((row, rowIndex) => row.map((piece, colIndex) => (
+                    <div key={`${rowIndex}-${colIndex}`}
+                      className={`chess-square ${selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? 'selected' : ''} 
+                      ${possibleMoves.some(move => move[0] === rowIndex && move[1] === colIndex) ? 'highlight-move' : ''}`}
+                      style={{
+                        backgroundColor: (rowIndex + colIndex) % 2 === 0 ? 'purple' : 'yellow',
+                      }}
+                      onClick={() => handleSquareClick(rowIndex, colIndex)}
+                    >
+                      {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '40px', height: '40px' }} />}
+                    </div>
+                  )))}
+                </div>
+                {/* Notation Display */}
+                <div className="notation-row">
+                  {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((note, index) => (
+                    <div key={index} style={{ position: 'absolute', top: `${(8 - index - 1) * 60 + 20}px`, left: '20px' }}>{note}</div>
+                  ))}
+                </div>
+                <div className="notation-col">
+                  {['8', '7', '6', '5', '4', '3', '2', '1'].map((note, index) => (
+                    <div key={index} style={{ position: 'absolute', bottom: '20px', left: `${(index * 60) + 30}px` }}>{note}</div>
+                  ))}
+                </div>
               </div>
               <div className="move-log">
                 <h3>Move Log:</h3>

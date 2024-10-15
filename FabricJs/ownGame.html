@@ -65,14 +65,18 @@
     });
     layer.add(bullet);
 
-    const anim = new Konva.Animation(() => {
-      bullet.y(bullet.y() - 10); // Bullet moves upward
+    // Bullet movement animation
+    const bulletAnim = new Konva.Animation(() => {
+      bullet.y(bullet.y() - 10); // Bullet moves upward gradually
       if (bullet.y() < 0) {
         bullet.destroy(); // Destroy if bullet goes off-screen
+        bulletAnim.stop();
       }
     }, layer);
-    anim.start();
-    return bullet;
+    bulletAnim.start();
+
+    // Return the bullet and its animation, so we can reference them later
+    return { bullet, bulletAnim };
   }
 
   // Check for collision between two circles
@@ -89,27 +93,6 @@
 
   window.addEventListener('keydown', (e) => {
     keysPressed[e.key] = true;
-
-    // Spacebar to shoot a bullet
-    if (e.key === ' ') {
-      const bullet = shootBullet();
-
-      // Check for collision between bullet and enemies
-      const anim = new Konva.Animation(() => {
-        layer.getChildren().forEach((enemy) => {
-          if (enemy !== player && enemy !== scoreText && isColliding(bullet, enemy)) {
-            // If collision, destroy both bullet and enemy
-            bullet.destroy();
-            enemy.destroy();
-            
-            // Increase the score
-            score++;
-            scoreText.text(`Score: ${score}`);
-          }
-        });
-      }, layer);
-      anim.start();
-    }
   });
 
   window.addEventListener('keyup', (e) => {
@@ -131,6 +114,30 @@
 
   // Start a continuous loop for smoother movement
   setInterval(movePlayer, 16); // 60 FPS
+
+  // Shoot bullets with spacebar
+  window.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+      const { bullet, bulletAnim } = shootBullet();
+
+      // Separate animation for checking bullet collisions
+      const collisionAnim = new Konva.Animation(() => {
+        layer.getChildren().forEach((enemy) => {
+          if (enemy !== player && enemy !== scoreText && isColliding(bullet, enemy)) {
+            // Destroy both bullet and enemy on collision
+            bullet.destroy();
+            bulletAnim.stop(); // Stop bullet movement once it hits an enemy
+            enemy.destroy();
+            
+            // Increase score
+            score++;
+            scoreText.text(`Score: ${score}`);
+          }
+        });
+      }, layer);
+      collisionAnim.start();
+    }
+  });
 
   layer.draw();
 </script>

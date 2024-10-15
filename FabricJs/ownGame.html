@@ -18,43 +18,6 @@
   });
   layer.add(player);
 
-  // Scoreboard
-  let score = 0;
-  const scoreText = new Konva.Text({
-    x: 20,
-    y: 20,
-    text: `Score: ${score}`,
-    fontSize: 24,
-    fill: 'white'
-  });
-  layer.add(scoreText);
-
-  // Enemy creation function
-  function createEnemy() {
-    const enemy = new Konva.Circle({
-      x: Math.random() * stage.width(),
-      y: -20,
-      radius: 20,
-      fill: 'green'
-    });
-    layer.add(enemy);
-    
-    const anim = new Konva.Animation(() => {
-      enemy.y(enemy.y() + 2); // Enemy falls down
-      if (enemy.y() > stage.height()) {
-        enemy.destroy(); // Destroy if it goes off-screen
-      }
-    }, layer);
-    anim.start();
-
-    return enemy;
-  }
-
-  // Generate enemies every second
-  setInterval(() => {
-    createEnemy();
-  }, 1000);
-
   // Bullet shooting function
   function shootBullet() {
     const bullet = new Konva.Circle({
@@ -66,78 +29,49 @@
     layer.add(bullet);
 
     // Bullet movement animation
-    const bulletAnim = new Konva.Animation(() => {
-      bullet.y(bullet.y() - 10); // Bullet moves upward gradually
-      if (bullet.y() < 0) {
-        bullet.destroy(); // Destroy if bullet goes off-screen
-        bulletAnim.stop();
-      }
+    const anim = new Konva.Animation(() => {
+      bullet.y(bullet.y() - 10);
+      if (bullet.y() < 0) bullet.destroy();
     }, layer);
-    bulletAnim.start();
-
-    // Return the bullet and its animation, so we can reference them later
-    return { bullet, bulletAnim };
+    anim.start();
   }
 
-  // Check for collision between two circles
-  function isColliding(bullet, enemy) {
-    const distX = bullet.x() - enemy.x();
-    const distY = bullet.y() - enemy.y();
-    const distance = Math.sqrt(distX * distX + distY * distY);
-
-    return distance < bullet.radius() + enemy.radius();
-  }
-
-  // Smoother movement for the player
-  const keysPressed = {};
-
-  window.addEventListener('keydown', (e) => {
-    keysPressed[e.key] = true;
-  });
-
-  window.addEventListener('keyup', (e) => {
-    keysPressed[e.key] = false;
-  });
-
-  function movePlayer() {
-    if (keysPressed['ArrowLeft']) {
-      player.x(player.x() - 5); // Move left
-    }
-    if (keysPressed['ArrowRight']) {
-      player.x(player.x() + 5); // Move right
-    }
-    if (player.x() < 0) player.x(0);
-    if (player.x() > stage.width()) player.x(stage.width());
-
-    layer.batchDraw();
-  }
-
-  // Start a continuous loop for smoother movement
-  setInterval(movePlayer, 16); // 60 FPS
-
-  // Shoot bullets with spacebar
+  // Event listener for space bar to shoot bullets
   window.addEventListener('keydown', (e) => {
     if (e.key === ' ') {
-      const { bullet, bulletAnim } = shootBullet();
-
-      // Separate animation for checking bullet collisions
-      const collisionAnim = new Konva.Animation(() => {
-        layer.getChildren().forEach((enemy) => {
-          if (enemy !== player && enemy !== scoreText && isColliding(bullet, enemy)) {
-            // Destroy both bullet and enemy on collision
-            bullet.destroy();
-            bulletAnim.stop(); // Stop bullet movement once it hits an enemy
-            enemy.destroy();
-            
-            // Increase score
-            score++;
-            scoreText.text(`Score: ${score}`);
-          }
-        });
-      }, layer);
-      collisionAnim.start();
+      shootBullet();
     }
   });
 
+  // Enemy creation function
+  function createEnemy() {
+    const enemy = new Konva.Circle({
+      x: Math.random() * stage.width(),
+      y: -20, // Start just above the top
+      radius: 20,
+      fill: 'green'
+    });
+    layer.add(enemy);
+
+    const anim = new Konva.Animation(() => {
+      enemy.y(enemy.y() + 2); // Enemy falls down
+      if (enemy.y() > stage.height()) {
+        enemy.destroy(); // Remove enemy once it falls off the screen
+      }
+    }, layer);
+    anim.start();
+  }
+
+  // Generate enemies at intervals, but not too many
+  let enemyCount = 0;
+  const maxEnemies = 5;
+  setInterval(() => {
+    if (enemyCount < maxEnemies) {
+      createEnemy();
+      enemyCount++;
+    }
+  }, 2000); // New enemy every 2 seconds
+
+  // Redraw the layer
   layer.draw();
 </script>

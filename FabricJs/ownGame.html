@@ -84,12 +84,32 @@
     return distance < bullet.radius() + enemy.radius();
   }
 
-  // Handling player movement
+  // Smoother movement for the player
+  const keysPressed = {};
+
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') player.x(player.x() - 10);
-    if (e.key === 'ArrowRight') player.x(player.x() + 10);
-    layer.batchDraw();
+    keysPressed[e.key] = true;
   });
+
+  window.addEventListener('keyup', (e) => {
+    keysPressed[e.key] = false;
+  });
+
+  function movePlayer() {
+    if (keysPressed['ArrowLeft']) {
+      player.x(player.x() - 5); // Move left
+    }
+    if (keysPressed['ArrowRight']) {
+      player.x(player.x() + 5); // Move right
+    }
+    if (player.x() < 0) player.x(0);
+    if (player.x() > stage.width()) player.x(stage.width());
+
+    layer.batchDraw();
+  }
+
+  // Start a continuous loop for smoother movement
+  setInterval(movePlayer, 16); // 60 FPS
 
   // Shooting bullets
   stage.on('click', () => {

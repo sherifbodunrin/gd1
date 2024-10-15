@@ -43,6 +43,33 @@
     }
   });
 
+  // Smoother arrow key movement
+  const keysPressed = {};
+
+  window.addEventListener('keydown', (e) => {
+    keysPressed[e.key] = true;
+  });
+
+  window.addEventListener('keyup', (e) => {
+    keysPressed[e.key] = false;
+  });
+
+  function movePlayer() {
+    if (keysPressed['ArrowLeft']) {
+      player.x(player.x() - 5); // Move left
+    }
+    if (keysPressed['ArrowRight']) {
+      player.x(player.x() + 5); // Move right
+    }
+    if (player.x() < 0) player.x(0); // Prevent going off screen (left)
+    if (player.x() > stage.width()) player.x(stage.width()); // Prevent going off screen (right)
+
+    layer.batchDraw(); // Redraw the layer to update player position
+  }
+
+  // Call movePlayer function every 16ms (60 frames per second)
+  setInterval(movePlayer, 16); // 60 FPS
+
   // Enemy creation function
   function createEnemy() {
     const enemy = new Konva.Circle({

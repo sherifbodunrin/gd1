@@ -89,6 +89,27 @@
 
   window.addEventListener('keydown', (e) => {
     keysPressed[e.key] = true;
+
+    // Spacebar to shoot a bullet
+    if (e.key === ' ') {
+      const bullet = shootBullet();
+
+      // Check for collision between bullet and enemies
+      const anim = new Konva.Animation(() => {
+        layer.getChildren().forEach((enemy) => {
+          if (enemy !== player && enemy !== scoreText && isColliding(bullet, enemy)) {
+            // If collision, destroy both bullet and enemy
+            bullet.destroy();
+            enemy.destroy();
+            
+            // Increase the score
+            score++;
+            scoreText.text(`Score: ${score}`);
+          }
+        });
+      }, layer);
+      anim.start();
+    }
   });
 
   window.addEventListener('keyup', (e) => {
@@ -110,27 +131,6 @@
 
   // Start a continuous loop for smoother movement
   setInterval(movePlayer, 16); // 60 FPS
-
-  // Shooting bullets
-  stage.on('click', () => {
-    const bullet = shootBullet();
-
-    // Check for collision between bullet and enemies
-    const anim = new Konva.Animation(() => {
-      layer.getChildren().forEach((enemy) => {
-        if (enemy !== player && enemy !== scoreText && isColliding(bullet, enemy)) {
-          // If collision, destroy both bullet and enemy
-          bullet.destroy();
-          enemy.destroy();
-          
-          // Increase the score
-          score++;
-          scoreText.text(`Score: ${score}`);
-        }
-      });
-    }, layer);
-    anim.start();
-  });
 
   layer.draw();
 </script>

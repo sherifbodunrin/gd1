@@ -293,7 +293,34 @@
   }
 
   // Make the boss shoot bullets every 2 seconds
-  setInterval(bossShoot, 2000);
+  let bossShootingInterval = setInterval(bossShoot, 2000);
+
+  // Clear previous shooting interval and set a new one when a new boss spawns
+  function clearShootingInterval() {
+    clearInterval(bossShootingInterval);
+    bossShootingInterval = setInterval(bossShoot, 2000);
+  }
+
+  // Update the level and shooting interval
+  function updateLevel() {
+    level++;
+    levelText.text(`Level ${level}`); // Update the level text
+    clearShootingInterval(); // Clear and reset shooting interval for new boss
+    spawnNewBoss(); // Spawn a new boss
+  }
+
+  // Modify the updateBossHp function to call updateLevel
+  function updateBossHp(damage) {
+    bossHp = Math.max(0, bossHp - damage); // Reduce boss HP
+    bossHpBar.width(bossHp); // Update HP bar width
+    if (bossHp === 0) {
+      console.log('Boss defeated!');
+      boss.destroy(); // Remove the old boss
+      bossHpBar.destroy(); // Remove the old boss HP bar
+      updateLevel(); // Call updateLevel to change the level and spawn a new boss
+    }
+    layer.batchDraw();
+  }
 
   // Redraw the layer
   layer.draw();

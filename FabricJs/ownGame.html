@@ -23,14 +23,25 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        // Player represented as a blue circle
-        const player = new Konva.Circle({
-            x: stage.width() / 2,
-            y: stage.height() - 50,
-            radius: 30,
-            fill: 'blue'
-        });
-        layer.add(player);
+        // Load the player sprite image
+        const playerImage = new Image();
+        playerImage.src = 'https://preview.redd.it/yct20hubfk061.png?auto=webp&s=32226b397578b664ed794b64938ce40adf3298fe';
+
+        // Initialize player variable
+        let player;
+
+        // Create the player once the image is loaded
+        playerImage.onload = () => {
+            player = new Konva.Image({
+                x: stage.width() / 2,
+                y: stage.height() - 50,
+                image: playerImage,
+                width: 60,  // Adjust width if necessary
+                height: 60  // Adjust height if necessary
+            });
+            layer.add(player);
+            layer.batchDraw();
+        };
 
         // Initialize level and score
         let level = 1;
@@ -84,8 +95,8 @@
         // Player HP Bar (below the player)
         let playerHp = 100;
         const playerHpBar = new Konva.Rect({
-            x: player.x() - 30,
-            y: player.y() + 40, // Position below the player
+            x: player ? player.x() - 30 : 0, // Use player position when available
+            y: player ? player.y() + 40 : 0, // Use player position when available
             width: playerHp, // Player HP starts at 100
             height: 10,
             fill: 'green'
@@ -280,6 +291,7 @@
         // Animation loop
         function animate() {
             movePlayer();
+            layer.batchDraw(); // Ensure the layer is redrawn every frame
             requestAnimationFrame(animate);
         }
 

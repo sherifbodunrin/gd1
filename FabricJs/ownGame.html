@@ -22,6 +22,12 @@
   let level = 1;
   let score = 0;
 
+  // Initialize power-up variables
+  let damagePowerUpActive = false;
+  let healthPowerUpActive = false;
+  let damagePowerUpTimer;
+  let healthPowerUpTimer;
+
   // Function to create a boss with a different color and shooting pattern
   let bossHp;
   let boss;
@@ -89,6 +95,9 @@
       level++; // Increase the level
       levelText.text(`Level ${level}`); // Update the level text
       spawnNewBoss(); // Spawn a new boss
+      if (level % 3 === 0) { // Spawn power-ups every 3 levels
+        spawnPowerUps();
+      }
     }
     layer.batchDraw();
   }
@@ -125,6 +134,41 @@
     layer.batchDraw();
   }
 
+  // Function to spawn power-ups
+  function spawnPowerUps() {
+    const powerUpColors = ['gold', 'pink'];
+    const powerUpType = Math.random() < 0.5 ? 'damage' : 'health'; // Randomly choose type
+    const randomColor = powerUpColors[Math.floor(Math.random() * powerUpColors.length)];
+
+    const powerUp = new Konva.Circle({
+      x: Math.random() * stage.width(),
+      y: Math.random() * (stage.height() - 100) + 100, // Spawn above the boss
+      radius: 15,
+      fill: randomColor,
+      powerUpType // Store type in the power-up
+    });
+    layer.add(powerUp);
+
+    // Power-up collection logic
+    powerUp.on('mouseover', () => {
+      if (powerUp.powerUpType === 'damage' && !damagePowerUpActive) {
+        damagePowerUpActive = true; // Activate damage power-up
+        console.log('Damage power-up activated!');
+        damagePowerUpTimer = setTimeout(() => {
+          damagePowerUpActive = false; // Deactivate after 10 seconds
+          console.log('Damage power-up expired!');
+        }, 10000); // 10 seconds duration
+      } else if (powerUp.powerUpType === 'health' && playerHp < 100) {
+        const healthRestore = 30; // Restore 30 HP
+        playerHp = Math.min(100, playerHp + healthRestore); // Cap HP at 100
+        playerHpBar.width(playerHp); // Update HP bar width
+        console.log('Health power-up collected! HP restored by ' + healthRestore);
+      }
+      powerUp.destroy(); // Remove the power-up after collection
+      layer.batchDraw(); // Redraw the layer
+    });
+  }
+
   // Bullet shooting function (Player)
   function shootBullet() {
     const bullet = new Konva.Circle({
@@ -145,7 +189,8 @@
           bullet.y() >= boss.y() &&
           bullet.x() >= boss.x() + 10 && // Adjusted hitbox for collision
           bullet.x() <= boss.x() + boss.width() - 10) { // Adjusted hitbox for collision
-        updateBossHp(2); // Deal 2 damage to the boss
+        const damage = damagePowerUpActive ? 4 : 2; // Double damage if power-up active
+        updateBossHp(damage); // Deal damage to the boss
         bullet.hasDamagedBoss = true; // Set the flag to true to avoid further damage
         bullet.destroy(); // Destroy the bullet upon collision
       }

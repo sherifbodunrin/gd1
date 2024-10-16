@@ -25,8 +25,7 @@
   // Initialize power-up variables
   let damagePowerUpActive = false;
   let healthPowerUpActive = false;
-  let damagePowerUpTimer;
-  let healthPowerUpTimer;
+  let powerUpText;
 
   // Function to create a boss with a different color and shooting pattern
   let bossHp;
@@ -149,24 +148,72 @@
     });
     layer.add(powerUp);
 
+    // Power-up despawn logic
+    setTimeout(() => {
+      if (powerUp) {
+        powerUp.destroy(); // Remove power-up if not collected
+        console.log('Power-up despawned!');
+        if (powerUpText) {
+          powerUpText.destroy(); // Remove power-up text if it was displayed
+          powerUpText = null;
+        }
+        layer.batchDraw(); // Redraw the layer
+      }
+    }, 5000); // 5 seconds despawn time
+
     // Power-up collection logic
     powerUp.on('mouseover', () => {
       if (powerUp.powerUpType === 'damage' && !damagePowerUpActive) {
         damagePowerUpActive = true; // Activate damage power-up
+        powerUpText = new Konva.Text({
+          x: stage.width() / 2 - 100,
+          y: 30,
+          text: 'Damage Power-Up Active!',
+          fontSize: 24,
+          fill: 'black'
+        });
+        layer.add(powerUpText);
         console.log('Damage power-up activated!');
-        damagePowerUpTimer = setTimeout(() => {
-          damagePowerUpActive = false; // Deactivate after 10 seconds
+
+        // Set timer for power-up expiration
+        setTimeout(() => {
+          damagePowerUpActive = false; // Deactivate after 30 seconds
+          if (powerUpText) {
+            powerUpText.destroy(); // Remove text on expiration
+            powerUpText = null;
+          }
           console.log('Damage power-up expired!');
-        }, 10000); // 10 seconds duration
+        }, 30000); // 30 seconds duration
       } else if (powerUp.powerUpType === 'health' && playerHp < 100) {
         const healthRestore = 30; // Restore 30 HP
         playerHp = Math.min(100, playerHp + healthRestore); // Cap HP at 100
         playerHpBar.width(playerHp); // Update HP bar width
+        powerUpText = new Konva.Text({
+          x: stage.width() / 2 - 100,
+          y: 30,
+          text: 'Health Power-Up Collected!',
+          fontSize: 24,
+          fill: 'black'
+        });
+        layer.add(powerUpText);
         console.log('Health power-up collected! HP restored by ' + healthRestore);
       }
       powerUp.destroy(); // Remove the power-up after collection
       layer.batchDraw(); // Redraw the layer
     });
+
+    // Set a timeout to remove the power-up if it is not collected within 30 seconds
+    setTimeout(() => {
+      if (powerUp) {
+        powerUp.destroy(); // Remove the power-up if it's not collected
+        console.log('Power-up expired without collection!');
+        if (powerUpText) {
+          powerUpText.destroy(); // Remove the displayed text if it exists
+          powerUpText = null;
+        }
+        layer.batchDraw(); // Redraw the layer
+      }
+    }, 30000); // 30 seconds for power-up to exist
   }
 
   // Bullet shooting function (Player)
@@ -190,144 +237,56 @@
           bullet.x() >= boss.x() + 10 && // Adjusted hitbox for collision
           bullet.x() <= boss.x() + boss.width() - 10) { // Adjusted hitbox for collision
         const damage = damagePowerUpActive ? 4 : 2; // Double damage if power-up active
-        updateBossHp(damage); // Deal damage to the boss
-        bullet.hasDamagedBoss = true; // Set the flag to true to avoid further damage
-        bullet.destroy(); // Destroy the bullet upon collision
+        updateBossHp(damage); // Deal damage to boss
+        bullet.hasDamagedBoss = true; // Mark bullet as having hit the boss
+        console.log('Bullet hit the boss! Damage dealt: ' + damage);
       }
 
-      if (bullet.y() < 0) {
-        bullet.destroy(); // Remove bullet if it leaves the screen
+      // Remove bullet if it goes off-screen or hits the boss
+      if (bullet.y() < 0 || bullet.hasDamagedBoss) {
+        anim.stop(); // Stop animation
+        bullet.destroy(); // Remove the bullet
       }
     }, layer);
-    anim.start();
+    anim.start(); // Start the bullet animation
   }
 
-  // Smoother arrow key movement with disabling default behavior
-  const keysPressed = {};
-
-  window.addEventListener('keydown', (e) => {
-    keysPressed[e.key] = true;
-
-    // Prevent the default scrolling behavior for arrow keys and space
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-      e.preventDefault();
-    }
-
-    // Event listener for space bar to shoot bullets
-    if (e.key === ' ') {
+  // Handle key presses
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ') { // Spacebar to shoot
       shootBullet();
     }
   });
 
-  window.addEventListener('keyup', (e) => {
-    keysPressed[e.key] = false;
-  });
-
-  function movePlayer() {
-    if (keysPressed['ArrowLeft']) {
-      player.x(player.x() - 5); // Move left
-      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
-    }
-    if (keysPressed['ArrowRight']) {
-      player.x(player.x() + 5); // Move right
-      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
-    }
-    if (keysPressed['ArrowUp']) {
-      player.y(player.y() - 5); // Move up
-      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
-    }
-    if (keysPressed['ArrowDown']) {
-      player.y(player.y() + 5); // Move down
-      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
-    }
-
-    // Boundaries to prevent the player from going off-screen
-    if (player.x() < 0) player.x(0); // Prevent going off screen (left)
-    if (player.x() > stage.width()) player.x(stage.width()); // Prevent going off screen (right)
-    if (player.y() < 0) player.y(0); // Prevent going off screen (top)
-    if (player.y() > stage.height()) player.y(stage.height()); // Prevent going off screen (bottom)
-
-    layer.batchDraw(); // Redraw the layer to update player position
-  }
-
-  // Call movePlayer function every 16ms (60 frames per second)
-  setInterval(movePlayer, 16); // 60 FPS
-
-  // Boss bullet patterns and damage to player
-  function shootStraightBullets() {
-    for (let i = 0; i < 5 + level; i++) { // Increase bullet count with level
-      const bullet = new Konva.Circle({
-        x: boss.x() + 20 * i,
-        y: boss.y() + boss.height(),
-        radius: 4, // Smaller radius for the boss's bullets
-        fill: 'orange' // Changed to a more visible color
-      });
-      layer.add(bullet);
-      bullet.hasDamagedPlayer = false; // Add a property to track collision
-
-      // Bullet movement animation (straight down)
-      const anim = new Konva.Animation(() => {
-        bullet.y(bullet.y() + 5 + level); // Increase speed with level
-
-        // Check for collision with the player
-        if (!bullet.hasDamagedPlayer && bullet.y() >= player.y() - player.radius() &&
-            bullet.x() >= player.x() + 10 && // Adjusted hitbox for collision
-            bullet.x() <= player.x() + player.radius() - 10) { // Adjusted hitbox for collision
-          updatePlayerHp(1); // Deal 1 damage to the player
-          bullet.hasDamagedPlayer = true; // Set the flag to true to avoid further damage
-          bullet.destroy(); // Destroy the bullet upon collision
-        }
-
-        if (bullet.y() > stage.height()) {
-          bullet.destroy(); // Remove bullet if it leaves the screen
-        }
-      }, layer);
-      anim.start();
-    }
-  }
-
-  function shootCircularBullets() {
-    const numBullets = 12 + level; // Increase bullet count with level
-    const angleStep = (2 * Math.PI) / numBullets;
-
-    for (let i = 0; i < numBullets; i++) {
-      const angle = i * angleStep;
-      const bullet = new Konva.Circle({
-        x: boss.x() + boss.width() / 2,
-        y: boss.y() + boss.height() / 2,
-        radius: 4, // Smaller radius for circular bullets
-        fill: 'orange' // Changed to a more visible color
-      });
-      layer.add(bullet);
-      bullet.hasDamagedPlayer = false; // Add a property to track collision
-
-      // Bullet movement animation (circular pattern)
-      const anim = new Konva.Animation(() => {
-        const speed = 2 + level; // Increase speed with level
-        bullet.x(bullet.x() + Math.cos(angle) * speed);
-        bullet.y(bullet.y() + Math.sin(angle) * speed);
-
-        // Check for collision with the player
-        if (!bullet.hasDamagedPlayer && bullet.y() >= player.y() - player.radius() &&
-            bullet.x() >= player.x() + 10 && // Adjusted hitbox for collision
-            bullet.x() <= player.x() + player.radius() - 10) { // Adjusted hitbox for collision
-          updatePlayerHp(1); // Deal 1 damage to the player
-          bullet.hasDamagedPlayer = true; // Set the flag to true to avoid further damage
-          bullet.destroy(); // Destroy the bullet upon collision
-        }
-
-        if (bullet.y() > stage.height()) {
-          bullet.destroy(); // Remove bullet if it leaves the screen
-        }
-      }, layer);
-      anim.start();
-    }
-  }
-
-  // Set an interval for the boss to shoot bullets
+  // Boss shooting logic
   let bossShootingInterval = setInterval(() => {
-    shootStraightBullets();
-    shootCircularBullets();
-  }, 2000); // Shoot every 2 seconds
+    const bullet = new Konva.Circle({
+      x: boss.x() + boss.width() / 2,
+      y: boss.y() + boss.height(),
+      radius: 5,
+      fill: 'red'
+    });
+    layer.add(bullet);
 
+    // Boss bullet movement animation
+    const anim = new Konva.Animation(() => {
+      bullet.y(bullet.y() + 5); // Move the bullet downwards
+
+      // Check for collision with the player
+      if (bullet.y() >= player.y() - player.radius) { // Check for collision with player
+        updatePlayerHp(10); // Deal damage to player
+        bullet.destroy(); // Remove bullet after hitting player
+        anim.stop(); // Stop animation
+      }
+
+      // Remove bullet if it goes off-screen
+      if (bullet.y() > stage.height()) {
+        anim.stop(); // Stop animation
+        bullet.destroy(); // Remove bullet
+      }
+    }, layer);
+    anim.start(); // Start the bullet animation
+  }, 1000); // Boss shoots every second
+
+  layer.draw(); // Initial draw
 </script>

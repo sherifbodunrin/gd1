@@ -119,36 +119,20 @@
         }
 
         // Function to update Player HP Bar
-        function updatePlayerHp(damage) {
-            playerHp = Math.max(0, playerHp - damage); // Reduce player HP
-            playerHpBar.width(playerHp); // Update HP bar width
-            if (playerHp === 0) {
-                console.log('Player defeated! Game Over! Your score: ' + score);
-                // Display game over message
-                const gameOverOverlay = new Konva.Rect({
-                    x: 0,
-                    y: 0,
-                    width: stage.width(),
-                    height: stage.height(),
-                    fill: 'black',
-                    opacity: 0.8
-                });
-                layer.add(gameOverOverlay);
+        // Function to update Player HP Bar
+function updatePlayerHp(damage) {
+    playerHp = Math.max(0, playerHp - damage); // Reduce player HP
+    playerHpBar.width(playerHp); // Update HP bar width
+    if (playerHp === 0) {
+        console.log('Player defeated! Game Over! Your score: ' + score);
+        // Instead of displaying game over message, crash the program
+        throw new Error("Game Over! Your score: " + score);
+        // Alternatively, you could refresh the page with:
+        // window.location.reload();
+    }
+    layer.batchDraw();
+}
 
-                const highestLevelText = new Konva.Text({
-                    x: stage.width() / 2 - 150,
-                    y: stage.height() / 2 - 50,
-                    text: 'Game Over! Your highest level: ' + level,
-                    fontSize: 36,
-                    fill: 'white' // Set text color to white for visibility on black background
-                });
-                layer.add(highestLevelText);
-
-                layer.batchDraw();
-                clearInterval(bossShootingInterval); // Stop boss shooting
-            }
-            layer.batchDraw();
-        }
 
         // Bullet shooting function (Player)
         function shootBullet() {

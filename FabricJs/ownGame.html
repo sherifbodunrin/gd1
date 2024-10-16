@@ -96,34 +96,28 @@
         let isGameOver = false;
 
         // Function to update Boss HP Bar
-       
+        function updateBossHp(damage) {
+            if (isGameOver) return; // Stop if game is over
+            bossHp = Math.max(0, bossHp - damage); // Reduce boss HP
+            bossHpBar.width(bossHp); // Update HP bar width
+            if (bossHp === 0) {
+                console.log('Boss defeated!');
+                score += level * 10; // Calculate score based on level
+                boss.destroy(); // Remove the old boss
+                bossHpBar.destroy(); // Remove the old boss HP bar
+                level++; // Increase the level
+                levelText.text(`Level ${level}`); // Update the level text
 
-// Function to update Boss HP Bar
-function updateBossHp(damage) {
-    if (isGameOver) return; // Stop if game is over
-    bossHp = Math.max(0, bossHp - damage); // Reduce boss HP
-    bossHpBar.width(bossHp); // Update HP bar width
-    if (bossHp === 0) {
-        console.log('Boss defeated!');
-        score += level * 10; // Calculate score based on level
-        boss.destroy(); // Remove the old boss
-        bossHpBar.destroy(); // Remove the old boss HP bar
-        level++; // Increase the level
-        levelText.text(`Level ${level}`); // Update the level text
+                // Heal the player when the level changes
+                playerHp = Math.min(100, playerHp + 20); // Heal player by 20 (max HP = 100)
+                playerHpBar.width(playerHp); // Update the HP bar
 
-        // Heal the player when the level changes
-        playerHp = Math.min(100, playerHp + 20); // Heal player by 20 (max HP = 100)
-        playerHpBar.width(playerHp); // Update the HP bar
-
-        // Slightly increase player bullet damage each level (optional)
-        // playerBulletDamage += 0; // Keep damage the same for all levels
-
-        spawnNewBoss(); // Spawn a new boss
-        clearInterval(bossShootingInterval); // Clear old shooting interval
-        setBossShootingPattern(); // Set the shooting pattern for the new level
-    }
-    layer.batchDraw();
-}
+                spawnNewBoss(); // Spawn a new boss
+                clearInterval(bossShootingInterval); // Clear old shooting interval
+                setBossShootingPattern(); // Set the shooting pattern for the new level
+            }
+            layer.batchDraw();
+        }
 
         // Function to update Player HP Bar
         function updatePlayerHp(damage) {
@@ -255,18 +249,23 @@ function updateBossHp(damage) {
                     fill: 'red' // Changed to red for boss bullets
                 });
                 layer.add(bossBullet);
+                bossBullet.hasDamagedPlayer = false; // Track if this bullet has damaged the player
 
                 // Boss bullet movement animation
                 const anim = new Konva.Animation(() => {
                     bossBullet.y(bossBullet.y() + 5); // Move down
+
                     // Check for collision with the player
-                    if (bossBullet.y() >= player.y() - 30 &&
+                    if (!bossBullet.hasDamagedPlayer && 
+                        bossBullet.y() >= player.y() - 30 &&
                         bossBullet.y() <= player.y() + 30 &&
                         bossBullet.x() >= player.x() - 30 && // Adjusted hitbox for collision
                         bossBullet.x() <= player.x() + 30) { // Adjusted hitbox for collision
                         updatePlayerHp(10); // Deal damage to the player
+                        bossBullet.hasDamagedPlayer = true; // Set the flag to true to avoid further damage
                         bossBullet.destroy(); // Destroy the bullet upon collision
                     }
+
                     if (bossBullet.y() > stage.height()) {
                         bossBullet.destroy(); // Remove bullet if it leaves the screen
                     }
@@ -275,15 +274,16 @@ function updateBossHp(damage) {
             }, 1000); // Shoot every second
         }
 
-        setBossShootingPattern(); // Start boss shooting pattern
+        // Start boss shooting pattern
+        setBossShootingPattern();
 
-        // Main game loop
-        function gameLoop() {
+        // Animation loop
+        function animate() {
             movePlayer();
-            requestAnimationFrame(gameLoop); // Loop the game
+            requestAnimationFrame(animate);
         }
 
-        gameLoop(); // Start the game loop
+        animate(); // Start the animation loop
     </script>
 </body>
 </html>

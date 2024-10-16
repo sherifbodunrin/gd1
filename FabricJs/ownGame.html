@@ -29,20 +29,22 @@
   layer.add(boss);
 
   // Boss HP Bar (above the boss)
+  let bossHp = 100;
   const bossHpBar = new Konva.Rect({
     x: boss.x(),
     y: boss.y() - 20, // Position above the boss
-    width: 100,
+    width: bossHp, // Boss HP starts at 100
     height: 10,
     fill: 'green'
   });
   layer.add(bossHpBar);
 
   // Player HP Bar (below the player)
+  let playerHp = 100;
   const playerHpBar = new Konva.Rect({
     x: player.x() - 30,
     y: player.y() + 40, // Position below the player
-    width: 100,
+    width: playerHp, // Player HP starts at 100
     height: 10,
     fill: 'green'
   });
@@ -50,9 +52,9 @@
 
   // Function to update Boss HP Bar (based on some arbitrary damage)
   function updateBossHp(damage) {
-    const newWidth = Math.max(0, bossHpBar.width() - damage); // Reduce HP bar width
-    bossHpBar.width(newWidth);
-    if (newWidth === 0) {
+    bossHp = Math.max(0, bossHp - damage); // Reduce boss HP
+    bossHpBar.width(bossHp); // Update HP bar width
+    if (bossHp === 0) {
       console.log('Boss defeated!');
     }
     layer.batchDraw();
@@ -60,15 +62,15 @@
 
   // Function to update Player HP Bar (based on some arbitrary damage)
   function updatePlayerHp(damage) {
-    const newWidth = Math.max(0, playerHpBar.width() - damage); // Reduce HP bar width
-    playerHpBar.width(newWidth);
-    if (newWidth === 0) {
+    playerHp = Math.max(0, playerHp - damage); // Reduce player HP
+    playerHpBar.width(playerHp); // Update HP bar width
+    if (playerHp === 0) {
       console.log('Player defeated!');
     }
     layer.batchDraw();
   }
 
-  // Bullet shooting function
+  // Bullet shooting function (Player)
   function shootBullet() {
     const bullet = new Konva.Circle({
       x: player.x(),
@@ -81,8 +83,18 @@
     // Bullet movement animation
     const anim = new Konva.Animation(() => {
       bullet.y(bullet.y() - 10);
+
+      // Check for collision with the boss
+      if (bullet.y() <= boss.y() + boss.height() &&
+          bullet.y() >= boss.y() &&
+          bullet.x() >= boss.x() &&
+          bullet.x() <= boss.x() + boss.width()) {
+        updateBossHp(10); // Deal 10 damage to the boss
+        bullet.destroy(); // Destroy the bullet upon collision
+      }
+
       if (bullet.y() < 0) {
-        bullet.destroy();
+        bullet.destroy(); // Remove bullet if it leaves the screen
       }
     }, layer);
     anim.start();
@@ -139,7 +151,7 @@
   // Call movePlayer function every 16ms (60 frames per second)
   setInterval(movePlayer, 16); // 60 FPS
 
-  // Boss bullet patterns
+  // Boss bullet patterns and damage to player
   function shootStraightBullets() {
     for (let i = 0; i < 5; i++) {
       const bullet = new Konva.Circle({
@@ -153,8 +165,17 @@
       // Bullet movement animation (straight down)
       const anim = new Konva.Animation(() => {
         bullet.y(bullet.y() + 5);
+
+        // Check for collision with the player
+        if (bullet.y() >= player.y() - player.radius() &&
+            bullet.x() >= player.x() - player.radius() &&
+            bullet.x() <= player.x() + player.radius()) {
+          updatePlayerHp(10); // Deal 10 damage to the player
+          bullet.destroy(); // Destroy the bullet upon collision
+        }
+
         if (bullet.y() > stage.height()) {
-          bullet.destroy();
+          bullet.destroy(); // Remove bullet if it leaves the screen
         }
       }, layer);
       anim.start();
@@ -179,6 +200,15 @@
       const anim = new Konva.Animation(() => {
         bullet.x(bullet.x() + Math.cos(angle) * 3);
         bullet.y(bullet.y() + Math.sin(angle) * 3);
+
+        // Check for collision with the player
+        if (bullet.y() >= player.y() - player.radius() &&
+            bullet.x() >= player.x() - player.radius() &&
+            bullet.x() <= player.x() + player.radius()) {
+          updatePlayerHp(10); // Deal 10 damage to the player
+          bullet.destroy(); // Destroy the bullet upon collision
+        }
+
         if (bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
           bullet.destroy();
         }
@@ -201,6 +231,15 @@
       const anim = new Konva.Animation(() => {
         bullet.y(bullet.y() + 5);
         bullet.x(bullet.x() + Math.sin(bullet.y() / 20) * 10); // Wave motion
+
+        // Check for collision with the player
+        if (bullet.y() >= player.y() - player.radius() &&
+            bullet.x() >= player.x() - player.radius() &&
+            bullet.x() <= player.x() + player.radius()) {
+          updatePlayerHp(10); // Deal 10 damage to the player
+          bullet.destroy(); // Destroy the bullet upon collision
+        }
+
         if (bullet.y() > stage.height()) {
           bullet.destroy();
         }

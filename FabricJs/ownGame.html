@@ -18,12 +18,11 @@
   });
   layer.add(player);
 
-  // Initialize level and score
+  // Initialize level, score, and highest level
   let level = 1;
   let score = 0;
-
-  // Highest level variable
-  let highestLevel = 1;
+  let highestLevel = 1; // Track highest level
+  let isPaused = false; // Track if game is paused
 
   // Function to create a boss with a different color and shooting pattern
   let bossHp;
@@ -56,29 +55,71 @@
     layer.batchDraw();
   }
 
-  // Spawn the first boss
-  spawnNewBoss();
+  // Function to display the intro screen
+  function showIntro() {
+    const introText = new Konva.Text({
+      x: stage.width() / 2 - 150,
+      y: stage.height() / 2 - 50,
+      text: 'Welcome to the Game!\nPress Enter to Start',
+      fontSize: 36,
+      fill: 'white',
+      align: 'center'
+    });
+    layer.add(introText);
+    layer.batchDraw();
+
+    // Listen for Enter key to start the game
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        layer.removeChildren(); // Clear the intro text
+        startGame(); // Start the game
+      }
+    });
+  }
+
+  // Function to start the game
+  function startGame() {
+    level = 1; // Reset level
+    score = 0; // Reset score
+    playerHp = 100; // Reset player HP
+    showPlayerHpBar();
+    spawnNewBoss();
+    updateLevelText();
+    startBossShooting();
+    setInterval(movePlayer, 16); // 60 FPS
+  }
 
   // Level text
-  const levelText = new Konva.Text({
-    x: stage.width() / 2 - 50,
-    y: 10,
-    text: Level ${level},
-    fontSize: 24,
-    fill: 'black' // Set text to black
-  });
-  layer.add(levelText);
+  let levelText;
+  function updateLevelText() {
+    if (!levelText) {
+      levelText = new Konva.Text({
+        x: stage.width() / 2 - 50,
+        y: 10,
+        text: `Level ${level}`,
+        fontSize: 24,
+        fill: 'black' // Set text to black
+      });
+      layer.add(levelText);
+    } else {
+      levelText.text(`Level ${level}`); // Update the level text
+    }
+    layer.batchDraw();
+  }
 
   // Player HP Bar (below the player)
   let playerHp = 100;
-  const playerHpBar = new Konva.Rect({
-    x: player.x() - 30,
-    y: player.y() + 40, // Position below the player
-    width: playerHp, // Player HP starts at 100
-    height: 10,
-    fill: 'green'
-  });
-  layer.add(playerHpBar);
+  let playerHpBar;
+  function showPlayerHpBar() {
+    playerHpBar = new Konva.Rect({
+      x: player.x() - 30,
+      y: player.y() + 40, // Position below the player
+      width: playerHp, // Player HP starts at 100
+      height: 10,
+      fill: 'green'
+    });
+    layer.add(playerHpBar);
+  }
 
   // Function to update Boss HP Bar
   function updateBossHp(damage) {
@@ -89,8 +130,9 @@
       score += level * 10; // Calculate score based on level
       boss.destroy(); // Remove the old boss
       bossHpBar.destroy(); // Remove the old boss HP bar
+      highestLevel = Math.max(highestLevel, level); // Update highest level
       level++; // Increase the level
-      levelText.text(Level ${level}); // Update the level text
+      updateLevelText(); // Update level text
       spawnNewBoss(); // Spawn a new boss
     }
     layer.batchDraw();
@@ -101,26 +143,39 @@
     playerHp = Math.max(0, playerHp - damage); // Reduce player HP
     playerHpBar.width(playerHp); // Update HP bar width
     if (playerHp === 0) {
-      console.log('Player defeated! Game Over! Your score: ' + score);
-      
-      // Update highest level if current level is higher
-      highestLevel = Math.max(highestLevel, level);
-      
-      // Display game over message with highest level
-      const gameOverText = new Konva.Text({
-        x: stage.width() / 2 - 100,
-        y: stage.height() / 2 - 50,
-        text: Game Over! Your score: ${score} \n Highest level was: ${highestLevel},
-        fontSize: 36,
-        fill: 'red'
-      });
-      layer.add(gameOverText);
-      layer.batchDraw();
-      
-      clearInterval(bossShootingInterval); // Stop boss shooting
-      return; // End the function to prevent further updates
+      endGame();
     }
     layer.batchDraw();
+  }
+
+  function endGame() {
+    console.log('Player defeated! Game Over! Your score: ' + score);
+    // Display game over message and highest level
+    const gameOverText = new Konva.Text({
+      x: stage.width() / 2 - 150,
+      y: stage.height() / 2 - 50,
+      text: 'Game Over!\nYour score: ' + score + '\nHighest Level: ' + highestLevel,
+      fontSize: 36,
+      fill: 'red',
+      align: 'center'
+    });
+    layer.add(gameOverText);
+    layer.batchDraw();
+
+    // Turn the screen black
+    const blackOverlay = new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: stage.width(),
+      height: stage.height(),
+      fill: 'black',
+      opacity: 0.7
+    });
+    layer.add(blackOverlay);
+    layer.batchDraw();
+
+    clearInterval(bossShootingInterval); // Stop boss shooting
+    window.removeEventListener('keydown', handleKeyDown); // Remove key events
   }
 
   // Bullet shooting function (Player)
@@ -168,6 +223,11 @@
     if (e.key === ' ') {
       shootBullet();
     }
+
+    // Event listener for pause functionality
+    if (e.key === 'p') {
+      togglePause(); // Call the pause function
+    }
   });
 
   window.addEventListener('keyup', (e) => {
@@ -175,34 +235,58 @@
   });
 
   function movePlayer() {
-    if (keysPressed['ArrowLeft']) {
-      player.x(player.x() - 5); // Move left
-      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
-    }
-    if (keysPressed['ArrowRight']) {
-      player.x(player.x() + 5); // Move right
-      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
-    }
-    if (keysPressed['ArrowUp']) {
-      player.y(player.y() - 5); // Move up
-      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
-    }
-    if (keysPressed['ArrowDown']) {
-      player.y(player.y() + 5); // Move down
-      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
-    }
+    if (!isPaused) { // Only move if the game is not paused
+      if (keysPressed['ArrowLeft']) {
+        player.x(player.x() - 5); // Move left
+        playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
+      }
+      if (keysPressed['ArrowRight']) {
+        player.x(player.x() + 5); // Move right
+        playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
+      }
+      if (keysPressed['ArrowUp']) {
+        player.y(player.y() - 5); // Move up
+        playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
+      }
+      if (keysPressed['ArrowDown']) {
+        player.y(player.y() + 5); // Move down
+        playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
+      }
 
-    // Boundaries to prevent the player from going off-screen
-    if (player.x() < 0) player.x(0); // Prevent going off screen (left)
-    if (player.x() > stage.width()) player.x(stage.width()); // Prevent going off screen (right)
-    if (player.y() < 0) player.y(0); // Prevent going off screen (top)
-    if (player.y() > stage.height()) player.y(stage.height()); // Prevent going off screen (bottom)
+      // Boundaries to prevent the player from going off-screen
+      if (player.x() < 0) player.x(0); // Prevent going off screen (left)
+      if (player.x() > stage.width()) player.x(stage.width()); // Prevent going off screen (right)
+      if (player.y() < 0) player.y(0); // Prevent going off screen (top)
+      if (player.y() > stage.height()) player.y(stage.height()); // Prevent going off screen (bottom)
 
-    layer.batchDraw(); // Redraw the layer to update player position
+      layer.batchDraw(); // Redraw the layer to update player position
+    }
   }
 
-  // Call movePlayer function every 16ms (60 frames per second)
-  setInterval(movePlayer, 16); // 60 FPS
+  // Function to pause and unpause the game
+  function togglePause() {
+    isPaused = !isPaused; // Toggle the pause state
+    if (isPaused) {
+      console.log('Game Paused');
+      // Optionally, you can display a pause overlay
+      const pauseOverlay = new Konva.Rect({
+        x: 0,
+        y: 0,
+        width: stage.width(),
+        height: stage.height(),
+        fill: 'grey',
+        opacity: 0.5
+      });
+      layer.add(pauseOverlay);
+      layer.batchDraw();
+    } else {
+      console.log('Game Resumed');
+      layer.find('Rect').forEach((shape) => {
+        if (shape.fill() === 'grey') shape.destroy(); // Remove pause overlay
+      });
+      layer.batchDraw();
+    }
+  }
 
   // Boss bullet patterns and damage to player
   function shootStraightBullets() {
@@ -272,11 +356,17 @@
   }
 
   // Start shooting bullets from the boss
-  let bossShootingInterval = setInterval(() => {
-    if (Math.random() < 0.5) {
-      shootStraightBullets();
-    } else {
-      shootCircularBullets();
-    }
-  }, 2000); // Boss shoots every 2 seconds
-</script> dont change the previous code, when you lose the program has to end and u cant do anything like shoot. And the message should display like a error on the screen
+  let bossShootingInterval;
+  function startBossShooting() {
+    bossShootingInterval = setInterval(() => {
+      if (Math.random() < 0.5) {
+        shootStraightBullets();
+      } else {
+        shootCircularBullets();
+      }
+    }, 2000); // Boss shoots every 2 seconds
+  }
+
+  // Show intro screen
+  showIntro();
+</script>

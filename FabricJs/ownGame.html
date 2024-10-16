@@ -22,6 +22,9 @@
   let level = 1;
   let score = 0;
 
+  // Highest level variable
+  let highestLevel = 1;
+
   // Function to create a boss with a different color and shooting pattern
   let bossHp;
   let boss;
@@ -99,17 +102,23 @@
     playerHpBar.width(playerHp); // Update HP bar width
     if (playerHp === 0) {
       console.log('Player defeated! Game Over! Your score: ' + score);
-      // Display game over message
+      
+      // Update highest level if current level is higher
+      highestLevel = Math.max(highestLevel, level);
+      
+      // Display game over message with highest level
       const gameOverText = new Konva.Text({
         x: stage.width() / 2 - 100,
         y: stage.height() / 2 - 50,
-        text: 'Game Over! Your score: ' + score,
+        text: `Game Over! Your score: ${score} \n Highest level was: ${highestLevel}`,
         fontSize: 36,
         fill: 'red'
       });
       layer.add(gameOverText);
       layer.batchDraw();
+      
       clearInterval(bossShootingInterval); // Stop boss shooting
+      return; // End the function to prevent further updates
     }
     layer.batchDraw();
   }

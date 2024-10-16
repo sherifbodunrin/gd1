@@ -326,11 +326,47 @@
             }
         }
 
+        function shootSpreadShot() {
+    const bulletCount = 7; // Number of bullets in the spread
+    const bulletOffset = 15; // Offset between each bullet
+    for (let i = 0; i < bulletCount; i++) {
+        const angleOffset = (i - Math.floor(bulletCount / 2)) * bulletOffset; // Calculate offset for spread
+        const bullet = new Konva.Circle({
+            x: boss.x() + boss.width() / 2,
+            y: boss.y() + boss.height(),
+            radius: 5,
+            fill: 'yellow' // New color for the spread shot bullets
+        });
+        layer.add(bullet);
+        bullet.hasDamagedPlayer = false; // Track if the bullet hits the player
+
+        // Bullet movement animation
+        const anim = new Konva.Animation(() => {
+            bullet.y(bullet.y() + 5); // Move downwards
+            bullet.x(bullet.x() + angleOffset * 0.1); // Add a slight horizontal movement for spread effect
+
+            if (!bullet.hasDamagedPlayer && bullet.y() >= player.y() - 30 &&
+                bullet.y() <= player.y() + 30 &&
+                bullet.x() >= player.x() - 30 &&
+                bullet.x() <= player.x() + 30) {
+                updatePlayerHp(10); // Deal damage to player
+                bullet.hasDamagedPlayer = true; // Mark as damaging
+            }
+
+            if (bullet.y() > stage.height()) {
+                bullet.destroy(); // Remove bullet if it leaves the screen
+            }
+        }, layer);
+        anim.start();
+    }
+}
+        
         // Array of shooting patterns
         const shootingPatterns = [
             shootStraightBullets,
             shootSpreadBullets,
-            shootDiagonalBullets
+            shootDiagonalBullets,
+            shootSpreadShot
         ];
 
         // Function to set the boss shooting pattern based on the level

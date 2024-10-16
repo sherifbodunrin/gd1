@@ -18,15 +18,39 @@
   });
   layer.add(player);
 
-  // Boss represented as a red square
-  const boss = new Konva.Rect({
-    x: stage.width() / 2 - 50,
-    y: 50,
-    width: 100,
-    height: 100,
-    fill: 'red'
-  });
-  layer.add(boss);
+  // Function to create a boss with a different color and shooting pattern
+  let bossHp;
+  let boss;
+  let bossHpBar;
+
+  function spawnNewBoss() {
+    const bossColors = ['red', 'green', 'orange', 'purple', 'cyan'];
+    const randomColor = bossColors[Math.floor(Math.random() * bossColors.length)];
+
+    boss = new Konva.Rect({
+      x: stage.width() / 2 - 50,
+      y: 50,
+      width: 100,
+      height: 100,
+      fill: randomColor
+    });
+    layer.add(boss);
+
+    bossHp = 100;
+    bossHpBar = new Konva.Rect({
+      x: boss.x(),
+      y: boss.y() - 20, // Position above the boss
+      width: bossHp, // Boss HP starts at 100
+      height: 10,
+      fill: 'green'
+    });
+    layer.add(bossHpBar);
+
+    layer.batchDraw();
+  }
+
+  // Spawn the first boss
+  spawnNewBoss();
 
   // Level text
   const levelText = new Konva.Text({
@@ -37,17 +61,6 @@
     fill: 'black' // Set text to black
   });
   layer.add(levelText);
-
-  // Boss HP Bar (above the boss)
-  let bossHp = 100;
-  const bossHpBar = new Konva.Rect({
-    x: boss.x(),
-    y: boss.y() - 20, // Position above the boss
-    width: bossHp, // Boss HP starts at 100
-    height: 10,
-    fill: 'green'
-  });
-  layer.add(bossHpBar);
 
   // Player HP Bar (below the player)
   let playerHp = 100;
@@ -60,50 +73,27 @@
   });
   layer.add(playerHpBar);
 
-  // Function to update Boss HP Bar and show damage number
+  // Function to update Boss HP Bar
   function updateBossHp(damage) {
     bossHp = Math.max(0, bossHp - damage); // Reduce boss HP
     bossHpBar.width(bossHp); // Update HP bar width
-    showDamageNumber(boss.x() + 50, boss.y(), damage, 'red');
     if (bossHp === 0) {
       console.log('Boss defeated!');
+      boss.destroy(); // Remove the old boss
+      bossHpBar.destroy(); // Remove the old boss HP bar
+      spawnNewBoss(); // Spawn a new boss
     }
     layer.batchDraw();
   }
 
-  // Function to update Player HP Bar and show damage number
+  // Function to update Player HP Bar
   function updatePlayerHp(damage) {
     playerHp = Math.max(0, playerHp - damage); // Reduce player HP
     playerHpBar.width(playerHp); // Update HP bar width
-    showDamageNumber(player.x(), player.y() - 50, damage, 'blue');
     if (playerHp === 0) {
       console.log('Player defeated!');
     }
     layer.batchDraw();
-  }
-
-  // Function to show floating damage numbers
-  function showDamageNumber(x, y, damage, color) {
-    const damageText = new Konva.Text({
-      x: x,
-      y: y,
-      text: `-${damage}`,
-      fontSize: 20,
-      fill: color
-    });
-    layer.add(damageText);
-
-    // Animate damage number to float up and fade out
-    const anim = new Konva.Animation((frame) => {
-      damageText.y(damageText.y() - 1); // Move upwards
-      if (frame.time > 500) { // After 0.5 seconds
-        damageText.opacity(damageText.opacity() - 0.05); // Fade out
-      }
-      if (damageText.opacity() <= 0) {
-        damageText.destroy(); // Remove the text when fully faded
-      }
-    }, layer);
-    anim.start();
   }
 
   // Bullet shooting function (Player)

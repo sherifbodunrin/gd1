@@ -43,11 +43,16 @@
     }
   });
 
-  // Smoother arrow key movement
+  // Smoother arrow key movement with disabling default behavior
   const keysPressed = {};
 
   window.addEventListener('keydown', (e) => {
     keysPressed[e.key] = true;
+
+    // Prevent the default scrolling behavior for up/down arrows and prevent other key events from affecting the entire page
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+      e.preventDefault();
+    }
   });
 
   window.addEventListener('keyup', (e) => {
@@ -67,8 +72,8 @@
     if (keysPressed['ArrowDown']) {
       player.y(player.y() + 5); // Move down
     }
-    
-    // Boundaries for the player
+
+    // Boundaries to prevent the player from going off-screen
     if (player.x() < 0) player.x(0); // Prevent going off screen (left)
     if (player.x() > stage.width()) player.x(stage.width()); // Prevent going off screen (right)
     if (player.y() < 0) player.y(0); // Prevent going off screen (top)

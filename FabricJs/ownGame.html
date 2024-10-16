@@ -61,8 +61,18 @@
     if (keysPressed['ArrowRight']) {
       player.x(player.x() + 5); // Move right
     }
+    if (keysPressed['ArrowUp']) {
+      player.y(player.y() - 5); // Move up
+    }
+    if (keysPressed['ArrowDown']) {
+      player.y(player.y() + 5); // Move down
+    }
+    
+    // Boundaries for the player
     if (player.x() < 0) player.x(0); // Prevent going off screen (left)
     if (player.x() > stage.width()) player.x(stage.width()); // Prevent going off screen (right)
+    if (player.y() < 0) player.y(0); // Prevent going off screen (top)
+    if (player.y() > stage.height()) player.y(stage.height()); // Prevent going off screen (bottom)
 
     layer.batchDraw(); // Redraw the layer to update player position
   }

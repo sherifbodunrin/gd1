@@ -18,6 +18,9 @@
   });
   layer.add(player);
 
+  // Initialize level
+  let level = 1;
+
   // Function to create a boss with a different color and shooting pattern
   let bossHp;
   let boss;
@@ -56,7 +59,7 @@
   const levelText = new Konva.Text({
     x: stage.width() / 2 - 50,
     y: 10,
-    text: 'Level 1',
+    text: `Level ${level}`,
     fontSize: 24,
     fill: 'black' // Set text to black
   });
@@ -81,6 +84,8 @@
       console.log('Boss defeated!');
       boss.destroy(); // Remove the old boss
       bossHpBar.destroy(); // Remove the old boss HP bar
+      level++; // Increase the level
+      levelText.text(`Level ${level}`); // Update the level text
       spawnNewBoss(); // Spawn a new boss
     }
     layer.batchDraw();
@@ -179,7 +184,7 @@
 
   // Boss bullet patterns and damage to player
   function shootStraightBullets() {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5 + level; i++) { // Increase bullet count with level
       const bullet = new Konva.Circle({
         x: boss.x() + 20 * i,
         y: boss.y() + boss.height(),
@@ -190,7 +195,7 @@
 
       // Bullet movement animation (straight down)
       const anim = new Konva.Animation(() => {
-        bullet.y(bullet.y() + 5);
+        bullet.y(bullet.y() + 5 + level); // Increase speed with level
 
         // Check for collision with the player
         if (bullet.y() >= player.y() - player.radius() &&
@@ -209,7 +214,7 @@
   }
 
   function shootCircularBullets() {
-    const numBullets = 12;
+    const numBullets = 12 + level; // Increase bullet count with level
     const angleStep = (2 * Math.PI) / numBullets;
 
     for (let i = 0; i < numBullets; i++) {
@@ -244,7 +249,7 @@
   }
 
   function shootWaveBullets() {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 8 + level; i++) { // Increase bullet count with level
       const bullet = new Konva.Circle({
         x: boss.x() + boss.width() / 2 + i * 15,
         y: boss.y() + boss.height(),

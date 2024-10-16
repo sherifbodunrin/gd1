@@ -32,6 +32,7 @@
   let bossHp;
   let boss;
   let bossHpBar;
+  let bossShootingPattern = 'straight'; // Default shooting pattern
 
   function spawnNewBoss() {
     const bossColors = ['red', 'green', 'orange', 'purple', 'cyan'];
@@ -95,6 +96,18 @@
       level++; // Increase the level
       levelText.text(`Level ${level}`); // Update the level text
       spawnNewBoss(); // Spawn a new boss
+
+      // Change shooting pattern every 3 levels
+      if (level % 3 === 0) {
+        if (bossShootingPattern === 'straight') {
+          bossShootingPattern = 'spread';
+        } else if (bossShootingPattern === 'spread') {
+          bossShootingPattern = 'rapid';
+        } else {
+          bossShootingPattern = 'straight';
+        }
+      }
+
       if (level % 3 === 0) { // Spawn power-ups every 3 levels
         spawnPowerUps();
       }
@@ -223,134 +236,65 @@
     keysPressed[e.key] = false;
   });
 
-  function movePlayer() {
-    if (keysPressed['ArrowLeft']) {
-      player.x(player.x() - 5); // Move left
-      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
+  // Boss shooting interval
+  let bossShootingInterval = setInterval(() => {
+    const bulletColors = ['red', 'orange', 'purple', 'cyan'];
+    const bullet = new Konva.Circle({
+      x: boss.x() + 50, // Center bullet horizontally on the boss
+      y: boss.y() + boss.height(),
+      radius: 5,
+      fill: bulletColors[Math.floor(Math.random() * bulletColors.length)]
+    });
+    layer.add(bullet);
+
+    // Shooting pattern logic
+    if (bossShootingPattern === 'straight') {
+      bullet.move({ x: 0, y: 10 }); // Straight down
+    } else if (bossShootingPattern === 'spread') {
+      bullet.move({ x: Math.random() < 0.5 ? -5 : 5, y: 10 }); // Spread effect
+    } else if (bossShootingPattern === 'rapid') {
+      for (let i = 0; i < 5; i++) {
+        const rapidBullet = new Konva.Circle({
+          x: boss.x() + 50,
+          y: boss.y() + boss.height(),
+          radius: 5,
+          fill: bulletColors[Math.floor(Math.random() * bulletColors.length)]
+        });
+        layer.add(rapidBullet);
+        // Move rapid bullets downward
+        const rapidAnim = new Konva.Animation(() => {
+          rapidBullet.y(rapidBullet.y() + 10);
+          if (rapidBullet.y() > stage.height()) {
+            rapidBullet.destroy(); // Remove bullet if it leaves the screen
+          }
+        }, layer);
+        rapidAnim.start();
+      }
     }
-    if (keysPressed['ArrowRight']) {
-      player.x(player.x() + 5); // Move right
-      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
+
+    // Bullet movement animation
+    const anim = new Konva.Animation(() => {
+      bullet.y(bullet.y() + 10);
+      if (bullet.y() > stage.height()) {
+        bullet.destroy(); // Remove bullet if it leaves the screen
+      }
+    }, layer);
+    anim.start();
+
+  }, 1000); // Boss shoots every second
+
+  // Game loop for player movement
+  function gameLoop() {
+    if (keysPressed['ArrowLeft'] && player.x() > 30) {
+      player.x(player.x() - 5);
     }
-    if (keysPressed['ArrowUp']) {
-      player.y(player.y() - 5); // Move up
-      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
+    if (keysPressed['ArrowRight'] && player.x() < stage.width() - 30) {
+      player.x(player.x() + 5);
     }
-    if (keysPressed['ArrowDown']) {
-      player.y(player.y() + 5); // Move down
-      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
-    }
+    playerHpBar.x(player.x() - 30); // Update player HP bar position
+    layer.batchDraw();
+    requestAnimationFrame(gameLoop);
   }
 
-  // Boss shooting logic
-  let bossShootingInterval;
-
-  function startBossShooting() {
-    bossShootingInterval = setInterval(() => {
-      const bullet = new Konva.Circle({
-        x: boss.x() + 50, // Shoot from the center of the boss
-        y: boss.y() + boss.height(), // Start from the bottom of the boss
-        radius: 5,
-        fill: 'red'
-      });
-      layer.add(bullet);
-
-      // Bullet movement animation for boss
-      const bossBulletAnim = new Konva.Animation(() => {
-        bullet.y(bullet.y() + 10); // Move bullet downwards
-
-        // Check for collision with the player
-        if (bullet.y() > player.y() - 30 && bullet.y() < player.y() + 30 &&
-            bullet.x() > player.x() - 30 && bullet.x() < player.x() + 30) {
-          const damage = damagePowerUpActive ? 4 : 2; // Double damage if power-up active
-          updatePlayerHp(damage); // Deal damage to the player
-          bullet.destroy(); // Destroy the bullet upon collision
-        }
-
-        if (bullet.y() > stage.height()) {
-          bullet.destroy(); // Remove bullet if it leaves the screen
-        }
-      }, layer);
-      bossBulletAnim.start();
-    }, 1000); // Boss shoots every second
-  }
-
-  startBossShooting(); // Start boss shooting
-
-  // Game loop
-  const gameLoop = new Konva.Animation(() => {
-    movePlayer();
-  }, layer);
-  gameLoop.start();
-
-  // Pause and restart buttons
-  const pauseButton = document.createElement('button');
-  pauseButton.innerText = 'Pause';
-  pauseButton.style.position = 'absolute';
-  pauseButton.style.top = '10px';
-  pauseButton.style.right = '100px'; // Adjust position
-  document.body.appendChild(pauseButton);
-
-  const restartButton = document.createElement('button');
-  restartButton.innerText = 'Restart';
-  restartButton.style.position = 'absolute';
-  restartButton.style.top = '10px';
-  restartButton.style.right = '10px'; // Adjust position
-  document.body.appendChild(restartButton);
-
-  let gamePaused = false;
-
-  pauseButton.addEventListener('click', () => {
-    gamePaused = !gamePaused; // Toggle pause state
-    pauseButton.innerText = gamePaused ? 'Resume' : 'Pause'; // Change button text
-    if (gamePaused) {
-      gameLoop.stop(); // Stop the game loop
-      clearInterval(bossShootingInterval); // Stop boss shooting
-    } else {
-      gameLoop.start(); // Restart the game loop
-      startBossShooting(); // Restart boss shooting
-    }
-  });
-
-  restartButton.addEventListener('click', () => {
-    // Reset game state
-    player.x(stage.width() / 2);
-    player.y(stage.height() - 50);
-    playerHp = 100;
-    playerHpBar.width(playerHp);
-    level = 1;
-    score = 0;
-    damagePowerUpActive = false;
-    healthPowerUpActive = false;
-
-    // Reset level text
-    levelText.text(`Level ${level}`);
-    
-    // Remove existing boss and HP bar
-    if (boss) {
-      boss.destroy();
-    }
-    if (bossHpBar) {
-      bossHpBar.destroy();
-    }
-
-    // Spawn the first boss again
-    spawnNewBoss();
-
-    // Clear and restart shooting intervals and animations
-    clearInterval(bossShootingInterval);
-    startBossShooting();
-
-    // Clear game over overlays if present
-    layer.find((node) => node.getClassName() === 'Rect' && node.fill() === 'black').destroy();
-    layer.find((node) => node.getClassName() === 'Text' && node.text().includes('Game Over')).destroy();
-
-    layer.batchDraw(); // Redraw the layer
-  });
-
-  // Resize handling
-  window.addEventListener('resize', () => {
-    stage.width(window.innerWidth);
-    stage.height(window.innerHeight);
-  });
+  gameLoop(); // Start the game loop
 </script>

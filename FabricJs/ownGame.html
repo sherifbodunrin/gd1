@@ -18,8 +18,9 @@
   });
   layer.add(player);
 
-  // Initialize level
+  // Initialize level and score
   let level = 1;
+  let score = 0;
 
   // Function to create a boss with a different color and shooting pattern
   let bossHp;
@@ -82,6 +83,7 @@
     bossHpBar.width(bossHp); // Update HP bar width
     if (bossHp === 0) {
       console.log('Boss defeated!');
+      score += level * 10; // Calculate score based on level
       boss.destroy(); // Remove the old boss
       bossHpBar.destroy(); // Remove the old boss HP bar
       level++; // Increase the level
@@ -96,7 +98,18 @@
     playerHp = Math.max(0, playerHp - damage); // Reduce player HP
     playerHpBar.width(playerHp); // Update HP bar width
     if (playerHp === 0) {
-      console.log('Player defeated!');
+      console.log('Player defeated! Game Over! Your score: ' + score);
+      // Display game over message
+      const gameOverText = new Konva.Text({
+        x: stage.width() / 2 - 100,
+        y: stage.height() / 2 - 50,
+        text: 'Game Over! Your score: ' + score,
+        fontSize: 36,
+        fill: 'red'
+      });
+      layer.add(gameOverText);
+      layer.batchDraw();
+      clearInterval(bossShootingInterval); // Stop boss shooting
     }
     layer.batchDraw();
   }
@@ -201,7 +214,7 @@
         if (bullet.y() >= player.y() - player.radius() &&
             bullet.x() >= player.x() - player.radius() &&
             bullet.x() <= player.x() + player.radius()) {
-          updatePlayerHp(2); // Deal 2 damage to the player
+          updatePlayerHp(1); // Deal 1 damage to the player (lowered from 2 to 1)
           bullet.destroy(); // Destroy the bullet upon collision
         }
 
@@ -223,51 +236,21 @@
         x: boss.x() + boss.width() / 2,
         y: boss.y() + boss.height() / 2,
         radius: 5,
-        fill: 'orange'
+        fill: 'yellow'
       });
       layer.add(bullet);
 
-      // Bullet movement in circular pattern
+      // Bullet movement animation (circular pattern)
       const anim = new Konva.Animation(() => {
-        bullet.x(bullet.x() + Math.cos(angle) * 3);
-        bullet.y(bullet.y() + Math.sin(angle) * 3);
+        const speed = 2 + level; // Increase speed with level
+        bullet.x(bullet.x() + Math.cos(angle) * speed);
+        bullet.y(bullet.y() + Math.sin(angle) * speed);
 
         // Check for collision with the player
         if (bullet.y() >= player.y() - player.radius() &&
             bullet.x() >= player.x() - player.radius() &&
             bullet.x() <= player.x() + player.radius()) {
-          updatePlayerHp(2); // Deal 2 damage to the player
-          bullet.destroy(); // Destroy the bullet upon collision
-        }
-
-        if (bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
-          bullet.destroy(); // Remove bullet if it leaves the screen
-        }
-      }, layer);
-      anim.start();
-    }
-  }
-
-  function shootWaveBullets() {
-    for (let i = 0; i < 8 + level; i++) { // Increase bullet count with level
-      const bullet = new Konva.Circle({
-        x: boss.x() + boss.width() / 2 + i * 15,
-        y: boss.y() + boss.height(),
-        radius: 5,
-        fill: 'purple'
-      });
-      layer.add(bullet);
-
-      // Bullet movement in a wave pattern
-      const anim = new Konva.Animation(() => {
-        bullet.y(bullet.y() + 5);
-        bullet.x(bullet.x() + Math.sin(bullet.y() / 20) * 10); // Wave motion
-
-        // Check for collision with the player
-        if (bullet.y() >= player.y() - player.radius() &&
-            bullet.x() >= player.x() - player.radius() &&
-            bullet.x() <= player.x() + player.radius()) {
-          updatePlayerHp(2); // Deal 2 damage to the player
+          updatePlayerHp(1); // Deal 1 damage to the player (lowered from 2 to 1)
           bullet.destroy(); // Destroy the bullet upon collision
         }
 
@@ -279,49 +262,12 @@
     }
   }
 
-  // Function to randomly choose bullet patterns
-  function bossShoot() {
-    const randomPattern = Math.floor(Math.random() * 3); // Choose between 3 patterns
-
-    if (randomPattern === 0) {
+  // Start shooting bullets from the boss
+  let bossShootingInterval = setInterval(() => {
+    if (Math.random() < 0.5) {
       shootStraightBullets();
-    } else if (randomPattern === 1) {
-      shootCircularBullets();
     } else {
-      shootWaveBullets();
+      shootCircularBullets();
     }
-  }
-
-  // Make the boss shoot bullets every 2 seconds
-  let bossShootingInterval = setInterval(bossShoot, 2000);
-
-  // Clear previous shooting interval and set a new one when a new boss spawns
-  function clearShootingInterval() {
-    clearInterval(bossShootingInterval);
-    bossShootingInterval = setInterval(bossShoot, 2000);
-  }
-
-  // Update the level and shooting interval
-  function updateLevel() {
-    level++;
-    levelText.text(`Level ${level}`); // Update the level text
-    clearShootingInterval(); // Clear and reset shooting interval for new boss
-    spawnNewBoss(); // Spawn a new boss
-  }
-
-  // Modify the updateBossHp function to call updateLevel
-  function updateBossHp(damage) {
-    bossHp = Math.max(0, bossHp - damage); // Reduce boss HP
-    bossHpBar.width(bossHp); // Update HP bar width
-    if (bossHp === 0) {
-      console.log('Boss defeated!');
-      boss.destroy(); // Remove the old boss
-      bossHpBar.destroy(); // Remove the old boss HP bar
-      updateLevel(); // Call updateLevel to change the level and spawn a new boss
-    }
-    layer.batchDraw();
-  }
-
-  // Redraw the layer
-  layer.draw();
+  }, 2000); // Boss shoots every 2 seconds
 </script>

@@ -21,6 +21,7 @@
   // Initialize level and score
   let level = 1;
   let score = 0;
+  let playerBulletDamage = 2; // Initial bullet damage
 
   // Function to create a boss with a different color and shooting pattern
   let bossHp;
@@ -40,11 +41,11 @@
     });
     layer.add(boss);
 
-    bossHp = 100;
+    bossHp = 100 + (level - 1) * 20; // Increase boss HP with each level
     bossHpBar = new Konva.Rect({
       x: boss.x(),
       y: boss.y() - 20, // Position above the boss
-      width: bossHp, // Boss HP starts at 100
+      width: bossHp, // Boss HP starts at 100 + 20 for each level
       height: 10,
       fill: 'green'
     });
@@ -88,7 +89,16 @@
       bossHpBar.destroy(); // Remove the old boss HP bar
       level++; // Increase the level
       levelText.text(`Level ${level}`); // Update the level text
+
+      // Slightly increase player bullet damage each level
+      playerBulletDamage += 1; // Increase damage by 1 for each level
+
       spawnNewBoss(); // Spawn a new boss
+      clearInterval(bossShootingInterval); // Clear old shooting interval
+      bossShootingInterval = setInterval(() => {
+        shootStraightBullets();
+        shootCircularBullets();
+      }, Math.max(1000, 2000 - (level - 1) * 200)); // Decrease interval as level increases
     }
     layer.batchDraw();
   }
@@ -145,7 +155,7 @@
           bullet.y() >= boss.y() &&
           bullet.x() >= boss.x() + 10 && // Adjusted hitbox for collision
           bullet.x() <= boss.x() + boss.width() - 10) { // Adjusted hitbox for collision
-        updateBossHp(2); // Deal 2 damage to the boss
+        updateBossHp(playerBulletDamage); // Deal damage based on playerBulletDamage
         bullet.hasDamagedBoss = true; // Set the flag to true to avoid further damage
         bullet.destroy(); // Destroy the bullet upon collision
       }

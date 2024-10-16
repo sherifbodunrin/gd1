@@ -50,10 +50,6 @@
     });
     layer.add(bossHpBar);
 
-    // Heal the player slightly each level
-    playerHp = Math.min(100, playerHp + 10); // Heal the player by 10, max 100
-    playerHpBar.width(playerHp); // Update the HP bar width after healing
-
     layer.batchDraw();
   }
 
@@ -64,7 +60,7 @@
   const levelText = new Konva.Text({
     x: stage.width() / 2 - 50,
     y: 10,
-    text: `Level ${level}`,
+    text: Level ${level},
     fontSize: 24,
     fill: 'black' // Set text to black
   });
@@ -91,7 +87,7 @@
       boss.destroy(); // Remove the old boss
       bossHpBar.destroy(); // Remove the old boss HP bar
       level++; // Increase the level
-      levelText.text(`Level ${level}`); // Update the level text
+      levelText.text(Level ${level}); // Update the level text
       spawnNewBoss(); // Spawn a new boss
     }
     layer.batchDraw();
@@ -289,4 +285,4 @@
     shootCircularBullets();
   }, 2000); // Shoot every 2 seconds
 
-</script>
+</script> 

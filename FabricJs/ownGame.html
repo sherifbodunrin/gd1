@@ -28,15 +28,45 @@
   });
   layer.add(boss);
 
-  // Level text on the top left corner
-  const levelText = new Konva.Text({
-    x: 10,
-    y: 10,
-    text: 'Level 1',
-    fontSize: 24,
-    fill: 'white'
+  // Boss HP Bar (above the boss)
+  const bossHpBar = new Konva.Rect({
+    x: boss.x(),
+    y: boss.y() - 20, // Position above the boss
+    width: 100,
+    height: 10,
+    fill: 'green'
   });
-  layer.add(levelText);
+  layer.add(bossHpBar);
+
+  // Player HP Bar (below the player)
+  const playerHpBar = new Konva.Rect({
+    x: player.x() - 30,
+    y: player.y() + 40, // Position below the player
+    width: 100,
+    height: 10,
+    fill: 'green'
+  });
+  layer.add(playerHpBar);
+
+  // Function to update Boss HP Bar (based on some arbitrary damage)
+  function updateBossHp(damage) {
+    const newWidth = Math.max(0, bossHpBar.width() - damage); // Reduce HP bar width
+    bossHpBar.width(newWidth);
+    if (newWidth === 0) {
+      console.log('Boss defeated!');
+    }
+    layer.batchDraw();
+  }
+
+  // Function to update Player HP Bar (based on some arbitrary damage)
+  function updatePlayerHp(damage) {
+    const newWidth = Math.max(0, playerHpBar.width() - damage); // Reduce HP bar width
+    playerHpBar.width(newWidth);
+    if (newWidth === 0) {
+      console.log('Player defeated!');
+    }
+    layer.batchDraw();
+  }
 
   // Bullet shooting function
   function shootBullet() {
@@ -82,15 +112,19 @@
   function movePlayer() {
     if (keysPressed['ArrowLeft']) {
       player.x(player.x() - 5); // Move left
+      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
     }
     if (keysPressed['ArrowRight']) {
       player.x(player.x() + 5); // Move right
+      playerHpBar.x(player.x() - 30); // Keep HP bar aligned with player
     }
     if (keysPressed['ArrowUp']) {
       player.y(player.y() - 5); // Move up
+      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
     }
     if (keysPressed['ArrowDown']) {
       player.y(player.y() + 5); // Move down
+      playerHpBar.y(player.y() + 40); // Keep HP bar aligned with player
     }
 
     // Boundaries to prevent the player from going off-screen

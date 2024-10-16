@@ -39,26 +39,31 @@
     const randomColor = bossColors[Math.floor(Math.random() * bossColors.length)];
 
     boss = new Konva.Rect({
-      x: stage.width() / 2 - 50,
-      y: 50,
-      width: 100,
-      height: 100,
-      fill: randomColor
+        x: stage.width() / 2 - 50,
+        y: 50,
+        width: 100,
+        height: 100,
+        fill: randomColor
     });
     layer.add(boss);
 
     bossHp = 100;
     bossHpBar = new Konva.Rect({
-      x: boss.x(),
-      y: boss.y() - 20, // Position above the boss
-      width: bossHp, // Boss HP starts at 100
-      height: 10,
-      fill: 'green'
+        x: boss.x(),
+        y: boss.y() - 20, // Position above the boss
+        width: bossHp, // Boss HP starts at 100
+        height: 10,
+        fill: 'green'
     });
     layer.add(bossHpBar);
 
+    // Heal the player slightly at the start of a new level
+    const healingAmount = 10; // Amount to heal
+    playerHp = Math.min(100, playerHp + healingAmount); // Heal without exceeding 100
+    playerHpBar.width(playerHp); // Update HP bar width
+
     layer.batchDraw();
-  }
+}
 
   // Spawn the first boss
   spawnNewBoss();

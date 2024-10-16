@@ -28,6 +28,16 @@
   });
   layer.add(boss);
 
+  // Level text
+  const levelText = new Konva.Text({
+    x: stage.width() / 2 - 50,
+    y: 10,
+    text: 'Level 1',
+    fontSize: 24,
+    fill: 'black' // Set text to black
+  });
+  layer.add(levelText);
+
   // Boss HP Bar (above the boss)
   let bossHp = 100;
   const bossHpBar = new Konva.Rect({
@@ -50,24 +60,50 @@
   });
   layer.add(playerHpBar);
 
-  // Function to update Boss HP Bar (based on some arbitrary damage)
+  // Function to update Boss HP Bar and show damage number
   function updateBossHp(damage) {
     bossHp = Math.max(0, bossHp - damage); // Reduce boss HP
     bossHpBar.width(bossHp); // Update HP bar width
+    showDamageNumber(boss.x() + 50, boss.y(), damage, 'red');
     if (bossHp === 0) {
       console.log('Boss defeated!');
     }
     layer.batchDraw();
   }
 
-  // Function to update Player HP Bar (based on some arbitrary damage)
+  // Function to update Player HP Bar and show damage number
   function updatePlayerHp(damage) {
     playerHp = Math.max(0, playerHp - damage); // Reduce player HP
     playerHpBar.width(playerHp); // Update HP bar width
+    showDamageNumber(player.x(), player.y() - 50, damage, 'blue');
     if (playerHp === 0) {
       console.log('Player defeated!');
     }
     layer.batchDraw();
+  }
+
+  // Function to show floating damage numbers
+  function showDamageNumber(x, y, damage, color) {
+    const damageText = new Konva.Text({
+      x: x,
+      y: y,
+      text: `-${damage}`,
+      fontSize: 20,
+      fill: color
+    });
+    layer.add(damageText);
+
+    // Animate damage number to float up and fade out
+    const anim = new Konva.Animation((frame) => {
+      damageText.y(damageText.y() - 1); // Move upwards
+      if (frame.time > 500) { // After 0.5 seconds
+        damageText.opacity(damageText.opacity() - 0.05); // Fade out
+      }
+      if (damageText.opacity() <= 0) {
+        damageText.destroy(); // Remove the text when fully faded
+      }
+    }, layer);
+    anim.start();
   }
 
   // Bullet shooting function (Player)
@@ -89,7 +125,7 @@
           bullet.y() >= boss.y() &&
           bullet.x() >= boss.x() &&
           bullet.x() <= boss.x() + boss.width()) {
-        updateBossHp(10); // Deal 10 damage to the boss
+        updateBossHp(2); // Deal 2 damage to the boss
         bullet.destroy(); // Destroy the bullet upon collision
       }
 
@@ -170,7 +206,7 @@
         if (bullet.y() >= player.y() - player.radius() &&
             bullet.x() >= player.x() - player.radius() &&
             bullet.x() <= player.x() + player.radius()) {
-          updatePlayerHp(10); // Deal 10 damage to the player
+          updatePlayerHp(2); // Deal 2 damage to the player
           bullet.destroy(); // Destroy the bullet upon collision
         }
 
@@ -205,12 +241,12 @@
         if (bullet.y() >= player.y() - player.radius() &&
             bullet.x() >= player.x() - player.radius() &&
             bullet.x() <= player.x() + player.radius()) {
-          updatePlayerHp(10); // Deal 10 damage to the player
+          updatePlayerHp(2); // Deal 2 damage to the player
           bullet.destroy(); // Destroy the bullet upon collision
         }
 
         if (bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
-          bullet.destroy();
+          bullet.destroy(); // Remove bullet if it leaves the screen
         }
       }, layer);
       anim.start();
@@ -236,12 +272,12 @@
         if (bullet.y() >= player.y() - player.radius() &&
             bullet.x() >= player.x() - player.radius() &&
             bullet.x() <= player.x() + player.radius()) {
-          updatePlayerHp(10); // Deal 10 damage to the player
+          updatePlayerHp(2); // Deal 2 damage to the player
           bullet.destroy(); // Destroy the bullet upon collision
         }
 
         if (bullet.y() > stage.height()) {
-          bullet.destroy();
+          bullet.destroy(); // Remove bullet if it leaves the screen
         }
       }, layer);
       anim.start();

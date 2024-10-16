@@ -128,32 +128,34 @@
   // Bullet shooting function (Player)
   function shootBullet() {
     const bullet = new Konva.Circle({
-        x: player.x(),
-        y: player.y() - 30,
-        radius: 5,
-        fill: 'lime' // Changed to a brighter color
+      x: player.x(),
+      y: player.y() - 30,
+      radius: 5,
+      fill: 'lime' // Changed to a brighter color
     });
     layer.add(bullet);
+    bullet.hasDamagedBoss = false; // Add a property to track collision
 
     // Bullet movement animation
     const anim = new Konva.Animation(() => {
-        bullet.y(bullet.y() - 10);
+      bullet.y(bullet.y() - 10);
 
-        // Check for collision with the boss
-        if (bullet.y() <= boss.y() + boss.height() &&
-            bullet.y() >= boss.y() &&
-            bullet.x() >= boss.x() + 10 && // Adjusted hitbox for collision
-            bullet.x() <= boss.x() + boss.width() - 10) { // Adjusted hitbox for collision
-            updateBossHp(2); // Deal 2 damage to the boss
-            bullet.destroy(); // Destroy the bullet upon collision
-        }
+      // Check for collision with the boss
+      if (!bullet.hasDamagedBoss && bullet.y() <= boss.y() + boss.height() &&
+          bullet.y() >= boss.y() &&
+          bullet.x() >= boss.x() + 10 && // Adjusted hitbox for collision
+          bullet.x() <= boss.x() + boss.width() - 10) { // Adjusted hitbox for collision
+        updateBossHp(2); // Deal 2 damage to the boss
+        bullet.hasDamagedBoss = true; // Set the flag to true to avoid further damage
+        bullet.destroy(); // Destroy the bullet upon collision
+      }
 
-        if (bullet.y() < 0) {
-            bullet.destroy(); // Remove bullet if it leaves the screen
-        }
+      if (bullet.y() < 0) {
+        bullet.destroy(); // Remove bullet if it leaves the screen
+      }
     }, layer);
     anim.start();
-}
+  }
 
   // Smoother arrow key movement with disabling default behavior
   const keysPressed = {};
@@ -209,75 +211,78 @@
   // Boss bullet patterns and damage to player
   function shootStraightBullets() {
     for (let i = 0; i < 5 + level; i++) { // Increase bullet count with level
-        const bullet = new Konva.Circle({
-            x: boss.x() + 20 * i,
-            y: boss.y() + boss.height(),
-            radius: 4, // Smaller radius for the boss's bullets
-            fill: 'orange' // Changed to a more visible color
-        });
-        layer.add(bullet);
+      const bullet = new Konva.Circle({
+        x: boss.x() + 20 * i,
+        y: boss.y() + boss.height(),
+        radius: 4, // Smaller radius for the boss's bullets
+        fill: 'orange' // Changed to a more visible color
+      });
+      layer.add(bullet);
+      bullet.hasDamagedPlayer = false; // Add a property to track collision
 
-        // Bullet movement animation (straight down)
-        const anim = new Konva.Animation(() => {
-            bullet.y(bullet.y() + 5 + level); // Increase speed with level
+      // Bullet movement animation (straight down)
+      const anim = new Konva.Animation(() => {
+        bullet.y(bullet.y() + 5 + level); // Increase speed with level
 
-            // Check for collision with the player
-            if (bullet.y() >= player.y() - player.radius() &&
-                bullet.x() >= player.x() + 10 && // Adjusted hitbox for collision
-                bullet.x() <= player.x() + player.radius() - 10) { // Adjusted hitbox for collision
-                updatePlayerHp(1); // Deal 1 damage to the player
-                bullet.destroy(); // Destroy the bullet upon collision
-            }
+        // Check for collision with the player
+        if (!bullet.hasDamagedPlayer && bullet.y() >= player.y() - player.radius() &&
+            bullet.x() >= player.x() + 10 && // Adjusted hitbox for collision
+            bullet.x() <= player.x() + player.radius() - 10) { // Adjusted hitbox for collision
+          updatePlayerHp(1); // Deal 1 damage to the player
+          bullet.hasDamagedPlayer = true; // Set the flag to true to avoid further damage
+          bullet.destroy(); // Destroy the bullet upon collision
+        }
 
-            if (bullet.y() > stage.height()) {
-                bullet.destroy(); // Remove bullet if it leaves the screen
-            }
-        }, layer);
-        anim.start();
+        if (bullet.y() > stage.height()) {
+          bullet.destroy(); // Remove bullet if it leaves the screen
+        }
+      }, layer);
+      anim.start();
     }
-}
-  
+  }
+
   function shootCircularBullets() {
     const numBullets = 12 + level; // Increase bullet count with level
     const angleStep = (2 * Math.PI) / numBullets;
 
     for (let i = 0; i < numBullets; i++) {
-        const angle = i * angleStep;
-        const bullet = new Konva.Circle({
-            x: boss.x() + boss.width() / 2,
-            y: boss.y() + boss.height() / 2,
-            radius: 4, // Smaller radius for circular bullets
-            fill: 'orange' // Changed to a more visible color
-        });
-        layer.add(bullet);
+      const angle = i * angleStep;
+      const bullet = new Konva.Circle({
+        x: boss.x() + boss.width() / 2,
+        y: boss.y() + boss.height() / 2,
+        radius: 4, // Smaller radius for circular bullets
+        fill: 'orange' // Changed to a more visible color
+      });
+      layer.add(bullet);
+      bullet.hasDamagedPlayer = false; // Add a property to track collision
 
-        // Bullet movement animation (circular pattern)
-        const anim = new Konva.Animation(() => {
-            const speed = 2 + level; // Increase speed with level
-            bullet.x(bullet.x() + Math.cos(angle) * speed);
-            bullet.y(bullet.y() + Math.sin(angle) * speed);
+      // Bullet movement animation (circular pattern)
+      const anim = new Konva.Animation(() => {
+        const speed = 2 + level; // Increase speed with level
+        bullet.x(bullet.x() + Math.cos(angle) * speed);
+        bullet.y(bullet.y() + Math.sin(angle) * speed);
 
-            // Check for collision with the player
-            if (bullet.y() >= player.y() - player.radius() &&
-                bullet.x() >= player.x() + 10 && // Adjusted hitbox for collision
-                bullet.x() <= player.x() + player.radius() - 10) { // Adjusted hitbox for collision
-                updatePlayerHp(1); // Deal 1 damage to the player
-                bullet.destroy(); // Destroy the bullet upon collision
-            }
+        // Check for collision with the player
+        if (!bullet.hasDamagedPlayer && bullet.y() >= player.y() - player.radius() &&
+            bullet.x() >= player.x() + 10 && // Adjusted hitbox for collision
+            bullet.x() <= player.x() + player.radius() - 10) { // Adjusted hitbox for collision
+          updatePlayerHp(1); // Deal 1 damage to the player
+          bullet.hasDamagedPlayer = true; // Set the flag to true to avoid further damage
+          bullet.destroy(); // Destroy the bullet upon collision
+        }
 
-            if (bullet.y() > stage.height()) {
-                bullet.destroy(); // Remove bullet if it leaves the screen
-            }
-        }, layer);
-        anim.start();
+        if (bullet.y() > stage.height()) {
+          bullet.destroy(); // Remove bullet if it leaves the screen
+        }
+      }, layer);
+      anim.start();
     }
-}
-  // Start shooting bullets from the boss
+  }
+
+  // Set an interval for the boss to shoot bullets
   let bossShootingInterval = setInterval(() => {
-    if (Math.random() < 0.5) {
-      shootStraightBullets();
-    } else {
-      shootCircularBullets();
-    }
-  }, 2000); // Boss shoots every 2 seconds
+    shootStraightBullets();
+    shootCircularBullets();
+  }, 2000); // Shoot every 2 seconds
+
 </script>

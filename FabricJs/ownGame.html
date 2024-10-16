@@ -28,6 +28,26 @@
   });
   layer.add(boss);
 
+  // Bullet shooting function
+  function shootBullet() {
+    const bullet = new Konva.Circle({
+      x: player.x(),
+      y: player.y() - 30,
+      radius: 5,
+      fill: 'red'
+    });
+    layer.add(bullet);
+
+    // Bullet movement animation
+    const anim = new Konva.Animation(() => {
+      bullet.y(bullet.y() - 10);
+      if (bullet.y() < 0) {
+        bullet.destroy();
+      }
+    }, layer);
+    anim.start();
+  }
+
   // Smoother arrow key movement with disabling default behavior
   const keysPressed = {};
 
@@ -37,6 +57,11 @@
     // Prevent the default scrolling behavior for arrow keys and space
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
       e.preventDefault();
+    }
+
+    // Event listener for space bar to shoot bullets
+    if (e.key === ' ') {
+      shootBullet();
     }
   });
 
@@ -159,3 +184,4 @@
   // Redraw the layer
   layer.draw();
 </script>
+

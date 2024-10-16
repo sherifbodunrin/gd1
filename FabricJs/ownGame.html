@@ -63,7 +63,7 @@
   const levelText = new Konva.Text({
     x: stage.width() / 2 - 50,
     y: 10,
-    text: `Level ${level}`,
+    text: Level ${level},
     fontSize: 24,
     fill: 'black' // Set text to black
   });
@@ -90,7 +90,7 @@
       boss.destroy(); // Remove the old boss
       bossHpBar.destroy(); // Remove the old boss HP bar
       level++; // Increase the level
-      levelText.text(`Level ${level}`); // Update the level text
+      levelText.text(Level ${level}); // Update the level text
       spawnNewBoss(); // Spawn a new boss
     }
     layer.batchDraw();
@@ -106,30 +106,21 @@
       // Update highest level if current level is higher
       highestLevel = Math.max(highestLevel, level);
       
-      // Display game over message as an error
+      // Display game over message with highest level
       const gameOverText = new Konva.Text({
         x: stage.width() / 2 - 100,
         y: stage.height() / 2 - 50,
-        text: `Game Over! Your score: ${score} \n Highest level was: ${highestLevel}`,
+        text: Game Over! Your score: ${score} \n Highest level was: ${highestLevel},
         fontSize: 36,
-        fill: 'red',
-        listening: false // Prevent interaction with the text
+        fill: 'red'
       });
       layer.add(gameOverText);
       layer.batchDraw();
       
       clearInterval(bossShootingInterval); // Stop boss shooting
-      disableGame(); // Disable the game
       return; // End the function to prevent further updates
     }
     layer.batchDraw();
-  }
-
-  function disableGame() {
-    // Disable player movement
-    window.removeEventListener('keydown', handleKeyDown);
-    window.removeEventListener('keyup', handleKeyUp);
-    clearInterval(movePlayerInterval); // Clear movement interval
   }
 
   // Bullet shooting function (Player)
@@ -164,9 +155,8 @@
 
   // Smoother arrow key movement with disabling default behavior
   const keysPressed = {};
-  const movePlayerInterval = setInterval(movePlayer, 16); // 60 FPS
 
-  function handleKeyDown(e) {
+  window.addEventListener('keydown', (e) => {
     keysPressed[e.key] = true;
 
     // Prevent the default scrolling behavior for arrow keys and space
@@ -178,14 +168,11 @@
     if (e.key === ' ') {
       shootBullet();
     }
-  }
+  });
 
-  function handleKeyUp(e) {
+  window.addEventListener('keyup', (e) => {
     keysPressed[e.key] = false;
-  }
-
-  window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('keyup', handleKeyUp);
+  });
 
   function movePlayer() {
     if (keysPressed['ArrowLeft']) {
@@ -215,7 +202,7 @@
   }
 
   // Call movePlayer function every 16ms (60 frames per second)
-  const movePlayerInterval = setInterval(movePlayer, 16); // 60 FPS
+  setInterval(movePlayer, 16); // 60 FPS
 
   // Boss bullet patterns and damage to player
   function shootStraightBullets() {
@@ -292,4 +279,4 @@
       shootCircularBullets();
     }
   }, 2000); // Boss shoots every 2 seconds
-</script>
+</script> dont change the previous code, when you lose the program has to end and u cant do anything like shoot. And the message should display like a error on the screen

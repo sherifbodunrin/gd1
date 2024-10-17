@@ -27,19 +27,23 @@
         const backgroundImageObj = new Image();
         backgroundImageObj.src = 'https://opengameart.org/sites/default/files/bg_02_h.png'; // Background image URL
         
-        backgroundImageObj.onload = function() {
-            const background = new Konva.Image({
-                x: 0,
-                y: 0,
-                image: backgroundImageObj,
-                width: stage.width(),
-                height: stage.height()
-            });
-            layer.add(background);
-            layer.batchDraw();
+       backgroundImageObj.onload = function() {
+        const background = new Konva.Image({
+        x: 0,
+        y: 0,
+        image: backgroundImageObj,
+        width: stage.width(),
+        height: stage.height()
+        });
+        layer.add(background); // Add background to the layer first
+        layer.batchDraw();
+
+        // Now add other images after the background is added
+        initializeGameObjects(); // Call a function to initialize player and boss
         };
 
         // Player represented as a blue circle
+        function initializeGameObjects()
         const playerImageObj = new Image();
         playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
         
@@ -51,7 +55,9 @@
             height: 60
         });
         layer.add(player);
-
+        spawnNewBoss()
+        }
+        
         // Initialize level and score
         let level = 1;
         let score = 0;
@@ -88,7 +94,7 @@
             layer.batchDraw();
         }
 
-        spawnNewBoss();
+    
 
         const levelText = new Konva.Text({
             x: stage.width() / 2 - 50,

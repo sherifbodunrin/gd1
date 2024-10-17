@@ -45,16 +45,17 @@
         let boss;
         let bossHpBar;
 
+        // Load the boss image
+        const bossImageObj = new Image();
+        bossImageObj.src = 'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623'; // Replace with your boss image URL
+        
         function spawnNewBoss() {
-            const bossColors = ['red', 'green', 'orange', 'purple', 'cyan'];
-            const randomColor = bossColors[Math.floor(Math.random() * bossColors.length)];
-
-            boss = new Konva.Rect({
+            boss = new Konva.Image({
                 x: stage.width() / 2 - 50,
                 y: 50,
+                image: bossImageObj,
                 width: 100,
-                height: 100,
-                fill: randomColor
+                height: 100
             });
             layer.add(boss);
 
@@ -273,16 +274,16 @@
             bossShootingInterval = setInterval(() => {
                 if (isGameOver) return;
 
-                for (let i = 0; i < 16; i++) { // Increased bullet count
-                    const angle = (i / 8) * Math.PI; // Adjusted for more spread
-                    const velocityX = Math.cos(angle) * 8; // Increased speed
-                    const velocityY = Math.sin(angle) * 8; // Increased speed
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const velocityX = Math.cos(angle) * 4;
+                    const velocityY = Math.sin(angle) * 4;
 
                     const bossBullet = new Konva.Circle({
                         x: boss.x() + boss.width() / 2,
                         y: boss.y() + boss.height() / 2,
                         radius: 5,
-                        fill: 'orange'
+                        fill: 'red'
                     });
                     layer.add(bossBullet);
                     bossBullet.hasDamagedPlayer = false;
@@ -296,7 +297,7 @@
                             bossBullet.y() <= player.y() + 30 &&
                             bossBullet.x() >= player.x() - 30 &&
                             bossBullet.x() <= player.x() + 30) {
-                            updatePlayerHp(15); // Increased damage
+                            updatePlayerHp(15);
                             bossBullet.hasDamagedPlayer = true;
                             bossBullet.destroy();
                         }
@@ -308,24 +309,25 @@
                     }, layer);
                     anim.start();
                 }
-            }, 1200);
+            }, 1000); // Increased interval for less frequent shots
         }
 
         function targetedShot() {
             bossShootingInterval = setInterval(() => {
                 if (isGameOver) return;
 
-                const velocityX = (player.x() - boss.x()) / Math.sqrt(Math.pow(player.x() - boss.x(), 2) + Math.pow(player.y() - boss.y(), 2)) * 5; // Targeted speed
-                const velocityY = (player.y() - boss.y()) / Math.sqrt(Math.pow(player.x() - boss.x(), 2) + Math.pow(player.y() - boss.y(), 2)) * 5; // Targeted speed
-
                 const bossBullet = new Konva.Circle({
                     x: boss.x() + boss.width() / 2,
                     y: boss.y() + boss.height() / 2,
                     radius: 5,
-                    fill: 'purple'
+                    fill: 'red'
                 });
                 layer.add(bossBullet);
                 bossBullet.hasDamagedPlayer = false;
+
+                const angle = Math.atan2(player.y() - bossBullet.y(), player.x() - bossBullet.x());
+                const velocityX = Math.cos(angle) * 5; // Adjusted speed
+                const velocityY = Math.sin(angle) * 5; // Adjusted speed
 
                 const anim = new Konva.Animation(() => {
                     bossBullet.x(bossBullet.x() + velocityX);
@@ -336,7 +338,7 @@
                         bossBullet.y() <= player.y() + 30 &&
                         bossBullet.x() >= player.x() - 30 &&
                         bossBullet.x() <= player.x() + 30) {
-                        updatePlayerHp(20); // Increased damage
+                        updatePlayerHp(15);
                         bossBullet.hasDamagedPlayer = true;
                         bossBullet.destroy();
                     }
@@ -347,16 +349,13 @@
                     }
                 }, layer);
                 anim.start();
-            }, 500); // Reduced interval for faster shots
+            }, 1500); // Increased interval for less frequent shots
         }
 
-        setRandomBossShootingPattern();
-
-        const anim = new Konva.Animation(() => {
+        const animation = new Konva.Animation(() => {
             movePlayer();
         }, layer);
-
-        anim.start();
+        animation.start();
     </script>
 </body>
 </html>

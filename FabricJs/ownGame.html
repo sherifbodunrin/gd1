@@ -9,6 +9,7 @@
         body {
             margin: 0;
             overflow: hidden;
+            background-color: black; /* Set background color to black */
         }
     </style>
 </head>
@@ -77,9 +78,9 @@
         const levelText = new Konva.Text({
             x: stage.width() / 2 - 50,
             y: 10,
-            text: `Level ${level}`,
+            text: Level ${level},
             fontSize: 24,
-            fill: 'black'
+            fill: 'white'
         });
         layer.add(levelText);
 
@@ -104,7 +105,7 @@
                 boss.destroy();
                 bossHpBar.destroy();
                 level++;
-                levelText.text(`Level ${level}`);
+                levelText.text(Level ${level});
 
                 playerHp = Math.min(100, playerHp + 50);
                 playerHpBar.width(playerHp);
@@ -136,7 +137,7 @@
                     y: stage.height() / 2 - 50,
                     text: 'Game Over! Your highest level: ' + level,
                     fontSize: 36,
-                    fill: 'white'
+                    fill: 'red'
                 });
                 layer.add(highestLevelText);
 
@@ -276,8 +277,8 @@
 
                 for (let i = 0; i < 8; i++) {
                     const angle = (i / 8) * Math.PI * 2;
-                    const velocityX = Math.cos(angle) * 4;
-                    const velocityY = Math.sin(angle) * 4;
+                    const velocityX = Math.cos(angle) * 7; // Increased speed
+                    const velocityY = Math.sin(angle) * 7; // Increased speed
 
                     const bossBullet = new Konva.Circle({
                         x: boss.x() + boss.width() / 2,
@@ -297,7 +298,7 @@
                             bossBullet.y() <= player.y() + 30 &&
                             bossBullet.x() >= player.x() - 30 &&
                             bossBullet.x() <= player.x() + 30) {
-                            updatePlayerHp(15);
+                            updatePlayerHp(10); // Increased damage
                             bossBullet.hasDamagedPlayer = true;
                             bossBullet.destroy();
                         }
@@ -309,12 +310,18 @@
                     }, layer);
                     anim.start();
                 }
-            }, 1000); // Increased interval for less frequent shots
+            }, 1000);
         }
 
         function targetedShot() {
             bossShootingInterval = setInterval(() => {
                 if (isGameOver) return;
+
+                const dx = player.x() - boss.x();
+                const dy = player.y() - boss.y();
+                const angle = Math.atan2(dy, dx);
+                const velocityX = Math.cos(angle) * 7; // Increased speed
+                const velocityY = Math.sin(angle) * 7; // Increased speed
 
                 const bossBullet = new Konva.Circle({
                     x: boss.x() + boss.width() / 2,
@@ -325,10 +332,6 @@
                 layer.add(bossBullet);
                 bossBullet.hasDamagedPlayer = false;
 
-                const angle = Math.atan2(player.y() - bossBullet.y(), player.x() - bossBullet.x());
-                const velocityX = Math.cos(angle) * 5; // Adjusted speed
-                const velocityY = Math.sin(angle) * 5; // Adjusted speed
-
                 const anim = new Konva.Animation(() => {
                     bossBullet.x(bossBullet.x() + velocityX);
                     bossBullet.y(bossBullet.y() + velocityY);
@@ -338,7 +341,7 @@
                         bossBullet.y() <= player.y() + 30 &&
                         bossBullet.x() >= player.x() - 30 &&
                         bossBullet.x() <= player.x() + 30) {
-                        updatePlayerHp(15);
+                        updatePlayerHp(20); // Increased damage
                         bossBullet.hasDamagedPlayer = true;
                         bossBullet.destroy();
                     }
@@ -349,13 +352,16 @@
                     }
                 }, layer);
                 anim.start();
-            }, 1500); // Increased interval for less frequent shots
+            }, 1200);
         }
 
-        const animation = new Konva.Animation(() => {
-            movePlayer();
-        }, layer);
-        animation.start();
+        setInterval(movePlayer, 1000 / 60);
+        setRandomBossShootingPattern();
+
+        window.addEventListener('resize', () => {
+            stage.width(window.innerWidth);
+            stage.height(window.innerHeight);
+        });
     </script>
 </body>
 </html>

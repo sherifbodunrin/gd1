@@ -83,7 +83,6 @@
       const [isGameStarted, setIsGameStarted] = React.useState(false);
       const [timeLeft, setTimeLeft] = React.useState(300); // 5 minutes in seconds
       const [timerInterval, setTimerInterval] = React.useState(null);
-      const [isInCheck, setIsInCheck] = React.useState(false);
 
       React.useEffect(() => {
         if (isGameStarted && timeLeft > 0) {
@@ -192,28 +191,14 @@
       };
 
       const isInCheck = (isWhite, gameState) => {
-        const kingPosition = findKingPosition(isWhite, gameState);
-        return isUnderAttack(kingPosition.row, kingPosition.col, !isWhite, gameState);
-      };
+        const kingRow = isWhite ? findKing('K', gameState) : findKing('k', gameState);
+        const opponentPieces = isWhite ? 'rnbq' : 'RNBQ';
 
-      const findKingPosition = (isWhite, gameState) => {
-        const king = isWhite ? 'K' : 'k';
         for (let row = 0; row < 8; row++) {
           for (let col = 0; col < 8; col++) {
-            if (gameState[row][col] === king) {
-              return { row, col };
-            }
-          }
-        }
-        return null;
-      };
-
-      const isUnderAttack = (row, col, isWhite, gameState) => {
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < 8; c++) {
-            const piece = gameState[r][c];
-            if (piece !== '' && (isWhite !== (piece === piece.toUpperCase()))) {
-              if (validateMove(r, c, row, col)) {
+            const piece = gameState[row][col];
+            if (piece && opponentPieces.includes(piece.toLowerCase())) {
+              if (validateMove(row, col, kingRow.row, kingRow.col)) {
                 return true;
               }
             }
@@ -222,11 +207,15 @@
         return false;
       };
 
-      const announceMove = (move) => {
-        if (isTTSOn) {
-          const utterance = new SpeechSynthesisUtterance(move);
-          window.speechSynthesis.speak(utterance);
+      const findKing = (king, gameState) => {
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            if (gameState[row][col] === king) {
+              return { row, col };
+            }
+          }
         }
+        return null;
       };
 
       const handleSquareClick = (row, col) => {
@@ -240,13 +229,17 @@
             newGame[fromRow][fromCol] = '';
 
             setGame(newGame);
-            // Check if the king is in check after the move
-            setIsInCheck(isInCheckAfterMove(fromRow, fromCol, row, col));
-
-            const moveDescription = `${pieceMoved} from ${fromRow},${fromCol} to ${row},${col}`;
-            setMoveLog(log => [...log, moveDescription]);
+            const pieceName = pieceMoved.toLowerCase() === 'p' ? 'Pawn' :
+                              pieceMoved.toLowerCase() === 'r' ? 'Rook' :
+                              pieceMoved.toLowerCase() === 'n' ? 'Knight' :
+                              pieceMoved.toLowerCase() === 'b' ? 'Bishop' :
+                              pieceMoved.toLowerCase() === 'q' ? 'Queen' : 'King';
+            const moveNotation = `${pieceName} moved from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
+            setMoveLog([...moveLog, moveNotation]);
+            announceMove(moveNotation, pieceName);
             setIsWhiteTurn(!isWhiteTurn);
-            announceMove(moveDescription);
+            setSelectedSquare(null);
+            setTimeLeft(300); // Reset timer for next player
           } else {
             setSelectedSquare(null);
           }
@@ -257,18 +250,26 @@
         }
       };
 
-      const startGame = () => {
+      const restartGame = () => {
         setGame(initialGameState);
-        setIsGameStarted(true);
         setMoveLog([]);
         setGameOverMessage("");
-        setTimeLeft(300);
         setIsWhiteTurn(true);
-        setIsInCheck(false);
+        setIsGameStarted(false);
+        setTimeLeft(300); // Reset timer
+        clearInterval(timerInterval);
       };
 
-      // Display warning if the king is in check
-      const checkMessage = isInCheck ? <div style={{ color: 'red', fontWeight: 'bold' }}>Warning: Your king is in check!</div> : null;
+      const startGame = () => {
+        setIsGameStarted(true); // Start the game
+      };
+
+      const announceMove = (move, pieceName) => {
+        if (isTTSOn) {
+          const utterance = new SpeechSynthesisUtterance(`${pieceName} ${move}`);
+          speechSynthesis.speak(utterance);
+        }
+      };
 
       return (
         <div>
@@ -280,21 +281,31 @@
           ) : (
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               <h2>{gameOverMessage || `Current Turn: ${isWhiteTurn ? 'White' : 'Black'} | Time Left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}`}</h2>
-              {checkMessage}
               <div className="chess-board">
-                {game.map((row, rowIndex) =>
-                  row.map((piece, colIndex) => (
-                    <div key={`${rowIndex}-${colIndex}`} className="chess-square" style={{ backgroundColor: (rowIndex + colIndex) % 2 === 0 ? '#eee' : '#aaa' }} onClick={() => handleSquareClick(rowIndex, colIndex)}>
-                      {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '80%', height: '80%' }} />}
-                    </div>
-                  ))
-                )}
+                {game.map((row, rowIndex) => row.map((piece, colIndex) => (
+                  <div key={`${rowIndex}-${colIndex}`}
+                    className="chess-square"
+                    style={{
+                      backgroundColor: (rowIndex + colIndex) % 2 === 0 ? 'purple' : 'yellow',
+                      border: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? '2px solid red' : 'none'
+                    }}
+                    onClick={() => handleSquareClick(rowIndex, colIndex)}
+                  >
+                    {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '40px', height: '40px' }} />}
+                  </div>
+                )))}
               </div>
               <div className="move-log">
-                <h3>Move Log</h3>
-                <ul>
-                  {moveLog.map((move, index) => <li key={index}>{move}</li>)}
-                </ul>
+                <h3>Move Log:</h3>
+                {moveLog.map((move, index) => <div key={index}>{move}</div>)}
+                {gameOverMessage && <div style={{ fontWeight: 'bold', color: 'red' }}>{gameOverMessage}</div>}
+              </div>
+              <div>
+                <button onClick={restartGame}>Restart Game</button>
+                <label>
+                  <input type="checkbox" checked={isTTSOn} onChange={() => setIsTTSOn(!isTTSOn)} />
+                  Text-to-Speech
+                </label>
               </div>
             </div>
           )}
@@ -302,8 +313,7 @@
       );
     }
 
-    const root = document.getElementById("root");
-    ReactDOM.render(<Game />, root);
+    ReactDOM.render(<Game />, document.getElementById('root'));
   </script>
 </body>
 </html>

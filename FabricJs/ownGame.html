@@ -23,10 +23,9 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        // Add background image
+        // Add the background image
         const backgroundImageObj = new Image();
-        backgroundImageObj.src = 'https://opengameart.org/sites/default/files/bg_02_h.png'; // Background image URL
-
+        backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
         backgroundImageObj.onload = function() {
             const background = new Konva.Image({
                 x: 0,
@@ -37,39 +36,20 @@
             });
             layer.add(background);
             layer.batchDraw();
-
-            // Call functions to spawn player and boss after background is loaded
-            spawnPlayer();
-            spawnNewBoss();
         };
 
-        // Function to spawn player
-        function spawnPlayer() {
-            const playerImageObj = new Image();
-            playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
-
-            const player = new Konva.Image({
-                x: stage.width() / 2 - 30,
-                y: stage.height() - 80,
-                image: playerImageObj,
-                width: 60,
-                height: 60
-            });
-            layer.add(player);
-
-            // Player health bar
-            let playerHp = 100;
-            const playerHpBar = new Konva.Rect({
-                x: player.x() - 30,
-                y: player.y() + 40,
-                width: playerHp,
-                height: 10,
-                fill: 'green'
-            });
-            layer.add(playerHpBar);
-
-            // Player shooting logic and other game functions would go here
-        }
+        // Player represented as a blue circle
+        const playerImageObj = new Image();
+        playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
+        
+        const player = new Konva.Image({
+            x: stage.width() / 2 - 30,
+            y: stage.height() - 80,
+            image: playerImageObj,
+            width: 60,
+            height: 60
+        });
+        layer.add(player);
 
         // Initialize level and score
         let level = 1;
@@ -107,15 +87,26 @@
             layer.batchDraw();
         }
 
-        // Level text
+        spawnNewBoss();
+
         const levelText = new Konva.Text({
             x: stage.width() / 2 - 50,
             y: 10,
-            text: `Level ${level}`,
+            text: Level ${level},
             fontSize: 24,
             fill: 'black'
         });
         layer.add(levelText);
+
+        let playerHp = 100;
+        const playerHpBar = new Konva.Rect({
+            x: player.x() - 30,
+            y: player.y() + 40,
+            width: playerHp,
+            height: 10,
+            fill: 'green'
+        });
+        layer.add(playerHpBar);
 
         let isGameOver = false;
 
@@ -128,7 +119,7 @@
                 boss.destroy();
                 bossHpBar.destroy();
                 level++;
-                levelText.text(`Level ${level}`);
+                levelText.text(Level ${level});
 
                 playerHp = Math.min(100, playerHp + 50);
                 playerHpBar.width(playerHp);
@@ -280,35 +271,106 @@
                         bossBullet.y() <= player.y() + 30 &&
                         bossBullet.x() >= player.x() - 30 &&
                         bossBullet.x() <= player.x() + 30) {
-                        updatePlayerHp(10);
+                        updatePlayerHp(15); // Increased damage
                         bossBullet.hasDamagedPlayer = true;
                         bossBullet.destroy();
                     }
 
-                    if (bossBullet.x() < 0 || bossBullet.x() > stage.width() ||
-                        bossBullet.y() < 0 || bossBullet.y() > stage.height()) {
+                    if (bossBullet.y() > stage.height() || bossBullet.y() < 0 ||
+                        bossBullet.x() > stage.width() || bossBullet.x() < 0) {
                         bossBullet.destroy();
                     }
                 }, layer);
                 anim.start();
-            }, 1000);
+            }, 700); // Reduced interval for more frequent shots
         }
 
         function radialBurst() {
-            // Implement radial burst logic
+            bossShootingInterval = setInterval(() => {
+                if (isGameOver) return;
+
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const velocityX = Math.cos(angle) * 4;
+                    const velocityY = Math.sin(angle) * 4;
+
+                    const bossBullet = new Konva.Circle({
+                        x: boss.x() + boss.width() / 2,
+                        y: boss.y() + boss.height() / 2,
+                        radius: 5,
+                        fill: 'red'
+                    });
+                    layer.add(bossBullet);
+                    bossBullet.hasDamagedPlayer = false;
+
+                    const anim = new Konva.Animation(() => {
+                        bossBullet.x(bossBullet.x() + velocityX);
+                        bossBullet.y(bossBullet.y() + velocityY);
+
+                        if (!bossBullet.hasDamagedPlayer &&
+                            bossBullet.y() >= player.y() - 30 &&
+                            bossBullet.y() <= player.y() + 30 &&
+                            bossBullet.x() >= player.x() - 30 &&
+                            bossBullet.x() <= player.x() + 30) {
+                            updatePlayerHp(15);
+                            bossBullet.hasDamagedPlayer = true;
+                            bossBullet.destroy();
+                        }
+
+                        if (bossBullet.y() > stage.height() || bossBullet.y() < 0 ||
+                            bossBullet.x() > stage.width() || bossBullet.x() < 0) {
+                            bossBullet.destroy();
+                        }
+                    }, layer);
+                    anim.start();
+                }
+            }, 1000); // Increased interval for less frequent shots
         }
 
         function targetedShot() {
-            // Implement targeted shot logic
+            bossShootingInterval = setInterval(() => {
+                if (isGameOver) return;
+
+                const bossBullet = new Konva.Circle({
+                    x: boss.x() + boss.width() / 2,
+                    y: boss.y() + boss.height() / 2,
+                    radius: 5,
+                    fill: 'red'
+                });
+                layer.add(bossBullet);
+                bossBullet.hasDamagedPlayer = false;
+
+                const angle = Math.atan2(player.y() - bossBullet.y(), player.x() - bossBullet.x());
+                const velocityX = Math.cos(angle) * 5; // Adjusted speed
+                const velocityY = Math.sin(angle) * 5; // Adjusted speed
+
+                const anim = new Konva.Animation(() => {
+                    bossBullet.x(bossBullet.x() + velocityX);
+                    bossBullet.y(bossBullet.y() + velocityY);
+
+                    if (!bossBullet.hasDamagedPlayer &&
+                        bossBullet.y() >= player.y() - 30 &&
+                        bossBullet.y() <= player.y() + 30 &&
+                        bossBullet.x() >= player.x() - 30 &&
+                        bossBullet.x() <= player.x() + 30) {
+                        updatePlayerHp(15);
+                        bossBullet.hasDamagedPlayer = true;
+                        bossBullet.destroy();
+                    }
+
+                    if (bossBullet.y() > stage.height() || bossBullet.y() < 0 ||
+                        bossBullet.x() > stage.width() || bossBullet.x() < 0) {
+                        bossBullet.destroy();
+                    }
+                }, layer);
+                anim.start();
+            }, 1500); // Increased interval for less frequent shots
         }
 
-        // Game loop
-        function gameLoop() {
+        const animation = new Konva.Animation(() => {
             movePlayer();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
+        }, layer);
+        animation.start();
     </script>
 </body>
 </html>

@@ -246,9 +246,17 @@
             // Function for the boss to shoot bullets towards the player
             bossShootingInterval = setInterval(() => {
                 if (isGameOver) return; // Stop if game is over
+                
+                // Generate a random angle for the boss bullet (in radians)
+                const angle = Math.random() * Math.PI * 2; // Random angle between 0 and 2π
+
+                // Calculate velocity components
+                const velocityX = Math.cos(angle) * 5; // Speed along X
+                const velocityY = Math.sin(angle) * 5; // Speed along Y
+
                 const bossBullet = new Konva.Circle({
                     x: boss.x() + boss.width() / 2,
-                    y: boss.y() + boss.height(),
+                    y: boss.y() + boss.height() / 2,
                     radius: 5,
                     fill: 'red' // Changed to red for boss bullets
                 });
@@ -257,7 +265,8 @@
 
                 // Boss bullet movement animation
                 const anim = new Konva.Animation(() => {
-                    bossBullet.y(bossBullet.y() + 5); // Move down
+                    bossBullet.x(bossBullet.x() + velocityX); // Move in X direction
+                    bossBullet.y(bossBullet.y() + velocityY); // Move in Y direction
 
                     // Check for collision with the player
                     if (!bossBullet.hasDamagedPlayer && 
@@ -270,7 +279,8 @@
                         bossBullet.destroy(); // Destroy the bullet upon collision
                     }
 
-                    if (bossBullet.y() > stage.height()) {
+                    if (bossBullet.y() > stage.height() || bossBullet.y() < 0 || 
+                        bossBullet.x() > stage.width() || bossBullet.x() < 0) {
                         bossBullet.destroy(); // Remove bullet if it leaves the screen
                     }
                 }, layer);

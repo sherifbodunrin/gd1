@@ -24,16 +24,15 @@
         stage.add(layer);
 
         // Player represented as a blue circle
-           // Load player sprite image
-    const playerImageObj = new Image();
-    playerImageObj.src = 'https://cdn-icons-png.freepik.com/512/5983/5983847.png';
+        const playerImageObj = new Image();
+        playerImageObj.src = 'https://cdn-icons-png.freepik.com/512/5983/5983847.png';
         
-       const player = new Konva.Image({
+        const player = new Konva.Image({
             x: stage.width() / 2 - 30, // Adjust based on image width
             y: stage.height() - 80, // Adjust based on image height
             image: playerImageObj,
-            width: 60, // Adjust this based on the actual size of your image
-            height: 60 // Adjust this based on the actual size of your image
+            width: 60,
+            height: 60
         });
         layer.add(player);
 
@@ -78,11 +77,11 @@
 
         // Level text
         const levelText = new Konva.Text({
-        x: stage.width() / 2 - 50,
-        y: 10,
-        text: `Level ${level}`,  // Use backticks for string interpolation
-        fontSize: 24,
-        fill: 'black' // Set text to black
+            x: stage.width() / 2 - 50,
+            y: 10,
+            text: `Level ${level}`,  // Use backticks for string interpolation
+            fontSize: 24,
+            fill: 'black' // Set text to black
         });
         layer.add(levelText);
 
@@ -111,7 +110,7 @@
                 boss.destroy(); // Remove the old boss
                 bossHpBar.destroy(); // Remove the old boss HP bar
                 level++; // Increase the level
-                levelText.text(Level ${level}); // Update the level text
+                levelText.text(`Level ${level}`); // Update the level text
 
                 // Heal the player when the level changes
                 playerHp = Math.min(100, playerHp + 50); // Heal player by 50 (max HP = 100)

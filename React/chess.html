@@ -23,21 +23,6 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        // Add the background image
-        const backgroundImageObj = new Image();
-        backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
-        backgroundImageObj.onload = function() {
-            const background = new Konva.Image({
-                x: 0,
-                y: 0,
-                image: backgroundImageObj,
-                width: stage.width(),
-                height: stage.height()
-            });
-            layer.add(background);
-            layer.batchDraw();
-        };
-
         // Player represented as a blue circle
         const playerImageObj = new Image();
         playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';

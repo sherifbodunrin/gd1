@@ -24,11 +24,16 @@
         stage.add(layer);
 
         // Player represented as a blue circle
-        const player = new Konva.Circle({
-            x: stage.width() / 2,
-            y: stage.height() - 50,
-            radius: 30,
-            fill: 'blue'
+           // Load player sprite image
+    const playerImageObj = new Image();
+    playerImageObj.src = 'https://cdn-icons-png.freepik.com/512/5983/5983847.png';
+        
+       const player = new Konva.Image({
+            x: stage.width() / 2 - 30, // Adjust based on image width
+            y: stage.height() - 80, // Adjust based on image height
+            image: playerImageObj,
+            width: 60, // Adjust this based on the actual size of your image
+            height: 60 // Adjust this based on the actual size of your image
         });
         layer.add(player);
 

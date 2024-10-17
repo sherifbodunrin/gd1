@@ -23,68 +23,33 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        // Load the player image (spaceship)
+        // Load player image (spaceship)
         const spaceshipImage = new Image();
         spaceshipImage.src = 'https://e7.pngegg.com/pngimages/861/595/png-clipart-spaceshiptwo-spacecraft-sprite-spaceshipone-sprite-spacecraft-symmetry.png';
-        
+
+        let player;
         spaceshipImage.onload = function() {
-            const player = new Konva.Image({
-                x: stage.width() / 2 - 30, // Adjust to center
-                y: stage.height() - 100,   // Adjust to be near the bottom
+            // Player represented by spaceship image
+            player = new Konva.Image({
+                x: stage.width() / 2 - 30,  // Center the player
+                y: stage.height() - 100,    // Start near the bottom
                 image: spaceshipImage,
                 width: 60,
                 height: 60
             });
             layer.add(player);
-            layer.batchDraw();
-
-            // Initialize level and score
-            let level = 1;
-            let score = 0;
-            let playerBulletDamage = 2; // Initial bullet damage
 
             // Player HP Bar (below the player)
-            let playerHp = 100;
             const playerHpBar = new Konva.Rect({
                 x: player.x() - 30,
                 y: player.y() + 60, // Position below the player
-                width: playerHp, // Player HP starts at 100
+                width: 100, // Player HP starts at 100
                 height: 10,
                 fill: 'green'
             });
             layer.add(playerHpBar);
 
-            // Game over flag
-            let isGameOver = false;
-
-            // Player movement and HP update logic remains unchanged
-            function updatePlayerHp(damage) {
-                if (isGameOver) return;
-                playerHp = Math.max(0, playerHp - damage);
-                playerHpBar.width(playerHp);
-                if (playerHp === 0) {
-                    console.log('Player defeated! Game Over! Your score: ' + score);
-                    isGameOver = true;
-                    clearInterval(bossShootingInterval);
-                }
-                layer.batchDraw();
-            }
-
-            const keysPressed = {};
-            window.addEventListener('keydown', (e) => {
-                keysPressed[e.key] = true;
-                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                    e.preventDefault();
-                }
-                if (e.key === ' ' && !isGameOver) {
-                    shootBullet();
-                }
-            });
-
-            window.addEventListener('keyup', (e) => {
-                keysPressed[e.key] = false;
-            });
-
+            // Function to move the player and keep HP bar aligned
             function movePlayer() {
                 if (isGameOver) return;
                 if (keysPressed['ArrowLeft']) {
@@ -104,23 +69,161 @@
                     playerHpBar.y(player.y() + 60);
                 }
 
+                // Boundaries to prevent the player from going off-screen
                 if (player.x() < 0) player.x(0);
-                if (player.x() > stage.width() - 60) player.x(stage.width() - 60); // Adjust for image width
+                if (player.x() > stage.width() - player.width()) player.x(stage.width() - player.width());
                 if (player.y() < 0) player.y(0);
-                if (player.y() > stage.height() - 60) player.y(stage.height() - 60); // Adjust for image height
+                if (player.y() > stage.height() - player.height()) player.y(stage.height() - player.height());
 
                 layer.batchDraw();
             }
 
-            function animate() {
-                movePlayer();
-                requestAnimationFrame(animate);
+            // Bullet shooting function (Player)
+            function shootBullet() {
+                if (isGameOver) return;
+                const bullet = new Konva.Circle({
+                    x: player.x() + player.width() / 2,
+                    y: player.y() - 30,
+                    radius: 5,
+                    fill: 'lime'
+                });
+                layer.add(bullet);
+                bullet.hasDamagedBoss = false;
+
+                const anim = new Konva.Animation(() => {
+                    bullet.y(bullet.y() - 10);
+                    if (!bullet.hasDamagedBoss && bullet.y() <= boss.y() + boss.height() &&
+                        bullet.y() >= boss.y() &&
+                        bullet.x() >= boss.x() - 10 &&
+                        bullet.x() <= boss.x() + boss.width() + 10) {
+                        updateBossHp(playerBulletDamage);
+                        bullet.hasDamagedBoss = true;
+                        bullet.destroy();
+                    }
+                    if (bullet.y() < 0) {
+                        bullet.destroy();
+                    }
+                }, layer);
+                anim.start();
             }
+
+            // Continue with the rest of the game setup...
+
+            // Event listener to shoot when space is pressed
+            window.addEventListener('keydown', (e) => {
+                keysPressed[e.key] = true;
+                if (e.key === ' ' && !isGameOver) {
+                    shootBullet();
+                }
+            });
+
+            // Start animation loop
             animate();
         };
 
-        // Other game logic such as boss spawning, shooting, etc. remains unchanged
-        // ...
+        // Initialize level, score, etc.
+        let level = 1;
+        let score = 0;
+        let playerBulletDamage = 2;
+        let playerHp = 100;
+        let isGameOver = false;
+
+        const keysPressed = {};
+
+        window.addEventListener('keydown', (e) => {
+            keysPressed[e.key] = true;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keysPressed[e.key] = false;
+        });
+
+        // Animation loop
+        function animate() {
+            movePlayer();
+            requestAnimationFrame(animate);
+        }
+
+        // Functions related to the boss, player HP, level, and game over remain the same as the original code
+        function spawnNewBoss() {
+            const bossColors = ['red', 'green', 'orange', 'purple', 'cyan'];
+            const randomColor = bossColors[Math.floor(Math.random() * bossColors.length)];
+
+            boss = new Konva.Rect({
+                x: stage.width() / 2 - 50,
+                y: 50,
+                width: 100,
+                height: 100,
+                fill: randomColor
+            });
+            layer.add(boss);
+
+            bossHp = 100 + (level - 1) * 20;
+            bossHpBar = new Konva.Rect({
+                x: boss.x(),
+                y: boss.y() - 20,
+                width: bossHp,
+                height: 10,
+                fill: 'green'
+            });
+            layer.add(bossHpBar);
+
+            layer.batchDraw();
+        }
+
+        function updateBossHp(damage) {
+            if (isGameOver) return;
+            bossHp = Math.max(0, bossHp - damage);
+            bossHpBar.width(bossHp);
+            if (bossHp === 0) {
+                score += level * 10;
+                boss.destroy();
+                bossHpBar.destroy();
+                level++;
+                playerHp = Math.min(100, playerHp + 50);
+                spawnNewBoss();
+                clearInterval(bossShootingInterval);
+                setBossShootingPattern();
+            }
+            layer.batchDraw();
+        }
+
+        // Rest of the game logic remains the same
+        setBossShootingPattern();
+
+        function setBossShootingPattern() {
+            bossShootingInterval = setInterval(() => {
+                if (isGameOver) return;
+                const bossBullet = new Konva.Circle({
+                    x: boss.x() + boss.width() / 2,
+                    y: boss.y() + boss.height(),
+                    radius: 5,
+                    fill: 'red'
+                });
+                layer.add(bossBullet);
+                bossBullet.hasDamagedPlayer = false;
+
+                const anim = new Konva.Animation(() => {
+                    bossBullet.y(bossBullet.y() + 5);
+                    if (!bossBullet.hasDamagedPlayer &&
+                        bossBullet.y() >= player.y() - 30 &&
+                        bossBullet.y() <= player.y() + 30 &&
+                        bossBullet.x() >= player.x() - 30 &&
+                        bossBullet.x() <= player.x() + 30) {
+                        updatePlayerHp(10);
+                        bossBullet.hasDamagedPlayer = true;
+                        bossBullet.destroy();
+                    }
+                    if (bossBullet.y() > stage.height()) {
+                        bossBullet.destroy();
+                    }
+                }, layer);
+                anim.start();
+            }, 1000);
+        }
 
     </script>
 </body>

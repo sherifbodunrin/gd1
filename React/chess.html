@@ -1,361 +1,319 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boss Battle Game</title>
-    <script src="https://cdn.jsdelivr.net/npm/konva@8.3.0/konva.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grand Royal Chess</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .move-log {
+      margin-left: 20px;
+      border-left: 1px solid #ccc;
+      padding-left: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .chess-board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      width: 480px; /* Increased size */
+      height: 480px; /* Increased size */
+      margin-bottom: 20px;
+    }
+    .chess-square {
+      width: 60px; /* Increased size */
+      height: 60px; /* Increased size */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <div id="container"></div>
-    <script>
-        const stage = new Konva.Stage({
-            container: 'container',
-            width: window.innerWidth,
-            height: window.innerHeight
-        });
-        const layer = new Konva.Layer();
-        stage.add(layer);
+  <div id="root"></div>
 
-        // Player represented as a blue circle
-        const playerImageObj = new Image();
-        playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
-        
-        const player = new Konva.Image({
-            x: stage.width() / 2 - 30,
-            y: stage.height() - 80,
-            image: playerImageObj,
-            width: 60,
-            height: 60
-        });
-        layer.add(player);
+  <script type="text/babel" data-presets="react,stage-3">
+    const initialGameState = [
+      ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+      ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', ''],
+      ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+      ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+    ];
 
-        // Initialize level and score
-        let level = 1;
-        let score = 0;
-        let playerBulletDamage = 2;
+    const pieceImages = {
+      'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+      'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+      'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
+      'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
+      'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
+      'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+      'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+      'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+      'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
+      'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
+      'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+      'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
+    };
 
-        let bossHp;
-        let boss;
-        let bossHpBar;
+    function Game() {
+      const [game, setGame] = React.useState(initialGameState);
+      const [selectedSquare, setSelectedSquare] = React.useState(null);
+      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
+      const [moveLog, setMoveLog] = React.useState([]);
+      const [gameOverMessage, setGameOverMessage] = React.useState("");
+      const [isTTSOn, setIsTTSOn] = React.useState(false);
+      const [isGameStarted, setIsGameStarted] = React.useState(false);
+      const [timeLeft, setTimeLeft] = React.useState(300); // 5 minutes in seconds
+      const [timerInterval, setTimerInterval] = React.useState(null);
 
-        // Load the boss image
-        const bossImageObj = new Image();
-        bossImageObj.src = 'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623'; // Replace with your boss image URL
-        
-        function spawnNewBoss() {
-            boss = new Konva.Image({
-                x: stage.width() / 2 - 50,
-                y: 50,
-                image: bossImageObj,
-                width: 100,
-                height: 100
-            });
-            layer.add(boss);
+      React.useEffect(() => {
+        if (isGameStarted && timeLeft > 0) {
+          const interval = setInterval(() => {
+            setTimeLeft(prevTime => prevTime - 1);
+          }, 1000);
+          setTimerInterval(interval);
+          return () => clearInterval(interval);
+        }
+        if (timeLeft === 0) {
+          setGameOverMessage(`${isWhiteTurn ? "Black" : "White"} wins by timeout!`);
+          clearInterval(timerInterval);
+        }
+      }, [isGameStarted, timeLeft, isWhiteTurn]);
 
-            bossHp = 100 + (level - 1) * 20;
-            bossHpBar = new Konva.Rect({
-                x: boss.x(),
-                y: boss.y() - 20,
-                width: bossHp,
-                height: 10,
-                fill: 'green'
-            });
-            layer.add(bossHpBar);
+      const validateMove = (fromRow, fromCol, toRow, toCol) => {
+        const piece = game[fromRow][fromCol];
+        const targetPiece = game[toRow][toCol];
 
-            layer.batchDraw();
+        if (piece === '') return false;
+
+        const isMovingWhite = piece === piece.toUpperCase();
+        const isTargetEmptyOrOpponent = !targetPiece || (isMovingWhite !== (targetPiece === targetPiece.toUpperCase()));
+
+        if (!isTargetEmptyOrOpponent) return false;
+
+        if (targetPiece === 'k' || targetPiece === 'K') {
+          setGameOverMessage(isWhiteTurn ? "White wins by checkmate!" : "Black wins by checkmate!");
+          announceMove("Checkmate!");
+          return true;
         }
 
-        spawnNewBoss();
+        switch (piece.toLowerCase()) {
+          case 'p':
+            const direction = isMovingWhite ? -1 : 1;
+            const startRow = isMovingWhite ? 6 : 1;
+            const hasMoved = (isMovingWhite && fromRow < 6) || (!isMovingWhite && fromRow > 1);
 
-        const levelText = new Konva.Text({
-            x: stage.width() / 2 - 50,
-            y: 10,
-            text: Level ${level},
-            fontSize: 24,
-            fill: 'black'
-        });
-        layer.add(levelText);
-
-        let playerHp = 100;
-        const playerHpBar = new Konva.Rect({
-            x: player.x() - 30,
-            y: player.y() + 40,
-            width: playerHp,
-            height: 10,
-            fill: 'green'
-        });
-        layer.add(playerHpBar);
-
-        let isGameOver = false;
-
-        function updateBossHp(damage) {
-            if (isGameOver) return;
-            bossHp = Math.max(0, bossHp - damage);
-            bossHpBar.width(bossHp);
-            if (bossHp === 0) {
-                score += level * 10;
-                boss.destroy();
-                bossHpBar.destroy();
-                level++;
-                levelText.text(Level ${level});
-
-                playerHp = Math.min(100, playerHp + 50);
-                playerHpBar.width(playerHp);
-
-                spawnNewBoss();
-                clearInterval(bossShootingInterval);
-                setRandomBossShootingPattern();
+            if (toCol === fromCol && targetPiece === '') {
+              if (toRow === fromRow + direction) return true;
+              if (!hasMoved && toRow === fromRow + 2 * direction && game[fromRow + direction][fromCol] === '') return true;
+            } else if (Math.abs(toCol - fromCol) === 1 && toRow === fromRow + direction) {
+              return !!targetPiece;
             }
-            layer.batchDraw();
-        }
+            break;
 
-        function updatePlayerHp(damage) {
-            if (isGameOver) return;
-            playerHp = Math.max(0, playerHp - damage);
-            playerHpBar.width(playerHp);
-            if (playerHp === 0) {
-                const gameOverOverlay = new Konva.Rect({
-                    x: 0,
-                    y: 0,
-                    width: stage.width(),
-                    height: stage.height(),
-                    fill: 'black',
-                    opacity: 0.8
-                });
-                layer.add(gameOverOverlay);
-
-                const highestLevelText = new Konva.Text({
-                    x: stage.width() / 2 - 150,
-                    y: stage.height() / 2 - 50,
-                    text: 'Game Over! Your highest level: ' + level,
-                    fontSize: 36,
-                    fill: 'white'
-                });
-                layer.add(highestLevelText);
-
-                layer.batchDraw();
-                clearInterval(bossShootingInterval);
-                isGameOver = true;
+          case 'r':
+            if (toRow === fromRow || toCol === fromCol) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
             }
-            layer.batchDraw();
-        }
+            break;
 
-        function shootBullet() {
-            if (isGameOver) return;
-            const bullet = new Konva.Circle({
-                x: player.x(),
-                y: player.y() - 30,
-                radius: 5,
-                fill: 'lime'
-            });
-            layer.add(bullet);
-            bullet.hasDamagedBoss = false;
-
-            const anim = new Konva.Animation(() => {
-                bullet.y(bullet.y() - 10);
-
-                if (!bullet.hasDamagedBoss && bullet.y() <= boss.y() + boss.height() &&
-                    bullet.y() >= boss.y() &&
-                    bullet.x() >= boss.x() - 10 &&
-                    bullet.x() <= boss.x() + boss.width() + 10) {
-                    updateBossHp(playerBulletDamage);
-                    bullet.hasDamagedBoss = true;
-                    bullet.destroy();
-                }
-
-                if (bullet.y() < 0) {
-                    bullet.destroy();
-                }
-            }, layer);
-            anim.start();
-        }
-
-        const keysPressed = {};
-
-        window.addEventListener('keydown', (e) => {
-            keysPressed[e.key] = true;
-
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
+          case 'n':
+            if ((Math.abs(toRow - fromRow) === 2 && Math.abs(toCol - fromCol) === 1) ||
+                (Math.abs(toRow - fromRow) === 1 && Math.abs(toCol - fromCol) === 2)) {
+              return true;
             }
+            break;
 
-            if (e.key === ' ' && !isGameOver) {
-                shootBullet();
+          case 'b':
+            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol)) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
             }
-        });
+            break;
 
-        window.addEventListener('keyup', (e) => {
-            keysPressed[e.key] = false;
-        });
-
-        function movePlayer() {
-            if (isGameOver) return;
-            if (keysPressed['ArrowLeft']) {
-                player.x(player.x() - 5);
-                playerHpBar.x(player.x() - 30);
+          case 'q':
+            if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol) || toRow === fromRow || toCol === fromCol) {
+              return isPathClear(fromRow, fromCol, toRow, toCol);
             }
-            if (keysPressed['ArrowRight']) {
-                player.x(player.x() + 5);
-                playerHpBar.x(player.x() - 30);
+            break;
+
+          case 'k':
+            if (Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1) {
+              return !isInCheckAfterMove(fromRow, fromCol, toRow, toCol);
             }
-            if (keysPressed['ArrowUp']) {
-                player.y(player.y() - 5);
-                playerHpBar.y(player.y() + 40);
+            break;
+
+          default:
+            return false;
+        }
+        return false;
+      };
+
+      const isInCheckAfterMove = (fromRow, fromCol, toRow, toCol) => {
+        const newGame = game.map(r => r.slice());
+        newGame[toRow][toCol] = newGame[fromRow][fromCol];
+        newGame[fromRow][fromCol] = '';
+        return isInCheck(isWhiteTurn, newGame);
+      };
+
+      const isPathClear = (fromRow, fromCol, toRow, toCol) => {
+        const rowDirection = toRow === fromRow ? 0 : (toRow > fromRow ? 1 : -1);
+        const colDirection = toCol === fromCol ? 0 : (toCol > fromCol ? 1 : -1);
+
+        let currentRow = fromRow + rowDirection;
+        let currentCol = fromCol + colDirection;
+
+        while (currentRow !== toRow || currentCol !== toCol) {
+          if (game[currentRow][currentCol] !== '') {
+            return false;
+          }
+          currentRow += rowDirection;
+          currentCol += colDirection;
+        }
+        return true;
+      };
+
+      const isInCheck = (isWhite, gameState) => {
+        const kingRow = isWhite ? findKing('K', gameState) : findKing('k', gameState);
+        const opponentPieces = isWhite ? 'rnbq' : 'RNBQ';
+
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const piece = gameState[row][col];
+            if (piece && opponentPieces.includes(piece.toLowerCase())) {
+              if (validateMove(row, col, kingRow.row, kingRow.col)) {
+                return true;
+              }
             }
-            if (keysPressed['ArrowDown']) {
-                player.y(player.y() + 5);
-                playerHpBar.y(player.y() + 40);
+          }
+        }
+        return false;
+      };
+
+      const findKing = (king, gameState) => {
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            if (gameState[row][col] === king) {
+              return { row, col };
             }
-
-            if (player.x() < 0) player.x(0);
-            if (player.x() > stage.width()) player.x(stage.width());
-            if (player.y() < 0) player.y(0);
-            if (player.y() > stage.height()) player.y(stage.height());
-
-            layer.batchDraw();
+          }
         }
+        return null;
+      };
 
-        let bossShootingInterval;
+      const handleSquareClick = (row, col) => {
+        if (selectedSquare) {
+          const [fromRow, fromCol] = selectedSquare;
+          const pieceMoved = game[fromRow][fromCol];
 
-        function setRandomBossShootingPattern() {
-            const patterns = [randomSpread, radialBurst, targetedShot];
-            const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
-            randomPattern();
+          if (validateMove(fromRow, fromCol, row, col)) {
+            const newGame = game.map(r => r.slice());
+            newGame[row][col] = newGame[fromRow][fromCol];
+            newGame[fromRow][fromCol] = '';
+
+            setGame(newGame);
+            const pieceName = pieceMoved.toLowerCase() === 'p' ? 'Pawn' :
+                              pieceMoved.toLowerCase() === 'r' ? 'Rook' :
+                              pieceMoved.toLowerCase() === 'n' ? 'Knight' :
+                              pieceMoved.toLowerCase() === 'b' ? 'Bishop' :
+                              pieceMoved.toLowerCase() === 'q' ? 'Queen' : 'King';
+            const moveNotation = `${pieceName} moved from ${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`;
+            setMoveLog([...moveLog, moveNotation]);
+            announceMove(moveNotation, pieceName);
+            setIsWhiteTurn(!isWhiteTurn);
+            setSelectedSquare(null);
+            setTimeLeft(300); // Reset timer for next player
+          } else {
+            setSelectedSquare(null);
+          }
+        } else {
+          if (game[row][col] !== '' && (isWhiteTurn === (game[row][col] === game[row][col].toUpperCase()))) {
+            setSelectedSquare([row, col]);
+          }
         }
+      };
 
-        function randomSpread() {
-            bossShootingInterval = setInterval(() => {
-                if (isGameOver) return;
+      const restartGame = () => {
+        setGame(initialGameState);
+        setMoveLog([]);
+        setGameOverMessage("");
+        setIsWhiteTurn(true);
+        setIsGameStarted(false);
+        setTimeLeft(300); // Reset timer
+        clearInterval(timerInterval);
+      };
 
-                const angle = Math.random() * Math.PI * 2;
-                const velocityX = Math.cos(angle) * 7; // Increased speed
-                const velocityY = Math.sin(angle) * 7; // Increased speed
+      const startGame = () => {
+        setIsGameStarted(true); // Start the game
+      };
 
-                const bossBullet = new Konva.Circle({
-                    x: boss.x() + boss.width() / 2,
-                    y: boss.y() + boss.height() / 2,
-                    radius: 5,
-                    fill: 'red'
-                });
-                layer.add(bossBullet);
-                bossBullet.hasDamagedPlayer = false;
-
-                const anim = new Konva.Animation(() => {
-                    bossBullet.x(bossBullet.x() + velocityX);
-                    bossBullet.y(bossBullet.y() + velocityY);
-
-                    if (!bossBullet.hasDamagedPlayer &&
-                        bossBullet.y() >= player.y() - 30 &&
-                        bossBullet.y() <= player.y() + 30 &&
-                        bossBullet.x() >= player.x() - 30 &&
-                        bossBullet.x() <= player.x() + 30) {
-                        updatePlayerHp(15); // Increased damage
-                        bossBullet.hasDamagedPlayer = true;
-                        bossBullet.destroy();
-                    }
-
-                    if (bossBullet.y() > stage.height() || bossBullet.y() < 0 ||
-                        bossBullet.x() > stage.width() || bossBullet.x() < 0) {
-                        bossBullet.destroy();
-                    }
-                }, layer);
-                anim.start();
-            }, 700); // Reduced interval for more frequent shots
+      const announceMove = (move, pieceName) => {
+        if (isTTSOn) {
+          const utterance = new SpeechSynthesisUtterance(`${pieceName} ${move}`);
+          speechSynthesis.speak(utterance);
         }
+      };
 
-        function radialBurst() {
-            bossShootingInterval = setInterval(() => {
-                if (isGameOver) return;
+      return (
+        <div>
+          {!isGameStarted ? (
+            <div className="start-screen">
+              <h1>Grand Royal Chess</h1>
+              <button onClick={startGame}>Start Game</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <h2>{gameOverMessage || `Current Turn: ${isWhiteTurn ? 'White' : 'Black'} | Time Left: ${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}`}</h2>
+              <div className="chess-board">
+                {game.map((row, rowIndex) => row.map((piece, colIndex) => (
+                  <div key={`${rowIndex}-${colIndex}`}
+                    className="chess-square"
+                    style={{
+                      backgroundColor: (rowIndex + colIndex) % 2 === 0 ? 'purple' : 'yellow',
+                      border: selectedSquare && selectedSquare[0] === rowIndex && selectedSquare[1] === colIndex ? '2px solid red' : 'none'
+                    }}
+                    onClick={() => handleSquareClick(rowIndex, colIndex)}
+                  >
+                    {piece && <img src={pieceImages[piece]} alt={piece} style={{ width: '40px', height: '40px' }} />}
+                  </div>
+                )))}
+              </div>
+              <div className="move-log">
+                <h3>Move Log:</h3>
+                {moveLog.map((move, index) => <div key={index}>{move}</div>)}
+                {gameOverMessage && <div style={{ fontWeight: 'bold', color: 'red' }}>{gameOverMessage}</div>}
+              </div>
+              <div>
+                <button onClick={restartGame}>Restart Game</button>
+                <label>
+                  <input type="checkbox" checked={isTTSOn} onChange={() => setIsTTSOn(!isTTSOn)} />
+                  Text-to-Speech
+                </label>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
 
-                for (let i = 0; i < 8; i++) {
-                    const angle = (i / 8) * Math.PI * 2;
-                    const velocityX = Math.cos(angle) * 4;
-                    const velocityY = Math.sin(angle) * 4;
-
-                    const bossBullet = new Konva.Circle({
-                        x: boss.x() + boss.width() / 2,
-                        y: boss.y() + boss.height() / 2,
-                        radius: 5,
-                        fill: 'red'
-                    });
-                    layer.add(bossBullet);
-                    bossBullet.hasDamagedPlayer = false;
-
-                    const anim = new Konva.Animation(() => {
-                        bossBullet.x(bossBullet.x() + velocityX);
-                        bossBullet.y(bossBullet.y() + velocityY);
-
-                        if (!bossBullet.hasDamagedPlayer &&
-                            bossBullet.y() >= player.y() - 30 &&
-                            bossBullet.y() <= player.y() + 30 &&
-                            bossBullet.x() >= player.x() - 30 &&
-                            bossBullet.x() <= player.x() + 30) {
-                            updatePlayerHp(15);
-                            bossBullet.hasDamagedPlayer = true;
-                            bossBullet.destroy();
-                        }
-
-                        if (bossBullet.y() > stage.height() || bossBullet.y() < 0 ||
-                            bossBullet.x() > stage.width() || bossBullet.x() < 0) {
-                            bossBullet.destroy();
-                        }
-                    }, layer);
-                    anim.start();
-                }
-            }, 1000); // Increased interval for less frequent shots
-        }
-
-        function targetedShot() {
-            bossShootingInterval = setInterval(() => {
-                if (isGameOver) return;
-
-                const bossBullet = new Konva.Circle({
-                    x: boss.x() + boss.width() / 2,
-                    y: boss.y() + boss.height() / 2,
-                    radius: 5,
-                    fill: 'red'
-                });
-                layer.add(bossBullet);
-                bossBullet.hasDamagedPlayer = false;
-
-                const angle = Math.atan2(player.y() - bossBullet.y(), player.x() - bossBullet.x());
-                const velocityX = Math.cos(angle) * 5; // Adjusted speed
-                const velocityY = Math.sin(angle) * 5; // Adjusted speed
-
-                const anim = new Konva.Animation(() => {
-                    bossBullet.x(bossBullet.x() + velocityX);
-                    bossBullet.y(bossBullet.y() + velocityY);
-
-                    if (!bossBullet.hasDamagedPlayer &&
-                        bossBullet.y() >= player.y() - 30 &&
-                        bossBullet.y() <= player.y() + 30 &&
-                        bossBullet.x() >= player.x() - 30 &&
-                        bossBullet.x() <= player.x() + 30) {
-                        updatePlayerHp(15);
-                        bossBullet.hasDamagedPlayer = true;
-                        bossBullet.destroy();
-                    }
-
-                    if (bossBullet.y() > stage.height() || bossBullet.y() < 0 ||
-                        bossBullet.x() > stage.width() || bossBullet.x() < 0) {
-                        bossBullet.destroy();
-                    }
-                }, layer);
-                anim.start();
-            }, 1500); // Increased interval for less frequent shots
-        }
-
-        const animation = new Konva.Animation(() => {
-            movePlayer();
-        }, layer);
-        animation.start();
-    </script>
+    ReactDOM.render(<Game />, document.getElementById('root'));
+  </script>
 </body>
 </html>

@@ -24,7 +24,7 @@
         stage.add(layer);
 
         // Add the background image
-        const backgroundImageObj = new Image();
+         const backgroundImageObj = new Image();
         backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
         backgroundImageObj.onload = function() {
             const background = new Konva.Image({
@@ -34,13 +34,13 @@
                 width: stage.width(),
                 height: stage.height()
             });
+            // Add the background first
             layer.add(background);
             layer.batchDraw();
 
-            // Load player and boss after the background is loaded
+            // Load player, boss, and text after the background
             startGame();
         };
-
         function startGame() {
             // Player represented as a blue circle
             const playerImageObj = new Image();

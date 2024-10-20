@@ -24,9 +24,9 @@
         stage.add(layer);
 
         // Add the background image
-         const backgroundImageObj = new Image();
+        const backgroundImageObj = new Image();
         backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
-        backgroundImageObj.onload = function() {
+        backgroundImageObj.onload = function () {
             const background = new Konva.Image({
                 x: 0,
                 y: 0,
@@ -34,372 +34,344 @@
                 width: stage.width(),
                 height: stage.height()
             });
-            // Add the background first
             layer.add(background);
             layer.batchDraw();
 
             // Load player, boss, and text after the background
             startGame();
         };
+
         function startGame() {
             // Player represented as a blue circle
             const playerImageObj = new Image();
             playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
-            
-            const player = new Konva.Image({
-                x: stage.width() / 2 - 30,
-                y: stage.height() - 80,
-                image: playerImageObj,
-                width: 60,
-                height: 60
-            });
-            layer.add(player);
-
-            // Initialize level and score
-            let level = 1;
-            let score = 0;
-            let playerBulletDamage = 2;
-
-            let bossHp;
-            let boss;
-            let bossHpBar;
-
-            // Load the boss image
-            const bossImageObj = new Image();
-            bossImageObj.src = 'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623'; // Replace with your boss image URL
-            
-            function spawnNewBoss() {
-                boss = new Konva.Image({
-                    x: stage.width() / 2 - 50,
-                    y: 50,
-                    image: bossImageObj,
-                    width: 100,
-                    height: 100
+            playerImageObj.onload = function () {
+                const player = new Konva.Image({
+                    x: stage.width() / 2 - 30,
+                    y: stage.height() - 80,
+                    image: playerImageObj,
+                    width: 60,
+                    height: 60
                 });
-                layer.add(boss);
+                layer.add(player);
 
-                bossHp = 100 + (level - 1) * 20;
-                bossHpBar = new Konva.Rect({
-                    x: boss.x(),
-                    y: boss.y() - 20,
-                    width: bossHp,
+                let playerHp = 100;
+                const playerHpBar = new Konva.Rect({
+                    x: player.x() - 30,
+                    y: player.y() + 40,
+                    width: playerHp,
                     height: 10,
                     fill: 'green'
                 });
-                layer.add(bossHpBar);
+                layer.add(playerHpBar);
 
-                layer.batchDraw();
-            }
+                let level = 1;
+                let score = 0;
+                let bossHp;
+                let boss, bossHpBar;
+                let isGameOver = false;
+                let bossShootingInterval;
 
-            spawnNewBoss();
+                function spawnNewBoss() {
+                    const bossImageObj = new Image();
+                    bossImageObj.src = 'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623'; // Replace with your boss image URL
+                    bossImageObj.onload = function () {
+                        boss = new Konva.Image({
+                            x: stage.width() / 2 - 50,
+                            y: 50,
+                            image: bossImageObj,
+                            width: 100,
+                            height: 100
+                        });
+                        layer.add(boss);
 
-            const levelText = new Konva.Text({
-                x: stage.width() / 2 - 50,
-                y: 10,
-                text: `Level ${level}`,
-                fontSize: 24,
-                fill: 'black'
-            });
-            layer.add(levelText);
+                        bossHp = 100 + (level - 1) * 20;
+                        bossHpBar = new Konva.Rect({
+                            x: boss.x(),
+                            y: boss.y() - 20,
+                            width: bossHp,
+                            height: 10,
+                            fill: 'green'
+                        });
+                        layer.add(bossHpBar);
 
-            let playerHp = 100;
-            const playerHpBar = new Konva.Rect({
-                x: player.x() - 30,
-                y: player.y() + 40,
-                width: playerHp,
-                height: 10,
-                fill: 'green'
-            });
-            layer.add(playerHpBar);
-
-            let isGameOver = false;
-
-            function updateBossHp(damage) {
-                if (isGameOver) return;
-                bossHp = Math.max(0, bossHp - damage);
-                bossHpBar.width(bossHp);
-                if (bossHp === 0) {
-                    score += level * 10;
-                    boss.destroy();
-                    bossHpBar.destroy();
-                    level++;
-                    levelText.text(`Level ${level}`);
-
-                    playerHp = Math.min(100, playerHp + 50);
-                    playerHpBar.width(playerHp);
-
-                    spawnNewBoss();
-                    clearInterval(bossShootingInterval);
-                    setRandomBossShootingPattern();
+                        layer.batchDraw();
+                    };
                 }
-                layer.batchDraw();
-            }
 
-            function updatePlayerHp(damage) {
-                if (isGameOver) return;
-                playerHp = Math.max(0, playerHp - damage);
-                playerHpBar.width(playerHp);
-                if (playerHp === 0) {
-                    const gameOverOverlay = new Konva.Rect({
-                        x: 0,
-                        y: 0,
-                        width: stage.width(),
-                        height: stage.height(),
-                        fill: 'black',
-                        opacity: 0.8
-                    });
-                    layer.add(gameOverOverlay);
-
-                    const highestLevelText = new Konva.Text({
-                        x: stage.width() / 2 - 150,
-                        y: stage.height() / 2 - 50,
-                        text: 'Game Over! Your highest level: ' + level,
-                        fontSize: 36,
-                        fill: 'white'
-                    });
-                    layer.add(highestLevelText);
-
-                    layer.batchDraw();
-                    clearInterval(bossShootingInterval);
-                    isGameOver = true;
-                }
-                layer.batchDraw();
-            }
-
-            function shootBullet() {
-                if (isGameOver) return;
-                const bullet = new Konva.Circle({
-                    x: player.x(),
-                    y: player.y() - 30,
-                    radius: 5,
-                    fill: 'lime'
+                const levelText = new Konva.Text({
+                    x: stage.width() / 2 - 50,
+                    y: 10,
+                    text: `Level ${level}`,
+                    fontSize: 24,
+                    fill: 'black'
                 });
-                layer.add(bullet);
-                bullet.hasDamagedBoss = false;
+                layer.add(levelText);
 
-                const anim = new Konva.Animation(() => {
-                    bullet.y(bullet.y() - 10);
-
-                    if (!bullet.hasDamagedBoss && bullet.y() <= boss.y() + boss.height() &&
-                        bullet.y() >= boss.y() &&
-                        bullet.x() >= boss.x() - 10 &&
-                        bullet.x() <= boss.x() + boss.width() + 10) {
-                        updateBossHp(playerBulletDamage);
-                        bullet.hasDamagedBoss = true;
-                        bullet.destroy();
-                    }
-
-                    if (bullet.y() < 0) {
-                        bullet.destroy();
-                    }
-                }, layer);
-                anim.start();
-            }
-
-            const keysPressed = {};
-
-            window.addEventListener('keydown', (e) => {
-                keysPressed[e.key] = true;
-
-                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                    e.preventDefault();
-                }
-
-                if (e.key === ' ' && !isGameOver) {
-                    shootBullet();
-                }
-            });
-
-            window.addEventListener('keyup', (e) => {
-                keysPressed[e.key] = false;
-            });
-
-            function movePlayer() {
-                if (isGameOver) return;
-                if (keysPressed['ArrowLeft']) {
-                    player.x(player.x() - 5);
-                    playerHpBar.x(player.x() - 30);
-                }
-                if (keysPressed['ArrowRight']) {
-                    player.x(player.x() + 5);
-                    playerHpBar.x(player.x() - 30);
-                }
-                if (keysPressed['ArrowUp']) {
-                    player.y(player.y() - 5);
-                    playerHpBar.y(player.y() + 40);
-                }
-                if (keysPressed['ArrowDown']) {
-                    player.y(player.y() + 5);
-                    playerHpBar.y(player.y() + 40);
-                }
-
-                if (player.x() < 0) player.x(0);
-                if (player.x() > stage.width()) player.x(stage.width());
-                if (player.y() < 0) player.y(0);
-                if (player.y() > stage.height()) player.y(stage.height());
-
-                layer.batchDraw();
-            }
-
-            let bossShootingInterval;
-
-            function setRandomBossShootingPattern() {
-                const patterns = [randomSpread, radialBurst, targetedShot];
-                const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
-                randomPattern();
-            }
-
-            function randomSpread() {
-                bossShootingInterval = setInterval(() => {
+                function updateBossHp(damage) {
                     if (isGameOver) return;
+                    bossHp = Math.max(0, bossHp - damage);
+                    bossHpBar.width(bossHp);
+                    if (bossHp === 0) {
+                        score += level * 10;
+                        boss.destroy();
+                        bossHpBar.destroy();
+                        level++;
+                        levelText.text(`Level ${level}`);
 
-                    const angle = Math.random() * Math.PI * 2;
-                    const velocityX = Math.cos(angle) * 7;
-                    const velocityY = Math.sin(angle) * 7;
+                        playerHp = Math.min(100, playerHp + 50);
+                        playerHpBar.width(playerHp);
 
-                    const bossBullet = new Konva.Circle({
-                        x: boss.x() + boss.width() / 2,
-                        y: boss.y() + boss.height() / 2,
+                        spawnNewBoss();
+                        clearInterval(bossShootingInterval);
+                        setRandomBossShootingPattern();
+                    }
+                    layer.batchDraw();
+                }
+
+                function updatePlayerHp(damage) {
+                    if (isGameOver) return;
+                    playerHp = Math.max(0, playerHp - damage);
+                    playerHpBar.width(playerHp);
+                    if (playerHp === 0) {
+                        const gameOverOverlay = new Konva.Rect({
+                            x: 0,
+                            y: 0,
+                            width: stage.width(),
+                            height: stage.height(),
+                            fill: 'black',
+                            opacity: 0.8
+                        });
+                        layer.add(gameOverOverlay);
+
+                        const highestLevelText = new Konva.Text({
+                            x: stage.width() / 2 - 150,
+                            y: stage.height() / 2 - 50,
+                            text: 'Game Over! Your highest level: ' + level,
+                            fontSize: 36,
+                            fill: 'white'
+                        });
+                        layer.add(highestLevelText);
+
+                        layer.batchDraw();
+                        clearInterval(bossShootingInterval);
+                        isGameOver = true;
+                    }
+                    layer.batchDraw();
+                }
+
+                function shootBullet() {
+                    if (isGameOver) return;
+                    const bullet = new Konva.Circle({
+                        x: player.x() + player.width() / 2,
+                        y: player.y() - 30,
                         radius: 5,
-                        fill: 'red'
+                        fill: 'lime'
                     });
-                    layer.add(bossBullet);
-                    bossBullet.hasDamagedPlayer = false;
+                    layer.add(bullet);
+                    bullet.hasDamagedBoss = false;
 
                     const anim = new Konva.Animation(() => {
-                        bossBullet.x(bossBullet.x() + velocityX);
-                        bossBullet.y(bossBullet.y() + velocityY);
+                        bullet.y(bullet.y() - 10);
 
-                        if (!bossBullet.hasDamagedPlayer &&
-                            bossBullet.y() >= player.y() - 30 &&
-                            bossBullet.y() <= player.y() + 30 &&
-                            bossBullet.x() >= player.x() - 30 &&
-                            bossBullet.x() <= player.x() + 30) {
-                            updatePlayerHp(15);
-                            bossBullet.hasDamagedPlayer = true;
-                            bossBullet.destroy();
+                        if (!bullet.hasDamagedBoss &&
+                            bullet.y() <= boss.y() + boss.height() &&
+                            bullet.y() >= boss.y() &&
+                            bullet.x() >= boss.x() - 10 &&
+                            bullet.x() <= boss.x() + boss.width() + 10) {
+                            updateBossHp(2);
+                            bullet.hasDamagedBoss = true;
+                            bullet.destroy();
                         }
 
-                        if (bossBullet.y() < 0 || bossBullet.y() > stage.height() ||
-                            bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
-                            bossBullet.destroy();
+                        if (bullet.y() < 0) {
+                            bullet.destroy();
                         }
                     }, layer);
                     anim.start();
-                }, 400);
-            }
-
-            function radialBurst() {
-                const bulletCount = 12; // Number of bullets to fire in the burst
-    const bulletSpeed = 5;  // Speed of the bullets
-
-    bossShootingInterval = setInterval(() => {
-        if (isGameOver) return;
-
-        // Calculate the angle step for each bullet
-        const angleStep = (2 * Math.PI) / bulletCount;
-
-        for (let i = 0; i < bulletCount; i++) {
-            const angle = i * angleStep;
-
-            const velocityX = Math.cos(angle) * bulletSpeed;
-            const velocityY = Math.sin(angle) * bulletSpeed;
-
-            const bossBullet = new Konva.Circle({
-                x: boss.x() + boss.width() / 2,
-                y: boss.y() + boss.height() / 2,
-                radius: 5,
-                fill: 'red'
-            });
-            layer.add(bossBullet);
-            bossBullet.hasDamagedPlayer = false;
-
-            const anim = new Konva.Animation(() => {
-                bossBullet.x(bossBullet.x() + velocityX);
-                bossBullet.y(bossBullet.y() + velocityY);
-
-                // Check if the bullet hits the player
-                if (!bossBullet.hasDamagedPlayer &&
-                    bossBullet.y() >= player.y() - 30 &&
-                    bossBullet.y() <= player.y() + 30 &&
-                    bossBullet.x() >= player.x() - 30 &&
-                    bossBullet.x() <= player.x() + 30) {
-                    updatePlayerHp(15);
-                    bossBullet.hasDamagedPlayer = true;
-                    bossBullet.destroy();
                 }
 
-                // Destroy bullet if it goes off-screen
-                if (bossBullet.y() < 0 || bossBullet.y() > stage.height() ||
-                    bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
-                    bossBullet.destroy();
+                const keysPressed = {};
+
+                window.addEventListener('keydown', (e) => {
+                    keysPressed[e.key] = true;
+
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                        e.preventDefault();
+                    }
+
+                    if (e.key === ' ' && !isGameOver) {
+                        shootBullet();
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    keysPressed[e.key] = false;
+                });
+
+                function movePlayer() {
+                    if (isGameOver) return;
+                    if (keysPressed['ArrowLeft']) {
+                        player.x(Math.max(0, player.x() - 5));
+                        playerHpBar.x(player.x() - 30);
+                    }
+                    if (keysPressed['ArrowRight']) {
+                        player.x(Math.min(stage.width() - player.width(), player.x() + 5));
+                        playerHpBar.x(player.x() - 30);
+                    }
+                    if (keysPressed['ArrowUp']) {
+                        player.y(Math.max(0, player.y() - 5));
+                        playerHpBar.y(player.y() + 40);
+                    }
+                    if (keysPressed['ArrowDown']) {
+                        player.y(Math.min(stage.height() - player.height(), player.y() + 5));
+                        playerHpBar.y(player.y() + 40);
+                    }
+
+                    layer.batchDraw();
                 }
-            }, layer);
-            anim.start();
-        }
-    }, 1500); // Fire a radial burst every 1.5 seconds
-            }
 
-            function targetedShot() {
-const bulletSpeed = 6;  // Speed of the bullets
+                function setRandomBossShootingPattern() {
+                    const patterns = [randomSpread, radialBurst, targetedShot];
+                    const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                    randomPattern();
+                }
 
-    bossShootingInterval = setInterval(() => {
-        if (isGameOver) return;
+                function randomSpread() {
+                    bossShootingInterval = setInterval(() => {
+                        if (isGameOver) return;
 
-        // Calculate the direction to the player
-        const playerX = player.x() + player.width() / 2;
-        const playerY = player.y() + player.height() / 2;
+                        const angle = Math.random() * Math.PI * 2;
+                        const velocityX = Math.cos(angle) * 7;
+                        const velocityY = Math.sin(angle) * 7;
 
-        const bossX = boss.x() + boss.width() / 2;
-        const bossY = boss.y() + boss.height() / 2;
+                        const bossBullet = new Konva.Circle({
+                            x: boss.x() + boss.width() / 2,
+                            y: boss.y() + boss.height() / 2,
+                            radius: 5,
+                            fill: 'red'
+                        });
+                        layer.add(bossBullet);
+                        bossBullet.hasDamagedPlayer = false;
 
-        const directionX = playerX - bossX;
-        const directionY = playerY - bossY;
-        const magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+                        const anim = new Konva.Animation(() => {
+                            bossBullet.x(bossBullet.x() + velocityX);
+                            bossBullet.y(bossBullet.y() + velocityY);
 
-        const velocityX = (directionX / magnitude) * bulletSpeed;
-        const velocityY = (directionY / magnitude) * bulletSpeed;
+                            if (!bossBullet.hasDamagedPlayer &&
+                                bossBullet.y() >= player.y() - 30 &&
+                                bossBullet.y() <= player.y() + player.height() + 30 &&
+                                bossBullet.x() >= player.x() - 30 &&
+                                bossBullet.x() <= player.x() + player.width() + 30) {
+                                updatePlayerHp(10);
+                                bossBullet.hasDamagedPlayer = true;
+                                bossBullet.destroy();
+                            }
 
-        // Create a bullet moving towards the player
-        const bossBullet = new Konva.Circle({
-            x: bossX,
-            y: bossY,
-            radius: 5,
-            fill: 'red'
-        });
-        layer.add(bossBullet);
-        bossBullet.hasDamagedPlayer = false;
+                            if (bossBullet.x() < 0 || bossBullet.x() > stage.width() ||
+                                bossBullet.y() < 0 || bossBullet.y() > stage.height()) {
+                                bossBullet.destroy();
+                            }
+                        }, layer);
+                        anim.start();
+                    }, 500);
+                }
 
-        const anim = new Konva.Animation(() => {
-            bossBullet.x(bossBullet.x() + velocityX);
-            bossBullet.y(bossBullet.y() + velocityY);
+                function radialBurst() {
+                    bossShootingInterval = setInterval(() => {
+                        if (isGameOver) return;
 
-            // Check if the bullet hits the player
-            if (!bossBullet.hasDamagedPlayer &&
-                bossBullet.y() >= player.y() - 30 &&
-                bossBullet.y() <= player.y() + 30 &&
-                bossBullet.x() >= player.x() - 30 &&
-                bossBullet.x() <= player.x() + 30) {
-                updatePlayerHp(15);
-                bossBullet.hasDamagedPlayer = true;
-                bossBullet.destroy();
-            }
+                        const bullets = 10;
+                        for (let i = 0; i < bullets; i++) {
+                            const angle = (i / bullets) * Math.PI * 2;
+                            const velocityX = Math.cos(angle) * 5;
+                            const velocityY = Math.sin(angle) * 5;
 
-            // Destroy bullet if it goes off-screen
-            if (bossBullet.y() < 0 || bossBullet.y() > stage.height() ||
-                bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
-                bossBullet.destroy();
-            }
-        }, layer);
-        anim.start();
+                            const bossBullet = new Konva.Circle({
+                                x: boss.x() + boss.width() / 2,
+                                y: boss.y() + boss.height() / 2,
+                                radius: 5,
+                                fill: 'red'
+                            });
+                            layer.add(bossBullet);
+                            bossBullet.hasDamagedPlayer = false;
 
-    }, 2000);  // Fire a targeted shot every 2 seconds
-            }
+                            const anim = new Konva.Animation(() => {
+                                bossBullet.x(bossBullet.x() + velocityX);
+                                bossBullet.y(bossBullet.y() + velocityY);
 
-            setRandomBossShootingPattern();
+                                if (!bossBullet.hasDamagedPlayer &&
+                                    bossBullet.y() >= player.y() - 30 &&
+                                    bossBullet.y() <= player.y() + player.height() + 30 &&
+                                    bossBullet.x() >= player.x() - 30 &&
+                                    bossBullet.x() <= player.x() + player.width() + 30) {
+                                    updatePlayerHp(10);
+                                    bossBullet.hasDamagedPlayer = true;
+                                    bossBullet.destroy();
+                                }
 
-            const anim = new Konva.Animation(movePlayer, layer);
-            anim.start();
+                                if (bossBullet.x() < 0 || bossBullet.x() > stage.width() ||
+                                    bossBullet.y() < 0 || bossBullet.y() > stage.height()) {
+                                    bossBullet.destroy();
+                                }
+                            }, layer);
+                            anim.start();
+                        }
+                    }, 1000);
+                }
+
+                function targetedShot() {
+                    bossShootingInterval = setInterval(() => {
+                        if (isGameOver) return;
+
+                        const diffX = player.x() + player.width() / 2 - (boss.x() + boss.width() / 2);
+                        const diffY = player.y() + player.height() / 2 - (boss.y() + boss.height() / 2);
+                        const magnitude = Math.sqrt(diffX * diffX + diffY * diffY);
+                        const velocityX = (diffX / magnitude) * 6;
+                        const velocityY = (diffY / magnitude) * 6;
+
+                        const bossBullet = new Konva.Circle({
+                            x: boss.x() + boss.width() / 2,
+                            y: boss.y() + boss.height() / 2,
+                            radius: 5,
+                            fill: 'red'
+                        });
+                        layer.add(bossBullet);
+                        bossBullet.hasDamagedPlayer = false;
+
+                        const anim = new Konva.Animation(() => {
+                            bossBullet.x(bossBullet.x() + velocityX);
+                            bossBullet.y(bossBullet.y() + velocityY);
+
+                            if (!bossBullet.hasDamagedPlayer &&
+                                bossBullet.y() >= player.y() - 30 &&
+                                bossBullet.y() <= player.y() + player.height() + 30 &&
+                                bossBullet.x() >= player.x() - 30 &&
+                                bossBullet.x() <= player.x() + player.width() + 30) {
+                                updatePlayerHp(10);
+                                bossBullet.hasDamagedPlayer = true;
+                                bossBullet.destroy();
+                            }
+
+                            if (bossBullet.x() < 0 || bossBullet.x() > stage.width() ||
+                                bossBullet.y() < 0 || bossBullet.y() > stage.height()) {
+                                bossBullet.destroy();
+                            }
+                        }, layer);
+                        anim.start();
+                    }, 1000);
+                }
+
+                function gameLoop() {
+                    if (isGameOver) return;
+                    movePlayer();
+                }
+
+                spawnNewBoss();
+                setRandomBossShootingPattern();
+
+                setInterval(gameLoop, 1000 / 60);
+            };
         }
     </script>
 </body>

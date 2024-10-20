@@ -290,11 +290,110 @@
             }
 
             function radialBurst() {
-                // Example: Similar to randomSpread but with a burst of bullets in all directions
+                const bulletCount = 12; // Number of bullets to fire in the burst
+    const bulletSpeed = 5;  // Speed of the bullets
+
+    bossShootingInterval = setInterval(() => {
+        if (isGameOver) return;
+
+        // Calculate the angle step for each bullet
+        const angleStep = (2 * Math.PI) / bulletCount;
+
+        for (let i = 0; i < bulletCount; i++) {
+            const angle = i * angleStep;
+
+            const velocityX = Math.cos(angle) * bulletSpeed;
+            const velocityY = Math.sin(angle) * bulletSpeed;
+
+            const bossBullet = new Konva.Circle({
+                x: boss.x() + boss.width() / 2,
+                y: boss.y() + boss.height() / 2,
+                radius: 5,
+                fill: 'red'
+            });
+            layer.add(bossBullet);
+            bossBullet.hasDamagedPlayer = false;
+
+            const anim = new Konva.Animation(() => {
+                bossBullet.x(bossBullet.x() + velocityX);
+                bossBullet.y(bossBullet.y() + velocityY);
+
+                // Check if the bullet hits the player
+                if (!bossBullet.hasDamagedPlayer &&
+                    bossBullet.y() >= player.y() - 30 &&
+                    bossBullet.y() <= player.y() + 30 &&
+                    bossBullet.x() >= player.x() - 30 &&
+                    bossBullet.x() <= player.x() + 30) {
+                    updatePlayerHp(15);
+                    bossBullet.hasDamagedPlayer = true;
+                    bossBullet.destroy();
+                }
+
+                // Destroy bullet if it goes off-screen
+                if (bossBullet.y() < 0 || bossBullet.y() > stage.height() ||
+                    bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
+                    bossBullet.destroy();
+                }
+            }, layer);
+            anim.start();
+        }
+    }, 1500); // Fire a radial burst every 1.5 seconds
             }
 
             function targetedShot() {
-                // Example: Boss shoots directly at the player
+const bulletSpeed = 6;  // Speed of the bullets
+
+    bossShootingInterval = setInterval(() => {
+        if (isGameOver) return;
+
+        // Calculate the direction to the player
+        const playerX = player.x() + player.width() / 2;
+        const playerY = player.y() + player.height() / 2;
+
+        const bossX = boss.x() + boss.width() / 2;
+        const bossY = boss.y() + boss.height() / 2;
+
+        const directionX = playerX - bossX;
+        const directionY = playerY - bossY;
+        const magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+
+        const velocityX = (directionX / magnitude) * bulletSpeed;
+        const velocityY = (directionY / magnitude) * bulletSpeed;
+
+        // Create a bullet moving towards the player
+        const bossBullet = new Konva.Circle({
+            x: bossX,
+            y: bossY,
+            radius: 5,
+            fill: 'red'
+        });
+        layer.add(bossBullet);
+        bossBullet.hasDamagedPlayer = false;
+
+        const anim = new Konva.Animation(() => {
+            bossBullet.x(bossBullet.x() + velocityX);
+            bossBullet.y(bossBullet.y() + velocityY);
+
+            // Check if the bullet hits the player
+            if (!bossBullet.hasDamagedPlayer &&
+                bossBullet.y() >= player.y() - 30 &&
+                bossBullet.y() <= player.y() + 30 &&
+                bossBullet.x() >= player.x() - 30 &&
+                bossBullet.x() <= player.x() + 30) {
+                updatePlayerHp(15);
+                bossBullet.hasDamagedPlayer = true;
+                bossBullet.destroy();
+            }
+
+            // Destroy bullet if it goes off-screen
+            if (bossBullet.y() < 0 || bossBullet.y() > stage.height() ||
+                bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
+                bossBullet.destroy();
+            }
+        }, layer);
+        anim.start();
+
+    }, 2000);  // Fire a targeted shot every 2 seconds
             }
 
             setRandomBossShootingPattern();

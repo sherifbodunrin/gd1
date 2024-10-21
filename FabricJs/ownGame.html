@@ -9,36 +9,37 @@
         body {
             margin: 0;
             overflow: hidden;
-            background: black;
-            color: white;
-            font-family: Arial, sans-serif;
+            background-color: black; /* Set background to black */
+            color: white; /* Set default text color to white */
         }
-        #intro {
+        #introScreen {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 10;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Dark overlay */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 10; /* Ensure the intro screen is on top */
         }
-        #startButton {
-            margin-top: 20px;
+        button {
             padding: 10px 20px;
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
-        }
-        #container {
-            display: none; /* Hide game container initially */
         }
     </style>
 </head>
 <body>
-    <div id="intro">
-        <h1>Boss Battle Game</h1>
-        <p>Beat all the boss stages as they get stronger!</p>
+    <div id="container"></div>
+    <div id="introScreen">
+        <h1>Welcome to the Boss Battle Game!</h1>
+        <p>Press the button below to start the game.</p>
         <button id="startButton">Start Game</button>
     </div>
-    <div id="container"></div>
 
     <script>
         const stage = new Konva.Stage({
@@ -57,26 +58,30 @@
         // Add the background image
         const backgroundImageObj = new Image();
         backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
-        backgroundImageObj.onload = function () {
-            const background = new Konva.Image({
-                x: 0,
-                y: 0,
-                image: backgroundImageObj,
-                width: stage.width(),
-                height: stage.height()
-            });
-            layer.add(background);
-            layer.batchDraw();
-
-            // Load player, boss, and text after the background
-            startGame();
-        };
 
         function startGame() {
-            document.getElementById('intro').style.display = 'none'; // Hide intro screen
-            document.getElementById('container').style.display = 'block'; // Show game container
-            music.play(); // Start background music
+            // Hide intro screen
+            document.getElementById('introScreen').style.display = 'none';
 
+            music.play(); // Play background music
+
+            backgroundImageObj.onload = function () {
+                const background = new Konva.Image({
+                    x: 0,
+                    y: 0,
+                    image: backgroundImageObj,
+                    width: stage.width(),
+                    height: stage.height()
+                });
+                layer.add(background);
+                layer.batchDraw();
+
+                // Load player, boss, and text after the background
+                initGame(); // Call initGame to start the game
+            };
+        }
+
+        function initGame() {
             // Player represented as a blue circle
             const playerImageObj = new Image();
             playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
@@ -114,11 +119,11 @@
                         'https://www.arcadequartermaster.com/mslug3/boss6.png',
                         'https://i.redd.it/9gvo2imxyxd81.gif'
                     ];
-                    
+
                     const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
-                    
+
                     const bossImageObj = new Image();
-                    bossImageObj.src = randomBossImage; 
+                    bossImageObj.src = randomBossImage; // Replace with your boss image URL
                     bossImageObj.onload = function () {
                         boss = new Konva.Image({
                             x: stage.width() / 2 - 50,
@@ -169,7 +174,7 @@
                         const sound1 = new Audio('level.mp3'); // Path to your music file
                         sound1.volume = 0.5; // Adjust volume as needed
                         sound1.play();
-                        
+
                         spawnNewBoss();
                         clearInterval(bossShootingInterval);
                         setRandomBossShootingPattern();
@@ -211,112 +216,72 @@
                 function shootBullet() {
                     if (isGameOver) return;
                     const bullet = new Konva.Circle({
-                        x: player.x() + player.width() / 2,
-                        y: player.y() - 30,
+                        x: player.x() + 30,
+                        y: player.y(),
                         radius: 5,
-                        fill: 'lime'
+                        fill: 'red'
                     });
                     layer.add(bullet);
-                    bullet.hasDamagedBoss = false;
+                    layer.batchDraw();
 
-                    const sound2 = new Audio('shoot.mp3'); // Path to your music file
-                    sound2.volume = 0.5; // Adjust volume as needed
-                    sound2.play();
-                    
-                    const bulletAnimation = new Konva.Animation(function (frame) {
+                    const bulletAnimation = new Konva.Animation(() => {
                         bullet.y(bullet.y() - 5);
                         if (bullet.y() < 0) {
                             bullet.destroy();
-                            layer.batchDraw();
                             bulletAnimation.stop();
-                        } else if (boss && !bullet.hasDamagedBoss && bullet.x() > boss.x() && bullet.x() < boss.x() + boss.width() && bullet.y() < boss.y() + boss.height() && bullet.y() > boss.y()) {
-                            bullet.hasDamagedBoss = true;
-                            updateBossHp(50);
+                        }
+
+                        if (boss && bullet.intersects(boss.getClientRect())) {
+                            bullet.destroy();
+                            bulletAnimation.stop();
+                            updateBossHp(20);
                         }
                     }, layer);
                     bulletAnimation.start();
                 }
 
                 function setRandomBossShootingPattern() {
-                    const patterns = [
-                        function () {
-                            // Pattern 1: Random shooting
-                            bossShootingInterval = setInterval(function () {
-                                if (isGameOver) return;
-                                const bullet = new Konva.Circle({
-                                    x: boss.x() + boss.width() / 2,
-                                    y: boss.y() + boss.height(),
-                                    radius: 8,
-                                    fill: 'red'
-                                });
-                                layer.add(bullet);
+                    bossShootingInterval = setInterval(() => {
+                        if (isGameOver) return;
 
-                                const bulletAnimation = new Konva.Animation(function (frame) {
-                                    bullet.y(bullet.y() + 4);
-                                    if (bullet.y() > stage.height()) {
-                                        bullet.destroy();
-                                        layer.batchDraw();
-                                        bulletAnimation.stop();
-                                    } else if (bullet.x > player.x() && bullet.x < player.x() + player.width() && bullet.y > player.y() && bullet.y < player.y() + player.height()) {
-                                        updatePlayerHp(20);
-                                        bullet.destroy();
-                                        layer.batchDraw();
-                                        bulletAnimation.stop();
-                                    }
-                                }, layer);
-                                bulletAnimation.start();
-                            }, 1000);
-                        },
-                        function () {
-                            // Pattern 2: Targeted shooting
-                            bossShootingInterval = setInterval(function () {
-                                if (isGameOver) return;
-                                const bullet = new Konva.Circle({
-                                    x: boss.x() + boss.width() / 2,
-                                    y: boss.y() + boss.height(),
-                                    radius: 8,
-                                    fill: 'red'
-                                });
-                                layer.add(bullet);
+                        const bullet = new Konva.Circle({
+                            x: boss.x() + 50,
+                            y: boss.y() + 100,
+                            radius: 5,
+                            fill: 'yellow'
+                        });
+                        layer.add(bullet);
+                        layer.batchDraw();
 
-                                const targetX = player.x() + player.width() / 2;
-                                const bulletAnimation = new Konva.Animation(function (frame) {
-                                    const direction = targetX > bullet.x() ? 2 : -2;
-                                    bullet.x(bullet.x() + direction);
-                                    bullet.y(bullet.y() + 4);
-                                    if (bullet.y() > stage.height()) {
-                                        bullet.destroy();
-                                        layer.batchDraw();
-                                        bulletAnimation.stop();
-                                    } else if (bullet.x > player.x() && bullet.x < player.x() + player.width() && bullet.y > player.y() && bullet.y < player.y() + player.height()) {
-                                        updatePlayerHp(20);
-                                        bullet.destroy();
-                                        layer.batchDraw();
-                                        bulletAnimation.stop();
-                                    }
-                                }, layer);
-                                bulletAnimation.start();
-                            }, 1500);
-                        }
-                    ];
-                    const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
-                    randomPattern();
+                        const bulletAnimation = new Konva.Animation(() => {
+                            bullet.y(bullet.y() + 5);
+                            if (bullet.y() > stage.height()) {
+                                bullet.destroy();
+                                bulletAnimation.stop();
+                            }
+
+                            if (player && bullet.intersects(player.getClientRect())) {
+                                bullet.destroy();
+                                bulletAnimation.stop();
+                                updatePlayerHp(20);
+                            }
+                        }, layer);
+                        bulletAnimation.start();
+                    }, 1000);
                 }
 
-                window.addEventListener('keydown', function (e) {
-                    if (isGameOver) return;
-                    if (e.key === ' ') {
+                window.addEventListener('keydown', (event) => {
+                    if (event.code === 'Space') {
                         shootBullet();
                     }
                 });
 
                 spawnNewBoss();
+                setRandomBossShootingPattern();
             };
         }
-        
-        document.getElementById('startButton').onclick = function () {
-            startGame();
-        };
+
+        document.getElementById('startButton').addEventListener('click', startGame);
     </script>
 </body>
 </html>

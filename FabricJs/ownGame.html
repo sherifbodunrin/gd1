@@ -24,22 +24,31 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        // Create the audio element using JavaScript
-        const music = new Audio('boss.mp3');
-        music.loop = true; // Set it to loop
-        music.volume = 0.5; // Set the volume to 50%
+        // Create background music using new Audio
+        const music = new Audio('deepSpace.mp3'); // Path to your music file
+        music.loop = true; // Loop the music
+        music.volume = 0.5; // Adjust volume as needed
+        music.play();
 
-        // Play the background music
-        function playBackgroundMusic() {
-            music.play().catch(error => {
-                console.log("Music autoplay was blocked. User interaction needed.");
+        // Add the background image
+        const backgroundImageObj = new Image();
+        backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
+        backgroundImageObj.onload = function () {
+            const background = new Konva.Image({
+                x: 0,
+                y: 0,
+                image: backgroundImageObj,
+                width: stage.width(),
+                height: stage.height()
             });
-        }
+            layer.add(background);
+            layer.batchDraw();
 
-        // Trigger music when the game starts
+            // Load player, boss, and text after the background
+            startGame();
+        };
+
         function startGame() {
-            playBackgroundMusic();
-
             // Player represented as a blue circle
             const playerImageObj = new Image();
             playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
@@ -266,21 +275,20 @@
                                 bossBullet.destroy();
                             }
 
-                            if (bossBullet.x() < 0 || bossBullet.x() > stage.width() ||
-                                bossBullet.y() < 0 || bossBullet.y() > stage.height()) {
+                            if (bossBullet.y() > stage.height() || bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
                                 bossBullet.destroy();
                             }
                         }, layer);
                         anim.start();
-                    }, 500);
+                    }, 1000);
                 }
 
                 function radialBurst() {
                     bossShootingInterval = setInterval(() => {
                         if (isGameOver) return;
 
-                        for (let i = 0; i < 10; i++) {
-                            const angle = (i / 10) * Math.PI * 2;
+                        for (let i = 0; i < 6; i++) {
+                            const angle = (i / 6) * Math.PI * 2;
                             const velocityX = Math.cos(angle) * 5;
                             const velocityY = Math.sin(angle) * 5;
 
@@ -307,25 +315,18 @@
                                     bossBullet.destroy();
                                 }
 
-                                if (bossBullet.x() < 0 || bossBullet.x() > stage.width() ||
-                                    bossBullet.y() < 0 || bossBullet.y() > stage.height()) {
+                                if (bossBullet.y() > stage.height() || bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
                                     bossBullet.destroy();
                                 }
                             }, layer);
                             anim.start();
                         }
-                    }, 1000);
+                    }, 2000);
                 }
 
                 function targetedShot() {
                     bossShootingInterval = setInterval(() => {
                         if (isGameOver) return;
-
-                        const dx = player.x() - boss.x();
-                        const dy = player.y() - boss.y();
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const velocityX = (dx / distance) * 8;
-                        const velocityY = (dy / distance) * 8;
 
                         const bossBullet = new Konva.Circle({
                             x: boss.x() + boss.width() / 2,
@@ -335,6 +336,10 @@
                         });
                         layer.add(bossBullet);
                         bossBullet.hasDamagedPlayer = false;
+
+                        const angleToPlayer = Math.atan2(player.y() - bossBullet.y(), player.x() - bossBullet.x());
+                        const velocityX = Math.cos(angleToPlayer) * 7;
+                        const velocityY = Math.sin(angleToPlayer) * 7;
 
                         const anim = new Konva.Animation(() => {
                             bossBullet.x(bossBullet.x() + velocityX);
@@ -350,27 +355,22 @@
                                 bossBullet.destroy();
                             }
 
-                            if (bossBullet.x() < 0 || bossBullet.x() > stage.width() ||
-                                bossBullet.y() < 0 || bossBullet.y() > stage.height()) {
+                            if (bossBullet.y() > stage.height() || bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
                                 bossBullet.destroy();
                             }
                         }, layer);
                         anim.start();
-                    }, 700);
+                    }, 1500);
                 }
 
-                spawnNewBoss();
-                setRandomBossShootingPattern();
-
-                const moveAnim = new Konva.Animation(() => {
+                const gameLoop = () => {
                     movePlayer();
-                }, layer);
-                moveAnim.start();
+                    requestAnimationFrame(gameLoop);
+                };
+                gameLoop();
+                spawnNewBoss();
             };
         }
-
-        // Start the game after user interaction (e.g., click)
-        document.body.addEventListener('click', startGame);
     </script>
 </body>
 </html>

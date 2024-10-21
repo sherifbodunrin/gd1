@@ -119,7 +119,7 @@
                 const levelText = new Konva.Text({
                     x: stage.width() / 2 - 50,
                     y: 10,
-                    text: `Level ${level}`,
+                    text: Level ${level},
                     fontSize: 24,
                     fill: 'white'
                 });
@@ -134,7 +134,7 @@
                         boss.destroy();
                         bossHpBar.destroy();
                         level++;
-                        levelText.text(`Level ${level}`);
+                        levelText.text(Level ${level});
 
                         playerHp = Math.min(100, playerHp + 50);
                         playerHpBar.width(playerHp);

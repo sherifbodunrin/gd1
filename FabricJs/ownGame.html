@@ -231,7 +231,7 @@
                             bulletAnimation.stop();
                         } else if (boss && !bullet.hasDamagedBoss && bullet.x() > boss.x() && bullet.x() < boss.x() + boss.width() && bullet.y() < boss.y() + boss.height() && bullet.y() > boss.y()) {
                             bullet.hasDamagedBoss = true;
-                            updateBossHp(20);
+                            updateBossHp(50);
                         }
                     }, layer);
                     bulletAnimation.start();

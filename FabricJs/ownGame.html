@@ -31,18 +31,8 @@
         music.play();
 
         // Add the background image
-        const backgroundImages = [
-            'https://wallpapercave.com/wp/wp9288093.jpg',
-            'https://beta.frvr.ai/img/5_UsSFB6rpEzgKklzCZdE7t6QrE=/fit-in/512x512/filters:format(png):quality(85)/https://cdn.frvr.ai/4b339a57-4cb8-4ffe-b3ec-33616412d750_tl_transparent_trim.png%3F3', 
-            'https://static.wikia.nocookie.net/insaniquarium/images/9/9a/Cyrax%2C_The_Evil_Fish-Killing_Mastermind.png/revision/latest/thumbnail/width/360/height/360?cb=20190629004535', 
-            'https://beta.frvr.ai/img/5nwCKrLvBDHa4RKsCRgmKCfrsU4=/fit-in/512x512/filters:format(png):quality(85)/https://cdn.frvr.ai/658ae2c51910c89cf0329492.png%3F3'  
-        ];
-
-        const randomBackgroundImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
-        
         const backgroundImageObj = new Image();
-       
-        backgroundImageObj.src = randomBackgroundImage; // Replace with your background URL
+        backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
         backgroundImageObj.onload = function () {
             const background = new Konva.Image({
                 x: 0,
@@ -90,8 +80,18 @@
                 let bossShootingInterval;
 
                 function spawnNewBoss() {
+
+                    const bossImages = [
+                    'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623',
+                    'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8amy-0b47096c-f464-45c5-a768-60eb1eb2e236.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFteS0wYjQ3MDk2Yy1mNDY0LTQ1YzUtYTc2OC02MGViMWViMmUyMzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.AcUpr0zYHWAWss-7YJNZbtYNOg1ygOFHzAXQG36tqQ8', // Replace with your second image URL
+                    'https://www.arcadequartermaster.com/mslug3/boss6.png', // Replace with your third image URL
+                    'https://i.redd.it/9gvo2imxyxd81.gif'  // Replace with your fourth image URL
+                    ];
+                    
+                    const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
+                    
                     const bossImageObj = new Image();
-                    bossImageObj.src = 'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623'; // Replace with your boss image URL
+                    bossImageObj.src = randomBossImage; // Replace with your boss image URL
                     bossImageObj.onload = function () {
                         boss = new Konva.Image({
                             x: stage.width() / 2 - 50,

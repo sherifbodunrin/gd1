@@ -15,12 +15,6 @@
 <body>
     <div id="container"></div>
 
-    <!-- Add audio element for background music -->
-    <audio id="backgroundMusic" loop>
-        <source src="boss.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-
     <script>
         const stage = new Konva.Stage({
             container: 'container',
@@ -30,30 +24,22 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        // Start background music
-        const music = document.getElementById('backgroundMusic');
-        music.volume = 0.5; // Adjust volume as needed
-        music.play();
+        // Create the audio element using JavaScript
+        const music = new Audio('boss.mp3');
+        music.loop = true; // Set it to loop
+        music.volume = 0.5; // Set the volume to 50%
 
-        // Add the background image
-        const backgroundImageObj = new Image();
-        backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
-        backgroundImageObj.onload = function () {
-            const background = new Konva.Image({
-                x: 0,
-                y: 0,
-                image: backgroundImageObj,
-                width: stage.width(),
-                height: stage.height()
+        // Play the background music
+        function playBackgroundMusic() {
+            music.play().catch(error => {
+                console.log("Music autoplay was blocked. User interaction needed.");
             });
-            layer.add(background);
-            layer.batchDraw();
+        }
 
-            // Load player, boss, and text after the background
-            startGame();
-        };
-
+        // Trigger music when the game starts
         function startGame() {
+            playBackgroundMusic();
+
             // Player represented as a blue circle
             const playerImageObj = new Image();
             playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
@@ -294,7 +280,7 @@
                         if (isGameOver) return;
 
                         for (let i = 0; i < 10; i++) {
-                            const angle = i * (Math.PI * 2 / 10);
+                            const angle = (i / 10) * Math.PI * 2;
                             const velocityX = Math.cos(angle) * 5;
                             const velocityY = Math.sin(angle) * 5;
 
@@ -316,7 +302,7 @@
                                     bossBullet.y() <= player.y() + player.height() &&
                                     bossBullet.x() >= player.x() &&
                                     bossBullet.x() <= player.x() + player.width()) {
-                                    updatePlayerHp(10);
+                                    updatePlayerHp(20);
                                     bossBullet.hasDamagedPlayer = true;
                                     bossBullet.destroy();
                                 }
@@ -335,9 +321,11 @@
                     bossShootingInterval = setInterval(() => {
                         if (isGameOver) return;
 
-                        const angle = Math.atan2(player.y() - boss.y(), player.x() - boss.x());
-                        const velocityX = Math.cos(angle) * 6;
-                        const velocityY = Math.sin(angle) * 6;
+                        const dx = player.x() - boss.x();
+                        const dy = player.y() - boss.y();
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const velocityX = (dx / distance) * 8;
+                        const velocityY = (dy / distance) * 8;
 
                         const bossBullet = new Konva.Circle({
                             x: boss.x() + boss.width() / 2,
@@ -357,7 +345,7 @@
                                 bossBullet.y() <= player.y() + player.height() &&
                                 bossBullet.x() >= player.x() &&
                                 bossBullet.x() <= player.x() + player.width()) {
-                                updatePlayerHp(30);
+                                updatePlayerHp(20);
                                 bossBullet.hasDamagedPlayer = true;
                                 bossBullet.destroy();
                             }
@@ -368,18 +356,21 @@
                             }
                         }, layer);
                         anim.start();
-                    }, 1000);
+                    }, 700);
                 }
 
                 spawnNewBoss();
                 setRandomBossShootingPattern();
 
-                const anim = new Konva.Animation(() => {
+                const moveAnim = new Konva.Animation(() => {
                     movePlayer();
                 }, layer);
-                anim.start();
+                moveAnim.start();
             };
         }
+
+        // Start the game after user interaction (e.g., click)
+        document.body.addEventListener('click', startGame);
     </script>
 </body>
 </html>

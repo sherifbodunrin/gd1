@@ -33,16 +33,16 @@
         // Add the background image
         const backgroundImages = [
             'https://wallpapercave.com/wp/wp9288093.jpg',
-            'https://beta.frvr.ai/img/5_UsSFB6rpEzgKklzCZdE7t6QrE=/fit-in/512x512/filters:format(png):quality(85)/https://cdn.frvr.ai/4b339a57-4cb8-4ffe-b3ec-33616412d750_tl_transparent_trim.png%3F3', // Replace with your second image URL
-            'https://static.wikia.nocookie.net/insaniquarium/images/9/9a/Cyrax%2C_The_Evil_Fish-Killing_Mastermind.png/revision/latest/thumbnail/width/360/height/360?cb=20190629004535', // Replace with your third image URL
-            'https://beta.frvr.ai/img/5nwCKrLvBDHa4RKsCRgmKCfrsU4=/fit-in/512x512/filters:format(png):quality(85)/https://cdn.frvr.ai/658ae2c51910c89cf0329492.png%3F3'  // Replace with your fourth image URL
+            'https://beta.frvr.ai/img/5_UsSFB6rpEzgKklzCZdE7t6QrE=/fit-in/512x512/filters:format(png):quality(85)/https://cdn.frvr.ai/4b339a57-4cb8-4ffe-b3ec-33616412d750_tl_transparent_trim.png%3F3', 
+            'https://static.wikia.nocookie.net/insaniquarium/images/9/9a/Cyrax%2C_The_Evil_Fish-Killing_Mastermind.png/revision/latest/thumbnail/width/360/height/360?cb=20190629004535', 
+            'https://beta.frvr.ai/img/5nwCKrLvBDHa4RKsCRgmKCfrsU4=/fit-in/512x512/filters:format(png):quality(85)/https://cdn.frvr.ai/658ae2c51910c89cf0329492.png%3F3'  
         ];
 
         const randomBackgroundImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
         
         const backgroundImageObj = new Image();
        
-        backgroundImageObj.src = randomBackgroundimage; // Replace with your background URL
+        backgroundImageObj.src = randomBackgroundImage; // Replace with your background URL
         backgroundImageObj.onload = function () {
             const background = new Konva.Image({
                 x: 0,

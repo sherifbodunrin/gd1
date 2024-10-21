@@ -14,6 +14,13 @@
 </head>
 <body>
     <div id="container"></div>
+
+    <!-- Add audio element for background music -->
+    <audio id="backgroundMusic" loop>
+        <source src="bgm.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
     <script>
         const stage = new Konva.Stage({
             container: 'container',
@@ -22,6 +29,11 @@
         });
         const layer = new Konva.Layer();
         stage.add(layer);
+
+        // Start background music
+        const music = document.getElementById('backgroundMusic');
+        music.volume = 0.5; // Adjust volume as needed
+        music.play();
 
         // Add the background image
         const backgroundImageObj = new Image();
@@ -259,11 +271,11 @@
                             bossBullet.y(bossBullet.y() + velocityY);
 
                             if (!bossBullet.hasDamagedPlayer &&
-                                bossBullet.y() >= player.y() - 30 &&
-                                bossBullet.y() <= player.y() + player.height() + 30 &&
-                                bossBullet.x() >= player.x() - 30 &&
-                                bossBullet.x() <= player.x() + player.width() + 30) {
-                                updatePlayerHp(10);
+                                bossBullet.y() >= player.y() &&
+                                bossBullet.y() <= player.y() + player.height() &&
+                                bossBullet.x() >= player.x() &&
+                                bossBullet.x() <= player.x() + player.width()) {
+                                updatePlayerHp(20);
                                 bossBullet.hasDamagedPlayer = true;
                                 bossBullet.destroy();
                             }
@@ -281,9 +293,8 @@
                     bossShootingInterval = setInterval(() => {
                         if (isGameOver) return;
 
-                        const bullets = 10;
-                        for (let i = 0; i < bullets; i++) {
-                            const angle = (i / bullets) * Math.PI * 2;
+                        for (let i = 0; i < 10; i++) {
+                            const angle = i * (Math.PI * 2 / 10);
                             const velocityX = Math.cos(angle) * 5;
                             const velocityY = Math.sin(angle) * 5;
 
@@ -301,10 +312,10 @@
                                 bossBullet.y(bossBullet.y() + velocityY);
 
                                 if (!bossBullet.hasDamagedPlayer &&
-                                    bossBullet.y() >= player.y() - 30 &&
-                                    bossBullet.y() <= player.y() + player.height() + 30 &&
-                                    bossBullet.x() >= player.x() - 30 &&
-                                    bossBullet.x() <= player.x() + player.width() + 30) {
+                                    bossBullet.y() >= player.y() &&
+                                    bossBullet.y() <= player.y() + player.height() &&
+                                    bossBullet.x() >= player.x() &&
+                                    bossBullet.x() <= player.x() + player.width()) {
                                     updatePlayerHp(10);
                                     bossBullet.hasDamagedPlayer = true;
                                     bossBullet.destroy();
@@ -324,11 +335,9 @@
                     bossShootingInterval = setInterval(() => {
                         if (isGameOver) return;
 
-                        const diffX = player.x() + player.width() / 2 - (boss.x() + boss.width() / 2);
-                        const diffY = player.y() + player.height() / 2 - (boss.y() + boss.height() / 2);
-                        const magnitude = Math.sqrt(diffX * diffX + diffY * diffY);
-                        const velocityX = (diffX / magnitude) * 6;
-                        const velocityY = (diffY / magnitude) * 6;
+                        const angle = Math.atan2(player.y() - boss.y(), player.x() - boss.x());
+                        const velocityX = Math.cos(angle) * 6;
+                        const velocityY = Math.sin(angle) * 6;
 
                         const bossBullet = new Konva.Circle({
                             x: boss.x() + boss.width() / 2,
@@ -344,11 +353,11 @@
                             bossBullet.y(bossBullet.y() + velocityY);
 
                             if (!bossBullet.hasDamagedPlayer &&
-                                bossBullet.y() >= player.y() - 30 &&
-                                bossBullet.y() <= player.y() + player.height() + 30 &&
-                                bossBullet.x() >= player.x() - 30 &&
-                                bossBullet.x() <= player.x() + player.width() + 30) {
-                                updatePlayerHp(10);
+                                bossBullet.y() >= player.y() &&
+                                bossBullet.y() <= player.y() + player.height() &&
+                                bossBullet.x() >= player.x() &&
+                                bossBullet.x() <= player.x() + player.width()) {
+                                updatePlayerHp(30);
                                 bossBullet.hasDamagedPlayer = true;
                                 bossBullet.destroy();
                             }
@@ -362,15 +371,13 @@
                     }, 1000);
                 }
 
-                function gameLoop() {
-                    if (isGameOver) return;
-                    movePlayer();
-                }
-
                 spawnNewBoss();
                 setRandomBossShootingPattern();
 
-                setInterval(gameLoop, 1000 / 60);
+                const anim = new Konva.Animation(() => {
+                    movePlayer();
+                }, layer);
+                anim.start();
             };
         }
     </script>

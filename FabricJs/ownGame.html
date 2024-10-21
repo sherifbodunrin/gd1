@@ -193,7 +193,7 @@
                     bullet.hasDamagedBoss = false;
 
                     const sound2 = new Audio('shoot.mp3'); // Path to your music file
-                    sound2.volume = 0.5; // Adjust volume as needed
+                    sound2.volume = 0.25; // Adjust volume as needed
                     sound2.play();
                     
                     const anim = new Konva.Animation(() => {
@@ -204,7 +204,7 @@
                             bullet.y() >= boss.y() &&
                             bullet.x() >= boss.x() - 10 &&
                             bullet.x() <= boss.x() + boss.width() + 10) {
-                            updateBossHp(2);
+                            updateBossHp(10);
                             bullet.hasDamagedBoss = true;
                             bullet.destroy();
                             const soundc = new Audio('hit.mp3'); // Path to your music file

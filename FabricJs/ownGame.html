@@ -74,7 +74,8 @@
                 let isGameOver = false;
                 let bosses = [];
                 let bossHpBars = [];
-                const speed = 2; // Base speed for bosses, kept constant
+                const speed = 1; // Base speed for bosses, kept constant
+                let bossMovementInterval;
 
                 function spawnNewBosses() {
                     const bossImages = [
@@ -125,7 +126,12 @@
                 }
 
                 function moveBoss() {
-                    const bossMovementInterval = setInterval(() => {
+                    // Clear the existing interval if it exists
+                    if (bossMovementInterval) {
+                        clearInterval(bossMovementInterval);
+                    }
+
+                    bossMovementInterval = setInterval(() => {
                         if (isGameOver) {
                             clearInterval(bossMovementInterval);
                             return;
@@ -138,8 +144,8 @@
                             }
 
                             // Calculate new position based on the direction
-                            const dx = Math.cos(boss.direction) * 1;
-                            const dy = Math.sin(boss.direction) * 1;
+                            const dx = Math.cos(boss.direction) * speed;
+                            const dy = Math.sin(boss.direction) * speed;
 
                             boss.node.x(boss.node.x() + dx);
                             boss.node.y(boss.node.y() + dy);

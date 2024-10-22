@@ -74,6 +74,8 @@
                 let isGameOver = false;
                 let bosses = [];
                 let bossHpBars = [];
+                let bossDirection = { x: 1 }; // Start moving right
+                const speed = 2; // Fixed speed for bosses
 
                 function spawnNewBosses() {
                     const bossImages = [
@@ -89,8 +91,14 @@
                         'https://mvcurrent.com/wp-content/uploads/2023/09/Crab-Colored.png',
                     ];
 
-                    bosses = []; // Reset bosses array
-                    bossHpBars = []; // Reset HP bars array
+                    bosses.forEach(boss => {
+                        boss.node.destroy();
+                    });
+                    bossHpBars.forEach(bar => {
+                        bar.destroy();
+                    });
+                    bosses = [];
+                    bossHpBars = [];
 
                     for (let i = 0; i < totalBosses; i++) {
                         const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
@@ -120,13 +128,9 @@
                     }
                     layer.batchDraw();
                     moveBoss();
-                    startBossShooting(); // Start boss shooting
                 }
 
-                let bossDirection = { x: 1, y: 0 }; // Start moving right
-
                 function moveBoss() {
-                    const speed = 2; // Speed of boss movement
                     const bossMovementInterval = setInterval(() => {
                         if (isGameOver) {
                             clearInterval(bossMovementInterval);
@@ -184,6 +188,7 @@
                         sound1.volume = 0.5;
                         sound1.play();
 
+                        // Adjust the number of bosses
                         if (level % 5 === 1 && level > 1) { // Every 5 levels, spawn 3 bosses
                             totalBosses = 3;
                         } else {
@@ -311,10 +316,6 @@
                 gameLoop();
                 spawnNewBosses();
             };
-        }
-
-        function startBossShooting() {
-            // Add logic to handle multiple bosses shooting if needed.
         }
     </script>
 </body>

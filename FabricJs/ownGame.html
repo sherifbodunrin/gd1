@@ -74,7 +74,6 @@
                 let bossHp;
                 let boss, bossHpBar;
                 let isGameOver = false;
-                let bossShootingInterval;
 
                 function spawnNewBoss() {
                     const bossImages = [
@@ -108,6 +107,7 @@
                         layer.add(bossHpBar);
                         layer.batchDraw();
                         moveBoss();
+                        startBossShooting(); // Start boss shooting
                     };
                 }
 
@@ -122,8 +122,6 @@
                         }
 
                         boss.x(boss.x() + bossDirection.x * speed);
-                        boss.y(boss.y() + bossDirection.y * speed);
-
                         bossHpBar.x(boss.x());
                         bossHpBar.y(boss.y() - 20);
 
@@ -164,7 +162,6 @@
                         sound1.play();
 
                         spawnNewBoss();
-                        clearInterval(bossShootingInterval);
                     }
                     layer.batchDraw();
                 }
@@ -283,6 +280,56 @@
                 gameLoop();
                 spawnNewBoss();
             };
+        }
+
+        function startBossShooting() {
+            bossShootingInterval = setInterval(() => {
+                if (isGameOver) {
+                    clearInterval(bossShootingInterval);
+                    return;
+                }
+
+                // Randomly determine shooting pattern
+                const shootPattern = Math.floor(Math.random() * 3); // 0: straight down, 1: down-left, 2: down-right
+
+                const bullet = new Konva.Circle({
+                    x: boss.x() + boss.width() / 2,
+                    y: boss.y() + boss.height(),
+                    radius: 5,
+                    fill: 'red'
+                });
+                layer.add(bullet);
+
+                const bulletAnimation = new Konva.Animation(() => {
+                    let bulletSpeed = 5; // Constant speed
+
+                    switch (shootPattern) {
+                        case 0: // Straight down
+                            bullet.y(bullet.y() + bulletSpeed);
+                            break;
+                        case 1: // Down-left
+                            bullet.x(bullet.x() - 2); // Move slightly left
+                            bullet.y(bullet.y() + bulletSpeed);
+                            break;
+                        case 2: // Down-right
+                            bullet.x(bullet.x() + 2); // Move slightly right
+                            bullet.y(bullet.y() + bulletSpeed);
+                            break;
+                    }
+
+                    // Check for collision with player
+                    if (bullet.y() >= player.y() && bullet.x() >= player.x() && bullet.x() <= player.x() + player.width()) {
+                        updatePlayerHp(10);
+                        bullet.destroy();
+                    }
+
+                    // Remove bullet if it goes off screen
+                    if (bullet.y() > stage.height()) {
+                        bullet.destroy();
+                    }
+                }, layer);
+                bulletAnimation.start();
+            }, 1000); // Boss shoots every second
         }
     </script>
 </body>

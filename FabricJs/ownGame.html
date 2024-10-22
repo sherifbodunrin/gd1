@@ -74,21 +74,13 @@
                 let isGameOver = false;
                 let bosses = [];
                 let bossHpBars = [];
-                let bossDirection = { x: 1 }; // Start moving right
                 const speed = 2; // Fixed speed for bosses
 
                 function spawnNewBosses() {
                     const bossImages = [
                         'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623',
                         'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8amy-0b47096c-f464-45c5-a768-60eb1eb2e236.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFteS0wYjQ3MDk2Yy1mNDY0LTQ1YzUtYTc2OC02MGViMWViMmUyMzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.AcUpr0zYHWAWss-7YJNZbtYNOg1ygOFHzAXQG36tqQ8',
-                        'https://www.arcadequartermaster.com/mslug3/boss6.png',
-                        'https://i.redd.it/9gvo2imxyxd81.gif',
-                        'https://static.wikia.nocookie.net/contra/images/6/65/Metal_Alien_-_03.png/revision/latest?cb=20180114152934',
-                        'https://static.wikia.nocookie.net/contra/images/d/d6/Gigafly_-_03.png/revision/latest?cb=20180114154116',
-                        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8afl-7b1c053c-f40d-43b8-b29e-224cf00da4f4.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFmbC03YjFjMDUzYy1mNDBkLTQzYjgtYjI5ZS0yMjRjZjAwZGE0ZjQucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.JOXyazNDPYTAjJrIPUv6omlLb688DJt3bO5gVD9i2nE',
-                        'https://i.imgur.com/8pITaLn.png',
-                        'https://i.imgur.com/aYA24Xl.png',
-                        'https://mvcurrent.com/wp-content/uploads/2023/09/Crab-Colored.png',
+                        // Add more boss images if needed...
                     ];
 
                     bosses.forEach(boss => {
@@ -114,7 +106,7 @@
                             });
                             layer.add(boss);
                             const bossHealth = 100 + (level - 1) * 20;
-                            bosses.push({ node: boss, hp: bossHealth });
+                            bosses.push({ node: boss, hp: bossHealth, direction: Math.random() < 0.5 ? 1 : -1 }); // Random direction for each boss
 
                             const bossHpBar = new Konva.Rect({
                                 x: boss.x(),
@@ -139,14 +131,14 @@
                         }
 
                         bosses.forEach(boss => {
-                            boss.node.x(boss.node.x() + bossDirection.x * speed);
+                            boss.node.x(boss.node.x() + boss.direction * speed);
                             const index = bosses.indexOf(boss);
                             bossHpBars[index].x(boss.node.x());
                             bossHpBars[index].y(boss.node.y() - 20);
 
                             // Check for wall collisions
                             if (boss.node.x() <= 0 || boss.node.x() + boss.node.width() >= stage.width()) {
-                                bossDirection.x *= -1; // Reverse direction
+                                boss.direction *= -1; // Reverse direction
                             }
                         });
 
@@ -169,13 +161,14 @@
                     const boss = bosses[bossIndex];
                     boss.hp = Math.max(0, boss.hp - damage);
                     bossHpBars[bossIndex].width(boss.hp);
-                    if (boss.hp === 0) {
+                    if (boss.hp <= 0) {
                         bossesDefeated++;
                         boss.node.destroy();
                         bossHpBars[bossIndex].destroy();
                         layer.batchDraw();
                     }
 
+                    // Check if all bosses are defeated
                     if (bossesDefeated === totalBosses) {
                         score += level * 10;
                         level++;

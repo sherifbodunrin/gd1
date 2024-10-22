@@ -74,7 +74,7 @@
                 let isGameOver = false;
                 let bosses = [];
                 let bossHpBars = [];
-                const speed = 1; // Base speed for bosses, kept constant
+                const speed = 1; // Base speed for bosses
                 let bossMovementInterval;
 
                 function spawnNewBosses() {
@@ -119,13 +119,12 @@
                             });
                             layer.add(bossHpBar);
                             bossHpBars.push(bossHpBar);
+
+                            shootAtPlayer(boss); // Start shooting at player when boss is spawned
                         };
                     }
                     layer.batchDraw();
                     moveBoss();
-                    bosses.forEach(boss => {
-                        shootAtPlayer(boss);
-                    });
                 }
 
                 function moveBoss() {
@@ -209,7 +208,7 @@
                             }
                         }, layer);
                         anim.start();
-                    }, 1000); // Adjust bullet firing rate (in milliseconds)
+                    }, Math.random() * 1000 + 500); // Randomize firing interval between 500ms to 1500ms
                 }
 
                 const levelText = new Konva.Text({

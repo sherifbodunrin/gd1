@@ -125,41 +125,43 @@
                     moveBoss();
                 }
 
-                function moveBoss() {
-                    const bossMovementInterval = setInterval(() => {
-                        if (isGameOver) {
-                            clearInterval(bossMovementInterval);
-                            return;
-                        }
+              let speed = 2; // Base speed for bosses, remain consistent
 
-                        bosses.forEach((boss, index) => {
-                            // Randomly change the direction every few seconds for varied movement
-                            if (Math.random() < 0.01) {
-                                boss.direction = Math.random() * Math.PI * 2; // New random angle
-                            }
+function moveBoss() {
+    const bossMovementInterval = setInterval(() => {
+        if (isGameOver) {
+            clearInterval(bossMovementInterval);
+            return;
+        }
 
-                            // Calculate new position based on the direction
-                            const dx = Math.cos(boss.direction) * speed;
-                            const dy = Math.sin(boss.direction) * speed;
+        bosses.forEach((boss, index) => {
+            // Randomly change the direction every few seconds for varied movement
+            if (Math.random() < 0.01) {
+                boss.direction = Math.random() * Math.PI * 2; // New random angle
+            }
 
-                            boss.node.x(boss.node.x() + dx);
-                            boss.node.y(boss.node.y() + dy);
+            // Calculate new position based on the direction
+            const dx = Math.cos(boss.direction) * speed;
+            const dy = Math.sin(boss.direction) * speed;
 
-                            // Wall collision detection
-                            if (boss.node.x() <= 0 || boss.node.x() + boss.node.width() >= stage.width()) {
-                                boss.direction = Math.PI - boss.direction; // Reflect direction
-                            }
-                            if (boss.node.y() <= 0 || boss.node.y() + boss.node.height() >= stage.height()) {
-                                boss.direction = -boss.direction; // Reflect direction
-                            }
+            boss.node.x(boss.node.x() + dx);
+            boss.node.y(boss.node.y() + dy);
 
-                            bossHpBars[index].x(boss.node.x());
-                            bossHpBars[index].y(boss.node.y() - 20);
-                        });
+            // Wall collision detection
+            if (boss.node.x() <= 0 || boss.node.x() + boss.node.width() >= stage.width()) {
+                boss.direction = Math.PI - boss.direction; // Reflect direction
+            }
+            if (boss.node.y() <= 0 || boss.node.y() + boss.node.height() >= stage.height()) {
+                boss.direction = -boss.direction; // Reflect direction
+            }
 
-                        layer.batchDraw();
-                    }, 1000 / 60); // 60 FPS
-                }
+            bossHpBars[index].x(boss.node.x());
+            bossHpBars[index].y(boss.node.y() - 20);
+        });
+
+        layer.batchDraw();
+    }, 1000 / 60); // 60 FPS
+}
 
                 const levelText = new Konva.Text({
                     x: stage.width() / 2 - 50,

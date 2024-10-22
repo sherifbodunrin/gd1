@@ -113,12 +113,13 @@
                                 height: 100
                             });
                             layer.add(boss);
-                            bosses.push({ node: boss, hp: 100 + (level - 1) * 20 });
+                            const bossHealth = 100 + (level - 1) * 20;
+                            bosses.push({ node: boss, hp: bossHealth });
 
                             const bossHpBar = new Konva.Rect({
                                 x: boss.x(),
                                 y: boss.y() - 20,
-                                width: bosses[i].hp,
+                                width: bossHealth,
                                 height: 10,
                                 fill: 'green'
                             });
@@ -162,19 +163,18 @@
                 });
                 layer.add(levelText);
 
-                function updateBossHp(damage) {
+                function updateBossHp(bossIndex, damage) {
                     if (isGameOver) return;
 
-                    bosses.forEach((boss, index) => {
-                        boss.hp = Math.max(0, boss.hp - damage);
-                        bossHpBars[index].width(boss.hp);
-                        if (boss.hp === 0) {
-                            bossesDefeated++;
-                            boss.node.destroy();
-                            bossHpBars[index].destroy();
-                            layer.batchDraw();
-                        }
-                    });
+                    const boss = bosses[bossIndex];
+                    boss.hp = Math.max(0, boss.hp - damage);
+                    bossHpBars[bossIndex].width(boss.hp);
+                    if (boss.hp === 0) {
+                        bossesDefeated++;
+                        boss.node.destroy();
+                        bossHpBars[bossIndex].destroy();
+                        layer.batchDraw();
+                    }
 
                     if (bossesDefeated === totalBosses) {
                         score += level * 10;
@@ -253,7 +253,7 @@
                                 bullet.y() >= boss.node.y() &&
                                 bullet.x() >= boss.node.x() - 10 &&
                                 bullet.x() <= boss.node.x() + boss.node.width() + 10) {
-                                updateBossHp(10);
+                                updateBossHp(index, 10);
                                 bullet.hasDamagedBoss = true;
                                 bullet.destroy();
                                 const soundc = new Audio('hit.mp3');

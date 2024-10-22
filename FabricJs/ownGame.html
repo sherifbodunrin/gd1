@@ -24,7 +24,7 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        // Create background music using new Audio
+        // Create background music
         const music = new Audio('deepSpace.mp3'); // Path to your music file
         music.loop = true; // Loop the music
         music.volume = 0.5; // Adjust volume as needed
@@ -32,7 +32,7 @@
 
         // Add the background image
         const backgroundImageObj = new Image();
-        backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Replace with your background URL
+        backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg'; // Background URL
         backgroundImageObj.onload = function () {
             const background = new Konva.Image({
                 x: 0,
@@ -43,13 +43,10 @@
             });
             layer.add(background);
             layer.batchDraw();
-
-            // Load player, boss, and text after the background
             startGame();
         };
 
         function startGame() {
-            // Player represented as a blue circle
             const playerImageObj = new Image();
             playerImageObj.src = 'https://i.pinimg.com/originals/cf/04/e4/cf04e4e031c7bbd277a74cf32a3a6362.png';
             playerImageObj.onload = function () {
@@ -79,81 +76,70 @@
                 let isGameOver = false;
                 let bossShootingInterval;
 
-               function spawnNewBoss() {
-    const bossImages = [
-        'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623',
-        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8amy-0b47096c-f464-45c5-a768-60eb1eb2e236.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFteS0wYjQ3MDk2Yy1mNDY0LTQ1YzUtYTc2OC02MGViMWViMmUyMzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.AcUpr0zYHWAWss-7YJNZbtYNOg1ygOFHzAXQG36tqQ8',
-        'https://www.arcadequartermaster.com/mslug3/boss6.png',
-        'https://i.redd.it/9gvo2imxyxd81.gif'
-    ];
+                function spawnNewBoss() {
+                    const bossImages = [
+                        'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623',
+                        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8amy-0b47096c-f464-45c5-a768-60eb1eb2e236.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFteS0wYjQ3MDk2Yy1mNDY0LTQ1YzUtYTc2OC02MGViMWViMmUyMzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.AcUpr0zYHWAWss-7YJNZbtYNOg1ygOFHzAXQG36tqQ8',
+                        'https://www.arcadequartermaster.com/mslug3/boss6.png',
+                        'https://i.redd.it/9gvo2imxyxd81.gif'
+                    ];
 
-    const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
+                    const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
+                    const bossImageObj = new Image();
+                    bossImageObj.src = randomBossImage;
+                    bossImageObj.onload = function () {
+                        boss = new Konva.Image({
+                            x: stage.width() / 2 - 50,
+                            y: 50,
+                            image: bossImageObj,
+                            width: 100,
+                            height: 100
+                        });
+                        layer.add(boss);
 
-    const bossImageObj = new Image();
-    bossImageObj.src = randomBossImage;
-    bossImageObj.onload = function () {
-        boss = new Konva.Image({
-            x: stage.width() / 2 - 50,
-            y: 50,
-            image: bossImageObj,
-            width: 100,
-            height: 100
-        });
-        layer.add(boss);
+                        bossHp = 100 + (level - 1) * 20;
+                        bossHpBar = new Konva.Rect({
+                            x: boss.x(),
+                            y: boss.y() - 20,
+                            width: bossHp,
+                            height: 10,
+                            fill: 'green'
+                        });
+                        layer.add(bossHpBar);
+                        layer.batchDraw();
+                        moveBoss();
+                    };
+                }
 
-        bossHp = 100 + (level - 1) * 20;
-        bossHpBar = new Konva.Rect({
-            x: boss.x(),
-            y: boss.y() - 20,
-            width: bossHp,
-            height: 10,
-            fill: 'green'
-        });
-        layer.add(bossHpBar);
+                let bossDirection = { x: 1, y: 0 }; // Start moving right
 
-        layer.batchDraw();
-        
-        // Start boss movement
-        moveBoss();
-    };
-}
+                function moveBoss() {
+                    const speed = 2; // Speed of boss movement
+                    const bossMovementInterval = setInterval(() => {
+                        if (isGameOver) {
+                            clearInterval(bossMovementInterval);
+                            return;
+                        }
 
-let bossDirection = { x: 1, y: 0 }; // Start moving right
+                        boss.x(boss.x() + bossDirection.x * speed);
+                        boss.y(boss.y() + bossDirection.y * speed);
 
-function moveBoss() {
-    const speed = 2; // Speed of boss movement
+                        bossHpBar.x(boss.x());
+                        bossHpBar.y(boss.y() - 20);
 
-    const bossMovementInterval = setInterval(() => {
-        if (isGameOver) {
-            clearInterval(bossMovementInterval);
-            return;
-        }
+                        // Check for wall collisions
+                        if (boss.x() <= 0 || boss.x() + boss.width() >= stage.width()) {
+                            bossDirection.x *= -1; // Reverse direction
+                        }
 
-        // Update boss position
-        boss.x(boss.x() + bossDirection.x * speed);
-        boss.y(boss.y() + bossDirection.y * speed);
-
-        // Update boss HP bar position
-        bossHpBar.x(boss.x());
-        bossHpBar.y(boss.y() - 20);
-
-        // Check for wall collisions
-        if (boss.x() <= 0 || boss.x() + boss.width() >= stage.width()) {
-            bossDirection.x *= -1; // Reverse direction
-        }
-        if (boss.y <= 0 || boss.y + boss.height >= stage.height()) {
-            bossDirection.y *= -1; // Reverse direction
-        }
-
-        layer.batchDraw();
-    }, 1000 / 60); // 60 FPS
-}
-
+                        layer.batchDraw();
+                    }, 1000 / 60); // 60 FPS
+                }
 
                 const levelText = new Konva.Text({
                     x: stage.width() / 2 - 50,
                     y: 10,
-                    text: Level ${level},
+                    text: `Level ${level}`,
                     fontSize: 24,
                     fill: 'white'
                 });
@@ -168,7 +154,7 @@ function moveBoss() {
                         boss.destroy();
                         bossHpBar.destroy();
                         level++;
-                        levelText.text(Level ${level});
+                        levelText.text(`Level ${level}`);
 
                         playerHp = Math.min(100, playerHp + 50);
                         playerHpBar.width(playerHp);
@@ -176,10 +162,9 @@ function moveBoss() {
                         const sound1 = new Audio('level.mp3'); // Path to your music file
                         sound1.volume = 0.5; // Adjust volume as needed
                         sound1.play();
-                        
+
                         spawnNewBoss();
                         clearInterval(bossShootingInterval);
-                        setRandomBossShootingPattern();
                     }
                     layer.batchDraw();
                 }
@@ -207,9 +192,7 @@ function moveBoss() {
                             fill: 'white'
                         });
                         layer.add(highestLevelText);
-
                         layer.batchDraw();
-                        clearInterval(bossShootingInterval);
                         isGameOver = true;
                     }
                     layer.batchDraw();
@@ -229,7 +212,7 @@ function moveBoss() {
                     const sound2 = new Audio('shoot.mp3'); // Path to your music file
                     sound2.volume = 0.25; // Adjust volume as needed
                     sound2.play();
-                    
+
                     const anim = new Konva.Animation(() => {
                         bullet.y(bullet.y() - 10);
 
@@ -291,152 +274,6 @@ function moveBoss() {
                     }
 
                     layer.batchDraw();
-                }
-
-                function setRandomBossShootingPattern() {
-                    const patterns = [randomSpread, radialBurst, targetedShot];
-                    const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
-                    randomPattern();
-                }
-
-                function randomSpread() {
-                    bossShootingInterval = setInterval(() => {
-                        if (isGameOver) return;
-
-                        const soundx = new Audio('boosWhoosh.mp3'); // Path to your music file
-                        soundx.volume = 0.5; // Adjust volume as needed
-                        soundx.play();
-                        
-                        const angle = Math.random() * Math.PI * 2;
-                        const velocityX = Math.cos(angle) * 7;
-                        const velocityY = Math.sin(angle) * 7;
-
-                        const bossBullet = new Konva.Circle({
-                            x: boss.x() + boss.width() / 2,
-                            y: boss.y() + boss.height() / 2,
-                            radius: 5,
-                            fill: 'red'
-                        });
-                        layer.add(bossBullet);
-                        bossBullet.hasDamagedPlayer = false;
-
-                        const anim = new Konva.Animation(() => {
-                            bossBullet.x(bossBullet.x() + velocityX);
-                            bossBullet.y(bossBullet.y() + velocityY);
-
-                            if (!bossBullet.hasDamagedPlayer &&
-                                bossBullet.y() >= player.y() &&
-                                bossBullet.y() <= player.y() + player.height() &&
-                                bossBullet.x() >= player.x() &&
-                                bossBullet.x() <= player.x() + player.width()) {
-                                updatePlayerHp(20);
-                                bossBullet.hasDamagedPlayer = true;
-                                bossBullet.destroy();
-                                const soundc = new Audio('hit.mp3'); // Path to your music file
-                                soundc.volume = 0.5; // Adjust volume as needed
-                                soundc.play();
-                            }
-
-                            if (bossBullet.y() > stage.height() || bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
-                                bossBullet.destroy();
-                            }
-                        }, layer);
-                        anim.start();
-                    }, 1000);
-                }
-
-                function radialBurst() {
-                    bossShootingInterval = setInterval(() => {
-                        if (isGameOver) return;
-
-                        const soundxx = new Audio('boosWhoosh.mp3'); // Path to your music file
-                        soundxx.volume = 0.5; // Adjust volume as needed
-                        soundxx.play();
-                        
-                        for (let i = 0; i < 6; i++) {
-                            const angle = (i / 6) * Math.PI * 2;
-                            const velocityX = Math.cos(angle) * 5;
-                            const velocityY = Math.sin(angle) * 5;
-
-                            const bossBullet = new Konva.Circle({
-                                x: boss.x() + boss.width() / 2,
-                                y: boss.y() + boss.height() / 2,
-                                radius: 5,
-                                fill: 'red'
-                            });
-                            layer.add(bossBullet);
-                            bossBullet.hasDamagedPlayer = false;
-
-                            const anim = new Konva.Animation(() => {
-                                bossBullet.x(bossBullet.x() + velocityX);
-                                bossBullet.y(bossBullet.y() + velocityY);
-
-                                if (!bossBullet.hasDamagedPlayer &&
-                                    bossBullet.y() >= player.y() &&
-                                    bossBullet.y() <= player.y() + player.height() &&
-                                    bossBullet.x() >= player.x() &&
-                                    bossBullet.x() <= player.x() + player.width()) {
-                                    updatePlayerHp(20);
-                                    bossBullet.hasDamagedPlayer = true;
-                                    bossBullet.destroy();
-                                    const soundc = new Audio('hit.mp3'); // Path to your music file
-                                    soundc.volume = 0.5; // Adjust volume as needed
-                                    soundc.play();
-                                }
-
-                                if (bossBullet.y() > stage.height() || bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
-                                    bossBullet.destroy();
-                                }
-                            }, layer);
-                            anim.start();
-                        }
-                    }, 2000);
-                }
-
-                function targetedShot() {
-                    bossShootingInterval = setInterval(() => {
-                        if (isGameOver) return;
-
-                        const soundxxx = new Audio('boosWhoosh.mp3'); // Path to your music file
-                        soundxxx.volume = 0.5; // Adjust volume as needed
-                        soundxxx.play();
-
-                        const bossBullet = new Konva.Circle({
-                            x: boss.x() + boss.width() / 2,
-                            y: boss.y() + boss.height() / 2,
-                            radius: 5,
-                            fill: 'red'
-                        });
-                        layer.add(bossBullet);
-                        bossBullet.hasDamagedPlayer = false;
-
-                        const angleToPlayer = Math.atan2(player.y() - bossBullet.y(), player.x() - bossBullet.x());
-                        const velocityX = Math.cos(angleToPlayer) * 7;
-                        const velocityY = Math.sin(angleToPlayer) * 7;
-
-                        const anim = new Konva.Animation(() => {
-                            bossBullet.x(bossBullet.x() + velocityX);
-                            bossBullet.y(bossBullet.y() + velocityY);
-
-                            if (!bossBullet.hasDamagedPlayer &&
-                                bossBullet.y() >= player.y() &&
-                                bossBullet.y() <= player.y() + player.height() &&
-                                bossBullet.x() >= player.x() &&
-                                bossBullet.x() <= player.x() + player.width()) {
-                                updatePlayerHp(20);
-                                bossBullet.hasDamagedPlayer = true;
-                                bossBullet.destroy();
-                                const soundc = new Audio('hit.mp3'); // Path to your music file
-                                soundc.volume = 0.5; // Adjust volume as needed
-                                soundc.play();
-                            }
-
-                            if (bossBullet.y() > stage.height() || bossBullet.x() < 0 || bossBullet.x() > stage.width()) {
-                                bossBullet.destroy();
-                            }
-                        }, layer);
-                        anim.start();
-                    }, 1500);
                 }
 
                 const gameLoop = () => {

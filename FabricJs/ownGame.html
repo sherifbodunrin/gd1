@@ -167,62 +167,61 @@
                 }
 
                 function shootAtPlayer(boss, index) {
-    const shootInterval = setInterval(() => {
-        if (isGameOver) {
-            clearInterval(shootInterval);
-            return;
-        }
+                    const shootInterval = setInterval(() => {
+                        if (isGameOver) {
+                            clearInterval(shootInterval);
+                            return;
+                        }
 
-        const bulletCount = 3; // Default bullet count
-        const angleSpread = Math.PI / 8; // Spread angle for shooting patterns
+                        const bulletCount = 3; // Default bullet count
+                        const angleSpread = Math.PI / 8; // Spread angle for shooting patterns
 
-        for (let i = 0; i < bulletCount; i++) {
-            const bullet = new Konva.Circle({
-                x: boss.node.x() + boss.node.width() / 2,
-                y: boss.node.y() + boss.node.height(),
-                radius: 5,
-                fill: 'red'
-            });
-            layer.add(bullet);
+                        for (let i = 0; i < bulletCount; i++) {
+                            const bullet = new Konva.Circle({
+                                x: boss.node.x() + boss.node.width() / 2,
+                                y: boss.node.y() + boss.node.height(),
+                                radius: 5,
+                                fill: 'red'
+                            });
+                            layer.add(bullet);
 
-            let angle;
-            if (index === 0) {
-                // Boss 1 shoots directly at the player
-                const dx = player.x() + player.width() / 2 - bullet.x();
-                const dy = player.y() - bullet.y();
-                angle = Math.atan2(dy, dx);
-            } else if (index === 1) {
-                // Boss 2 spreads bullets
-                angle = Math.random() * angleSpread - angleSpread / 2; // Random angle within spread
-            } else {
-                // Boss 3 shoots at random angles
-                angle = Math.random() * Math.PI * 2;
-            }
+                            let angle;
+                            if (index === 0) {
+                                // Boss 1 shoots directly at the player
+                                const dx = player.x() + player.width() / 2 - bullet.x();
+                                const dy = player.y() - bullet.y();
+                                angle = Math.atan2(dy, dx);
+                            } else if (index === 1) {
+                                // Boss 2 spreads bullets
+                                angle = Math.random() * angleSpread - angleSpread / 2; // Random angle within spread
+                            } else {
+                                // Boss 3 shoots at random angles
+                                angle = Math.random() * Math.PI * 2;
+                            }
 
-            const bulletSpeed = 5; 
-            const anim = new Konva.Animation(() => {
-                bullet.x(bullet.x() + Math.cos(angle) * bulletSpeed);
-                bullet.y(bullet.y() - Math.sin(angle) * bulletSpeed);
+                            const bulletSpeed = 5; 
+                            const anim = new Konva.Animation(() => {
+                                bullet.x(bullet.x() + Math.cos(angle) * bulletSpeed);
+                                bullet.y(bullet.y() - Math.sin(angle) * bulletSpeed);
 
-                // Check for collision with player
-                if (bullet.y() < player.y() + player.height() &&
-                    bullet.y() > player.y() &&
-                    bullet.x() > player.x() &&
-                    bullet.x() < player.x() + player.width()) {
-                    updatePlayerHp(10); 
-                    bullet.destroy();
+                                // Check for collision with player
+                                if (bullet.y() < player.y() + player.height() &&
+                                    bullet.y() > player.y() &&
+                                    bullet.x() > player.x() &&
+                                    bullet.x() < player.x() + player.width()) {
+                                    updatePlayerHp(10); 
+                                    bullet.destroy();
+                                }
+
+                                // Destroy bullet if it goes off-screen
+                                if (bullet.y() < 0) {
+                                    bullet.destroy();
+                                }
+                            }, layer);
+                            anim.start();
+                        }
+                    }, Math.random() * 1000 + 500);
                 }
-
-                // Destroy bullet if it goes off-screen
-                if (bullet.y() < 0) {
-                    bullet.destroy();
-                }
-            }, layer);
-            anim.start();
-        }
-    }, Math.random() * 1000 + 500);
-}
-
 
                 const levelText = new Konva.Text({
                     x: stage.width() / 2 - 50,

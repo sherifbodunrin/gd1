@@ -166,14 +166,19 @@
                     }, 1000 / 60); // 60 FPS
                 }
 
-       function shootAtPlayer(boss, index) {
+      function shootAtPlayer(boss, index) {
     const shootInterval = setInterval(() => {
         if (isGameOver) {
             clearInterval(shootInterval);
             return;
         }
 
-        // Debug: log that the boss is shooting
+        // Check if boss node is defined and exists
+        if (!boss.node) {
+            console.error(`Boss ${index + 1} has no node yet.`);
+            return;
+        }
+
         console.log(`Boss ${index + 1} is shooting`);
 
         const bullet = new Konva.Circle({
@@ -184,42 +189,40 @@
         });
         layer.add(bullet);
 
-        // Default shooting angle: straight down (adjust for different bosses)
-        let angle = Math.PI / 2; // Default angle for shooting downwards
+        let angle = Math.PI / 2; // Default shooting angle (straight down)
 
-        // Boss-specific shooting angles
+        // Boss-specific shooting behavior
         if (index === 0) {
             // Boss 1 shoots directly at the player
             const dx = player.x() + player.width() / 2 - bullet.x();
             const dy = player.y() - bullet.y();
             angle = Math.atan2(dy, dx);
         } else if (index === 1) {
-            // Boss 2 spreads bullets
-            const spread = Math.PI / 8; // Spread angle
-            angle = Math.random() * spread - spread / 2; // Random angle in spread
+            // Boss 2 spreads bullets randomly within an angle spread
+            const spread = Math.PI / 8;
+            angle = Math.random() * spread - spread / 2;
         } else if (index === 2) {
-            // Boss 3 shoots at random angles
+            // Boss 3 shoots in random directions
             angle = Math.random() * Math.PI * 2;
         }
 
         const bulletSpeed = 5;
         const anim = new Konva.Animation(() => {
-            // Move bullet according to the calculated angle
             bullet.x(bullet.x() + Math.cos(angle) * bulletSpeed);
             bullet.y(bullet.y() + Math.sin(angle) * bulletSpeed);
 
-            // Check for collision with player
+            // Check for collision with the player
             if (
                 bullet.y() < player.y() + player.height() &&
                 bullet.y() > player.y() &&
                 bullet.x() > player.x() &&
                 bullet.x() < player.x() + player.width()
             ) {
-                updatePlayerHp(10); // Damage the player
-                bullet.destroy();   // Destroy the bullet after collision
+                updatePlayerHp(10);
+                bullet.destroy();
             }
 
-            // Destroy the bullet if it goes off-screen
+            // Destroy bullet if it goes off-screen
             if (bullet.y() < 0 || bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
                 bullet.destroy();
             }

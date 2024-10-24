@@ -173,27 +173,8 @@
                             return;
                         }
 
-                        let bulletCount;
-                        let angleSpread;
-                        
-                        // Define shooting patterns based on the boss index
-                        switch (index) {
-                            case 0: // Boss 1 shoots straight bullets
-                                bulletCount = 1;
-                                angleSpread = 0;
-                                break;
-                            case 1: // Boss 2 spreads bullets
-                                bulletCount = 5;
-                                angleSpread = Math.PI / 4; // Spread angle
-                                break;
-                            case 2: // Boss 3 shoots at player direction
-                                bulletCount = 1;
-                                angleSpread = 0;
-                                break;
-                            default: // Fallback
-                                bulletCount = 1;
-                                angleSpread = 0;
-                        }
+                        const bulletCount = 3; // Default bullet count
+                        const angleSpread = Math.PI / 8; // Spread angle for shooting patterns
 
                         for (let i = 0; i < bulletCount; i++) {
                             const bullet = new Konva.Circle({
@@ -205,13 +186,17 @@
                             layer.add(bullet);
 
                             let angle;
-                            if (bulletCount === 1) {
+                            if (index === 0) {
+                                // Boss 1 shoots directly at the player
                                 const dx = player.x() + player.width() / 2 - bullet.x();
                                 const dy = player.y() - bullet.y();
                                 angle = Math.atan2(dy, dx);
-                            } else {
-                                // Spread bullets
+                            } else if (index === 1) {
+                                // Boss 2 spreads bullets
                                 angle = Math.random() * angleSpread - angleSpread / 2; // Random angle within spread
+                            } else {
+                                // Boss 3 shoots at random angles
+                                angle = Math.random() * Math.PI * 2;
                             }
 
                             const bulletSpeed = 5; 

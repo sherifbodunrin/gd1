@@ -221,38 +221,38 @@
                 layer.add(levelText);
 
                 function updateBossHp(bossIndex, damage) {
-    if (isGameOver) return;
+                    if (isGameOver) return;
 
-    const boss = bosses[bossIndex];
-    boss.hp = Math.max(0, boss.hp - damage);
-    bossHpBars[bossIndex].width(boss.hp);
-    if (boss.hp <= 0) {
-        bossesDefeated++;
-        boss.node.destroy();
-        bossHpBars[bossIndex].destroy();
-        layer.batchDraw();
+                    const boss = bosses[bossIndex];
+                    boss.hp = Math.max(0, boss.hp - damage);
+                    bossHpBars[bossIndex].width(boss.hp);
+                    if (boss.hp <= 0) {
+                    bossesDefeated++;
+                    boss.node.destroy();
+                    bossHpBars[bossIndex].destroy();
+                    layer.batchDraw();
         
-        // Check if all bosses are defeated
-        if (bossesDefeated === totalBosses) {
-            score += level * 10;
-            level++;
-            levelText.text(`Level ${level}`);
-            playerHp = Math.min(100, playerHp + 25);
-            playerHpBar.width(playerHp);
-            bossesDefeated = 0; // Reset for next round
+                    // Check if all bosses are defeated
+                    if (bossesDefeated === totalBosses) {
+                    score += level * 10;
+                    level++;
+                    levelText.text(`Level ${level}`);
+                    playerHp = Math.min(100, playerHp + 25);
+                    playerHpBar.width(playerHp);
+                    bossesDefeated = 0; // Reset for next round
             
-            const sound1 = new Audio('level.mp3');
-            sound1.volume = 0.5;
-            sound1.play();
+                    const sound1 = new Audio('level.mp3');
+                    sound1.volume = 0.5;
+                    sound1.play();
 
-            // Clear boss arrays and spawn new bosses
-            bosses = [];
-            bossHpBars = [];
-            spawnNewBosses(); // Spawn new bosses
-        }
-    }
-    layer.batchDraw();
-}
+                    // Clear boss arrays and spawn new bosses
+                    bosses = [];
+                    bossHpBars = [];
+                    spawnNewBosses(); // Spawn new bosses
+                    }
+                 }
+                layer.batchDraw();
+                }
 
                 function updatePlayerHp(damage) {
                     if (isGameOver) return;

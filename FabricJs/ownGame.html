@@ -221,17 +221,19 @@
                 layer.add(levelText);
 
                 function updateBossHp(bossIndex, damage) {
-                    if (isGameOver) return;
+                if (isGameOver) return;
 
-                    const boss = bosses[bossIndex];
-                    boss.hp = Math.max(0, boss.hp - damage);
-                    bossHpBars[bossIndex].width(boss.hp);
-                    if (boss.hp <= 0) {
-                    bossesDefeated++;
+                const boss = bosses[bossIndex];
+                boss.hp = Math.max(0, boss.hp - damage);
+                bossHpBars[bossIndex].width(boss.hp);
+    
+                if (boss.hp <= 0) {
                     boss.node.destroy();
                     bossHpBars[bossIndex].destroy();
+                    bossesDefeated++; // Increment defeated bosses
+
                     layer.batchDraw();
-        
+
                     // Check if all bosses are defeated
                     if (bossesDefeated === totalBosses) {
                     score += level * 10;
@@ -240,7 +242,7 @@
                     playerHp = Math.min(100, playerHp + 25);
                     playerHpBar.width(playerHp);
                     bossesDefeated = 0; // Reset for next round
-            
+
                     const sound1 = new Audio('level.mp3');
                     sound1.volume = 0.5;
                     sound1.play();
@@ -250,9 +252,10 @@
                     bossHpBars = [];
                     spawnNewBosses(); // Spawn new bosses
                     }
-                 }
+                }
                 layer.batchDraw();
                 }
+
 
                 function updatePlayerHp(damage) {
                     if (isGameOver) return;

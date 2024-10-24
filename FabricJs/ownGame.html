@@ -224,18 +224,22 @@
                 if (isGameOver) return;
 
                 const boss = bosses[bossIndex];
+                if (!boss) return; // Ensure the boss still exists
+
                 boss.hp = Math.max(0, boss.hp - damage);
                 bossHpBars[bossIndex].width(boss.hp);
-    
+
                 if (boss.hp <= 0) {
-                    boss.node.destroy();
-                    bossHpBars[bossIndex].destroy();
-                    bossesDefeated++; // Increment defeated bosses
+                // Boss is defeated
+                boss.node.destroy();
+                bossHpBars[bossIndex].destroy();
+                bossesDefeated++; // Increment defeated bosses
+                bosses[bossIndex] = null; // Mark this boss as destroyed for later checks
 
-                    layer.batchDraw();
+                layer.batchDraw();
 
-                    // Check if all bosses are defeated
-                    if (bossesDefeated === totalBosses) {
+                // Check if all bosses are defeated
+                if (bossesDefeated === totalBosses) {
                     score += level * 10;
                     level++;
                     levelText.text(`Level ${level}`);
@@ -254,7 +258,7 @@
                     }
                 }
                 layer.batchDraw();
-                }
+            }
 
 
                 function updatePlayerHp(damage) {

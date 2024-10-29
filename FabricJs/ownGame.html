@@ -79,62 +79,60 @@
 
                 function spawnNewBosses() {
                     const bossImages = [
-                    'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623',
-                    'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8amy-0b47096c-f464-45c5-a768-60eb1eb2e236.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFteS0wYjQ3MDk2Yy1mNDY0LTQ1YzUtYTc2OC02MGViMWViMmUyMzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.AcUpr0zYHWAWss-7YJNZbtYNOg1ygOFHzAXQG36tqQ8',
-                    'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/f4c2aa35-b577-450c-9ce3-714ca13fa37e/d3ea9oa-c44029f3-049f-4a8e-b3a1-9b73e7ccee42.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2Y0YzJhYTM1LWI1NzctNDUwYy05Y2UzLTcxNGNhMTNmYTM3ZVwvZDNlYTlvYS1jNDQwMjlmMy0wNDlmLTRhOGUtYjNhMS05YjczZTdjY2VlNDIuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.u4yWarWF3leA7DwVLU3L9j_PXPEViMIPy6hgHAPDfOw',
-                    'https://static.wikia.nocookie.net/avp/images/3/38/Smasher.png/revision/latest/thumbnail/width/360/height/360?cb=20200412024702',
-                    'https://preview.redd.it/c6th25lyadh11.png?auto=webp&s=bd13ab59dc487e8afad5cc333595265728537d8d',
-                    'https://img.itch.zone/aW1nLzE0MDMyMDc3LnBuZw==/315x250%23c/3AQqBO.png',
-                    'https://static.wikia.nocookie.net/metroid/images/c/c4/Kraid_%28Zero_Mission_Animation%29.gif/revision/latest/thumbnail/width/360/height/360?cb=20190509144249',
-                    'https://preview.redd.it/i-didnt-even-realize-theyre-two-different-enemies-v0-r0hsk4z214cc1.png?width=640&crop=smart&auto=webp&s=5004d186f327840457a26a0581ba64592edd6e80',   
-                    'https://cdn.fusiondex.org/lQXotH5ARel7U8J8RW93S2sN/dn/pif/1.139.png',
-                    'https://i.pinimg.com/originals/5b/44/e0/5b44e047cec68c8bf151b5e6b6e5aca3.gif',  
-                    'https://static.wikia.nocookie.net/contra/images/d/d6/Alien_Cell_-_Hard_Corps_-_01.png/revision/latest?cb=20120618223341',   
-                    'https://i.redd.it/y4lnvq3qe7751.gif'
+                        'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623',
+                        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8amy-0b47096c-f464-45c5-a768-60eb1eb2e236.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFteS0wYjQ3MDk2Yy1mNDY0LTQ1YzUtYTc2OC02MGViMWViMmUyMzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.AcUpr0zYHWAWss-7YJNZbtYNOg1ygOFHzAXQG36tqQ8',
+                        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/f4c2aa35-b577-450c-9ce3-714ca13fa37e/d3ea9oa-c44029f3-049f-4a8e-b3a1-9b73e7ccee42.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2Y0YzJhYTM1LWI1NzctNDUwYy05Y2UzLTcxNGNhMTNmYTM3ZVwvZDNlYTlvYS1jNDQwMjlmMy0wNDlmLTRhOGUtYjNhMS05YjczZTdjY2VlNDIuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.u4yWarWF3leA7DwVLU3L9j_PXPEViMIPy6hgHAPDfOw',
+                        'https://static.wikia.nocookie.net/avp/images/3/38/Smasher.png/revision/latest/thumbnail/width/360/height/360?cb=20200412024702',
+                        'https://preview.redd.it/c6th25lyadh11.png?auto=webp&s=bd13ab59dc487e8afad5cc333595265728537d8d',
+                        'https://img.itch.zone/aW1nLzE0MDMyMDc3LnBuZw==/315x250%23c/3AQqBO.png',
+                        'https://static.wikia.nocookie.net/metroid/images/c/c4/Kraid_%28Zero_Mission_Animation%29.gif/revision/latest/thumbnail/width/360/height/360?cb=20190509144249',
+                        'https://preview.redd.it/i-didnt-even-realize-theyre-two-different-enemies-v0-r0hsk4z214cc1.png?width=640&crop=smart&auto=webp&s=5004d186f327840457a26a0581ba64592edd6e80',   
+                        'https://cdn.fusiondex.org/lQXotH5ARel7U8J8RW93S2sN/dn/pif/1.139.png',
+                        'https://i.pinimg.com/originals/5b/44/e0/5b44e047cec68c8bf151b5e6b6e5aca3.gif',  
+                        'https://static.wikia.nocookie.net/contra/images/d/d6/Alien_Cell_-_Hard_Corps_-_01.png/revision/latest?cb=20120618223341',   
+                        'https://i.redd.it/y4lnvq3qe7751.gif'
                     ];
 
                     bosses = [];
                     bossHpBars = [];
 
-                for (let i = 0; i < totalBosses; i++) {
-                    const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
-                    const bossImageObj = new Image();
-                    bossImageObj.src = randomBossImage;
+                    for (let i = 0; i < totalBosses; i++) {
+                        const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
+                        const bossImageObj = new Image();
+                        bossImageObj.src = randomBossImage;
 
-                    bossImageObj.onload = function () {
-                    const boss = new Konva.Image({
-                    x: Math.random() * (stage.width() - 100), // Random position within stage width
-                    y: Math.random() * (stage.height() / 2), // Random position within top half of the stage
-                    image: bossImageObj,
-                    width: 100,
-                    height: 100
-                    });
+                        bossImageObj.onload = function () {
+                            const boss = new Konva.Image({
+                                x: Math.random() * (stage.width() - 100),
+                                y: Math.random() * (stage.height() / 2),
+                                image: bossImageObj,
+                                width: 100,
+                                height: 100
+                            });
 
-                    layer.add(boss);
+                            layer.add(boss);
 
-                    const bossHealth = 100;
-                    bosses.push({ node: boss, hp: bossHealth, direction: Math.random() * Math.PI * 2 });
+                            const bossHealth = 100;
+                            bosses.push({ node: boss, hp: bossHealth, direction: Math.random() * Math.PI * 2 });
 
-                    const bossHpBar = new Konva.Rect({
-                        x: boss.x(),
-                        y: boss.y() - 20,
-                        width: bossHealth,
-                        height: 10,
-                        fill: 'green'
-                    });
+                            const bossHpBar = new Konva.Rect({
+                                x: boss.x(),
+                                y: boss.y() - 20,
+                                width: bossHealth,
+                                height: 10,
+                                fill: 'green'
+                            });
 
-                    layer.add(bossHpBar);
-                    bossHpBars.push(bossHpBar);
+                            layer.add(bossHpBar);
+                            bossHpBars.push(bossHpBar);
 
-                    shootAtPlayer(boss, i); // Bosses start shooting after loading
-                };
-            }
+                            shootAtPlayer(boss, i); // Bosses start shooting after loading
+                        };
+                    }
 
-            layer.batchDraw();
-            moveBoss();
-            }
-
-
+                    layer.batchDraw();
+                    moveBoss();
+                }
 
                 function moveBoss() {
                     if (bossMovementInterval) {
@@ -148,10 +146,10 @@
                         }
 
                         bosses.forEach((boss, index) => {
-                            if (!boss) return; // Skip if the boss is null
+                            if (!boss) return;
 
                             if (Math.random() < 0.01) {
-                                boss.direction = Math.random() * Math.PI * 2; // New random angle
+                                boss.direction = Math.random() * Math.PI * 2;
                             }
 
                             const dx = Math.cos(boss.direction) * speed;
@@ -172,55 +170,53 @@
                         });
 
                         layer.batchDraw();
-                    }, 1000 / 60); // 60 FPS
+                    }, 1000 / 60);
                 }
 
-  function shootAtPlayer(boss, index) {
-    const shootInterval = setInterval(() => {
-        if (isGameOver) {
-            clearInterval(shootInterval);
-            return;
-        }
+                function shootAtPlayer(boss, index) {
+                    const shootInterval = setInterval(() => {
+                        if (isGameOver) {
+                            clearInterval(shootInterval);
+                            return;
+                        }
 
-        if (!boss.node) return;
+                        if (!boss.node) return;
 
-        // Create a beam using an elongated rectangle
-       const beam = new Konva.Rect({
-    x: boss.node.x() + boss.node.width() / 2 - 5, // Center the beam
-    y: boss.node.y() + boss.node.height(), // Start just below the boss
-    width: 10, // Beam's width
-    height: 30, // Beam's height
-    fill: 'red'
-});
-        layer.add(beam); // Add beam to layer
+                        const beam = new Konva.Rect({
+                            x: boss.node.x() + boss.node.width() / 2 - 5,
+                            y: boss.node.y() + boss.node.height(),
+                            width: 10,
+                            height: 30,
+                            fill: 'red'
+                        });
+                        layer.add(beam);
 
-        const dx = player.x() + player.width() / 2 - beam.x();
-        const dy = player.y() - beam.y();
-        const angle = Math.atan2(dy, dx);
+                        const dx = player.x() + player.width() / 2 - beam.x();
+                        const dy = player.y() - beam.y();
+                        const angle = Math.atan2(dy, dx);
 
-        const beamSpeed = 2;
-        const anim = new Konva.Animation(() => {
-            beam.x(beam.x() + Math.cos(angle) * beamSpeed);
-            beam.y(beam.y() + Math.sin(angle) * beamSpeed);
+                        const beamSpeed = 2;
+                        const anim = new Konva.Animation(() => {
+                            beam.x(beam.x() + Math.cos(angle) * beamSpeed);
+                            beam.y(beam.y() + Math.sin(angle) * beamSpeed);
 
-            if (
-                beam.y() < player.y() + player.height() &&
-                beam.y() > player.y() &&
-                beam.x() > player.x() &&
-                beam.x() < player.x() + player.width()
-            ) {
-                updatePlayerHp(10);
-                beam.destroy();
-            }
+                            if (
+                                beam.y() < player.y() + player.height() &&
+                                beam.y() > player.y() &&
+                                beam.x() > player.x() &&
+                                beam.x() < player.x() + player.width()
+                            ) {
+                                updatePlayerHp(10);
+                                beam.destroy();
+                            }
 
-            if (beam.y() < 0 || beam.y() > stage.height() || beam.x() < 0 || beam.x() > stage.width()) {
-                beam.destroy();
-            }
-        }, layer);
-        anim.start();
-    }, Math.random() * 800 + 300); // Shoot every 300ms to 1100ms
-}
-
+                            if (beam.y() < 0 || beam.y() > stage.height() || beam.x() < 0 || beam.x() > stage.width()) {
+                                beam.destroy();
+                            }
+                        }, layer);
+                        anim.start();
+                    }, Math.random() * 800 + 300);
+                }
 
                 const levelText = new Konva.Text({
                     x: stage.width() / 2 - 50,
@@ -245,7 +241,6 @@
                         bossHpBars[bossIndex].destroy();
                         bossesDefeated++;
 
-                        // Remove the destroyed boss from the array
                         bosses = bosses.filter((b) => b && b.hp > 0);
                         bossHpBars = bossHpBars.filter((bar, index) => index !== bossIndex);
 

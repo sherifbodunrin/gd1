@@ -70,11 +70,11 @@
                 let level = 1;
                 let score = 0;
                 let bossesDefeated = 0;
-                let totalBosses = 1;
+                let totalBosses = 1; // Start with one boss
                 let isGameOver = false;
                 let bosses = [];
                 let bossHpBars = [];
-                const speed = 1;
+                const speed = 1; // Base speed for bosses
                 let bossMovementInterval;
 
               function spawnNewBosses() {
@@ -136,10 +136,10 @@
                         }
 
                         bosses.forEach((boss, index) => {
-                            if (!boss) return;
+                            if (!boss) return; // Skip if the boss is null
 
                             if (Math.random() < 0.01) {
-                                boss.direction = Math.random() * Math.PI * 2;
+                                boss.direction = Math.random() * Math.PI * 2; // New random angle
                             }
 
                             const dx = Math.cos(boss.direction) * speed;
@@ -160,51 +160,120 @@
                         });
 
                         layer.batchDraw();
-                    }, 1000 / 60);
+                    }, 1000 / 60); // 60 FPS
                 }
 
-                function shootAtPlayer(boss, index) {
-                    const shootInterval = setInterval(() => {
-                        if (isGameOver) {
-                            clearInterval(shootInterval);
-                            return;
+      function shootAtPlayer(boss, index) {
+    const shootInterval = setInterval(() => {
+        if (isGameOver) {
+            clearInterval(shootInterval);
+            return;
+        }
+
+        // Check if boss node is defined and exists
+        if (!boss.node) {
+            console.error(Boss ${index + 1} has no node yet.);
+            return;
+        }
+
+        console.log(Boss ${index + 1} is shooting);
+
+        const bullet = new Konva.Circle({
+            x: boss.node.x() + boss.node.width() / 2,
+            y: boss.node.y() + boss.node.height(),
+            radius: 5,
+            fill: 'red'
+        });
+        layer.add(bullet);
+
+        let angle = Math.PI / 2; // Default shooting angle (straight down)
+
+        // Boss-specific shooting behavior
+        if (index === 0) {
+            // Boss 1 shoots directly at the player
+            const dx = player.x() + player.width() / 2 - bullet.x();
+            const dy = player.y() - bullet.y();
+            angle = Math.atan2(dy, dx);
+        } else if (index === 1) {
+            // Boss 2 spreads bullets randomly within an angle spread
+            const spread = Math.PI / 8;
+            angle = Math.random() * spread - spread / 2;
+        } else if (index === 2) {
+            // Boss 3 shoots in random directions
+            angle = Math.random() * Math.PI * 2;
+        }
+
+        const bulletSpeed = 5;
+        const anim = new Konva.Animation(() => {
+            bullet.x(bullet.x() + Math.cos(angle) * bulletSpeed);
+            bullet.y(bullet.y() + Math.sin(angle) * bulletSpeed);
+
+            // Check for collision with the player
+            if (
+                bullet.y() < player.y() + player.height() &&
+                bullet.y() > player.y() &&
+                bullet.x() > player.x() &&
+                bullet.x() < player.x() + player.width()
+            ) {
+                updatePlayerHp(10);
+                bullet.destroy();
+            }
+
+            // Destroy bullet if it goes off-screen
+            if (bullet.y() < 0 || bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
+                bullet.destroy();
+            }
+        }, layer);
+        anim.start();
+    }, Math.random() * 800 + 300); // Shoot every 300ms to 1100ms
+}
+
+
+                const levelText = new Konva.Text({
+                    x: stage.width() / 2 - 50,
+                    y: 10,
+                    text: Level ${level},
+                    fontSize: 24,
+                    fill: 'white'
+                });
+                layer.add(levelText);
+
+                function updateBossHp(bossIndex, damage) {
+                    if (isGameOver) return;
+
+                    const boss = bosses[bossIndex];
+                    if (!boss) return;
+
+                    boss.hp = Math.max(0, boss.hp - damage);
+                    bossHpBars[bossIndex].width(boss.hp);
+
+                    if (boss.hp <= 0) {
+                        boss.node.destroy();
+                        bossHpBars[bossIndex].destroy();
+                        bossesDefeated++;
+
+                        // Remove the destroyed boss from the array
+                        bosses = bosses.filter((b) => b && b.hp > 0);
+                        bossHpBars = bossHpBars.filter((bar, index) => index !== bossIndex);
+
+                        layer.batchDraw();
+
+                        if (bossesDefeated === totalBosses) {
+                            score += level * 10;
+                            level++;
+                            levelText.text(Level ${level});
+                            playerHp = Math.min(100, playerHp + 25);
+                            playerHpBar.width(playerHp);
+                            bossesDefeated = 0;
+
+                            const sound1 = new Audio('level.mp3');
+                            sound1.volume = 0.5;
+                            sound1.play();
+
+                            spawnNewBosses();
                         }
-
-                        if (!boss.node) {
-                            return;
-                        }
-
-                        const bullet = new Konva.Circle({
-                            x: boss.node.x() + boss.node.width() / 2,
-                            y: boss.node.y() + boss.node.height(),
-                            radius: 5,
-                            fill: 'red'
-                        });
-                        layer.add(bullet);
-
-                        let angle = Math.atan2(player.y() - bullet.y(), player.x() + player.width() / 2 - bullet.x());
-                        const bulletSpeed = 5;
-
-                        const anim = new Konva.Animation(() => {
-                            bullet.x(bullet.x() + Math.cos(angle) * bulletSpeed);
-                            bullet.y(bullet.y() + Math.sin(angle) * bulletSpeed);
-
-                            if (
-                                bullet.y() < player.y() + player.height() &&
-                                bullet.y() > player.y() &&
-                                bullet.x() > player.x() &&
-                                bullet.x() < player.x() + player.width()
-                            ) {
-                                updatePlayerHp(10);
-                                bullet.destroy();
-                            }
-
-                            if (bullet.y() < 0 || bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
-                                bullet.destroy();
-                            }
-                        }, layer);
-                        anim.start();
-                    }, Math.random() * 800 + 300);
+                    }
+                    layer.batchDraw();
                 }
 
                 function updatePlayerHp(damage) {
@@ -212,18 +281,84 @@
                     playerHp = Math.max(0, playerHp - damage);
                     playerHpBar.width(playerHp);
                     if (playerHp === 0) {
+                        const gameOverOverlay = new Konva.Rect({
+                            x: 0,
+                            y: 0,
+                            width: stage.width(),
+                            height: stage.height(),
+                            fill: 'black',
+                            opacity: 0.8
+                        });
+                        layer.add(gameOverOverlay);
+
+                        const highestLevelText = new Konva.Text({
+                            x: stage.width() / 2 - 150,
+                            y: stage.height() / 2 - 50,
+                            text: 'Game Over! Your highest level: ' + level,
+                            fontSize: 36,
+                            fill: 'white'
+                        });
+                        layer.add(highestLevelText);
+                        layer.batchDraw();
                         isGameOver = true;
                     }
                     layer.batchDraw();
                 }
 
+                function shootBullet() {
+                    if (isGameOver) return;
+                    const bullet = new Konva.Circle({
+                        x: player.x() + player.width() / 2,
+                        y: player.y() - 30,
+                        radius: 5,
+                        fill: 'lime'
+                    });
+                    layer.add(bullet);
+                    bullet.hasDamagedBoss = false;
+
+                    const sound2 = new Audio('shoot.mp3');
+                    sound2.volume = 0.25;
+                    sound2.play();
+
+                    const anim = new Konva.Animation(() => {
+                        bullet.y(bullet.y() - 10);
+
+                        bosses.forEach((boss, index) => {
+                            if (!bullet.hasDamagedBoss &&
+                                bullet.y() <= boss.node.y() + boss.node.height() &&
+                                bullet.y() >= boss.node.y() &&
+                                bullet.x() >= boss.node.x() - 10 &&
+                                bullet.x() <= boss.node.x() + boss.node.width() + 10) {
+                                updateBossHp(index, 50);
+                                bullet.hasDamagedBoss = true;
+                                bullet.destroy();
+                                const soundc = new Audio('hit.mp3');
+                                soundc.volume = 0.5;
+                                soundc.play();
+                            }
+                        });
+
+                        if (bullet.y() < 0) {
+                            bullet.destroy();
+                        }
+                    }, layer);
+                    anim.start();
+                }
+
                 const keysPressed = {};
+
                 window.addEventListener('keydown', (e) => {
                     keysPressed[e.key] = true;
+
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                        e.preventDefault();
+                    }
+
                     if (e.key === ' ' && !isGameOver) {
                         shootBullet();
                     }
                 });
+
                 window.addEventListener('keyup', (e) => {
                     keysPressed[e.key] = false;
                 });
@@ -238,63 +373,24 @@
                         player.x(Math.min(stage.width() - player.width(), player.x() + 5));
                         playerHpBar.x(player.x() - 30);
                     }
-                    layer.batchDraw();
-                }
-
-                function shootBullet() {
-                    const bullet = new Konva.Circle({
-                        x: player.x() + player.width() / 2,
-                        y: player.y(),
-                        radius: 5,
-                        fill: 'yellow'
-                    });
-                    layer.add(bullet);
-
-                    const bulletSpeed = -5;
-                    const anim = new Konva.Animation(() => {
-                        bullet.y(bullet.y() + bulletSpeed);
-
-                        bosses.forEach((boss, index) => {
-                            if (
-                                bullet.y() < boss.node.y() + boss.node.height() &&
-                                bullet.y() > boss.node.y() &&
-                                bullet.x() > boss.node.x() &&
-                                bullet.x() < boss.node.x() + boss.node.width()
-                            ) {
-                                updateBossHp(index, 20);
-                                bullet.destroy();
-                            }
-                        });
-
-                        if (bullet.y() < 0) {
-                            bullet.destroy();
-                        }
-                    }, layer);
-                    anim.start();
-                }
-
-                function updateBossHp(index, damage) {
-                    bosses[index].hp = Math.max(0, bosses[index].hp - damage);
-                    bossHpBars[index].width(bosses[index].hp);
-                    if (bosses[index].hp === 0) {
-                        bosses[index].node.destroy();
-                        bossHpBars[index].destroy();
-                        bosses[index] = null;
-                        bossHpBars[index] = null;
-                        score += 10;
-                        bossesDefeated++;
-                        if (bossesDefeated >= totalBosses) {
-                            level++;
-                            totalBosses++;
-                            bossesDefeated = 0;
-                            spawnNewBosses();
-                        }
+                    if (keysPressed['ArrowUp']) {
+                        player.y(Math.max(0, player.y() - 5));
+                        playerHpBar.y(player.y() + 40);
                     }
+                    if (keysPressed['ArrowDown']) {
+                        player.y(Math.min(stage.height() - player.height(), player.y() + 5));
+                        playerHpBar.y(player.y() + 40);
+                    }
+
                     layer.batchDraw();
                 }
 
+                const gameLoop = () => {
+                    movePlayer();
+                    requestAnimationFrame(gameLoop);
+                };
+                gameLoop();
                 spawnNewBosses();
-                movePlayer();
             };
         }
     </script>

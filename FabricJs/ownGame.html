@@ -173,50 +173,56 @@
                     }, 1000 / 60);
                 }
 
-                function shootAtPlayer(boss, index) {
-                    const shootInterval = setInterval(() => {
-                        if (isGameOver) {
-                            clearInterval(shootInterval);
-                            return;
-                        }
+               function shootAtPlayer(boss, index) {
+    const shootInterval = setInterval(() => {
+        if (isGameOver) {
+            clearInterval(shootInterval);
+            return;
+        }
 
-                        if (!boss.node) return;
+        if (!boss.node) return;
 
-                        const beam = new Konva.Rect({
-                            x: boss.node.x() + boss.node.width() / 2 - 5,
-                            y: boss.node.y() + boss.node.height(),
-                            width: 10,
-                            height: 30,
-                            fill: 'red'
-                        });
-                        layer.add(beam);
+        const bulletImageObj = new Image();
+        bulletImageObj.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/a23b539f-36f1-4675-8f36-64dda35ea03e/dhfsc7z-89a47d9f-68d0-4c81-a224-4dc0bc5688a3.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2EyM2I1MzlmLTM2ZjEtNDY3NS04ZjM2LTY0ZGRhMzVlYTAzZVwvZGhmc2M3ei04OWE0N2Q5Zi02OGQwLTRjODEtYTIyNC00ZGMwYmM1Njg4YTMucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.CIxgRM_w9v8JCtDB4MEvQn4ZHHaL5x6e-k_79O2a3kU';
 
-                        const dx = player.x() + player.width() / 2 - beam.x();
-                        const dy = player.y() - beam.y();
-                        const angle = Math.atan2(dy, dx);
+        bulletImageObj.onload = function() {
+            const beam = new Konva.Image({
+                x: boss.node.x() + boss.node.width() / 2 - 10,
+                y: boss.node.y() + boss.node.height(),
+                image: bulletImageObj,
+                width: 20, // Adjust width as needed
+                height: 20 // Adjust height as needed
+            });
+            layer.add(beam);
 
-                        const beamSpeed = 2;
-                        const anim = new Konva.Animation(() => {
-                            beam.x(beam.x() + Math.cos(angle) * beamSpeed);
-                            beam.y(beam.y() + Math.sin(angle) * beamSpeed);
+            const dx = player.x() + player.width() / 2 - beam.x();
+            const dy = player.y() - beam.y();
+            const angle = Math.atan2(dy, dx);
 
-                            if (
-                                beam.y() < player.y() + player.height() &&
-                                beam.y() > player.y() &&
-                                beam.x() > player.x() &&
-                                beam.x() < player.x() + player.width()
-                            ) {
-                                updatePlayerHp(10);
-                                beam.destroy();
-                            }
+            const beamSpeed = 2;
+            const anim = new Konva.Animation(() => {
+                beam.x(beam.x() + Math.cos(angle) * beamSpeed);
+                beam.y(beam.y() + Math.sin(angle) * beamSpeed);
 
-                            if (beam.y() < 0 || beam.y() > stage.height() || beam.x() < 0 || beam.x() > stage.width()) {
-                                beam.destroy();
-                            }
-                        }, layer);
-                        anim.start();
-                    }, Math.random() * 800 + 300);
+                if (
+                    beam.y() < player.y() + player.height() &&
+                    beam.y() > player.y() &&
+                    beam.x() > player.x() &&
+                    beam.x() < player.x() + player.width()
+                ) {
+                    updatePlayerHp(10);
+                    beam.destroy();
                 }
+
+                if (beam.y() < 0 || beam.y() > stage.height() || beam.x() < 0 || beam.x() > stage.width()) {
+                    beam.destroy();
+                }
+            }, layer);
+            anim.start();
+        };
+    }, Math.random() * 800 + 300);
+}
+
 
                 const levelText = new Konva.Text({
                     x: stage.width() / 2 - 50,

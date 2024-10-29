@@ -173,7 +173,7 @@
                     }, 1000 / 60);
                 }
 
-               function shootAtPlayer(boss, index) {
+              function shootAtPlayer(boss, index) {
     const shootInterval = setInterval(() => {
         if (isGameOver) {
             clearInterval(shootInterval);
@@ -190,8 +190,8 @@
                 x: boss.node.x() + boss.node.width() / 2 - 10,
                 y: boss.node.y() + boss.node.height(),
                 image: bulletImageObj,
-                width: 20, // Adjust width as needed
-                height: 20 // Adjust height as needed
+                width: 20, // Adjust width if needed
+                height: 20 // Adjust height if needed
             });
             layer.add(beam);
 
@@ -219,6 +219,11 @@
                 }
             }, layer);
             anim.start();
+        };
+
+        // Optionally handle image loading errors
+        bulletImageObj.onerror = function() {
+            console.error('Bullet image failed to load.');
         };
     }, Math.random() * 800 + 300);
 }

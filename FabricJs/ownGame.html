@@ -325,7 +325,7 @@
                                 bullet.y() >= boss.node.y() &&
                                 bullet.x() >= boss.node.x() - 10 &&
                                 bullet.x() <= boss.node.x() + boss.node.width() + 10) {
-                                updateBossHp(index, 50);
+                                updateBossHp(index, 20);
                                 bullet.hasDamagedBoss = true;
                                 bullet.destroy();
                                 const soundc = new Audio('hit.mp3');

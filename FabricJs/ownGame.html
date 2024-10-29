@@ -175,7 +175,7 @@
                     }, 1000 / 60); // 60 FPS
                 }
 
-    function shootAtPlayer(boss, index) {
+  function shootAtPlayer(boss, index) {
     const shootInterval = setInterval(() => {
         if (isGameOver) {
             clearInterval(shootInterval);
@@ -184,43 +184,40 @@
 
         if (!boss.node) return;
 
-        const bulletImageObj = new Image();
-        bulletImageObj.src = 'https://img.itch.zone/aW1nLzE2Nzc1NTM1LmdpZg==/315x250%23cm/PYelHk.gif';
-        bulletImageObj.onload = function () {
-            const bullet = new Konva.Image({
-                x: boss.node.x() + boss.node.width() / 2 - 10,
-                y: boss.node.y() + boss.node.height(),
-                image: bulletImageObj,
-                width: 20,
-                height: 20
-            });
-            layer.add(bullet); // Add bullet to layer
+        // Create a beam using an elongated rectangle
+        const beam = new Konva.Rect({
+            x: boss.node.x() + boss.node.width() / 2 - 5, // Center the beam
+            y: boss.node.y() + boss.node.height(),
+            width: 10, // Beam's width
+            height: 30, // Beam's height
+            fill: 'red'
+        });
+        layer.add(beam); // Add beam to layer
 
-            const dx = player.x() + player.width() / 2 - bullet.x();
-            const dy = player.y() - bullet.y();
-            const angle = Math.atan2(dy, dx);
+        const dx = player.x() + player.width() / 2 - beam.x();
+        const dy = player.y() - beam.y();
+        const angle = Math.atan2(dy, dx);
 
-            const bulletSpeed = 5;
-            const anim = new Konva.Animation(() => {
-                bullet.x(bullet.x() + Math.cos(angle) * bulletSpeed);
-                bullet.y(bullet.y() + Math.sin(angle) * bulletSpeed);
+        const beamSpeed = 5;
+        const anim = new Konva.Animation(() => {
+            beam.x(beam.x() + Math.cos(angle) * beamSpeed);
+            beam.y(beam.y() + Math.sin(angle) * beamSpeed);
 
-                if (
-                    bullet.y() < player.y() + player.height() &&
-                    bullet.y() > player.y() &&
-                    bullet.x() > player.x() &&
-                    bullet.x() < player.x() + player.width()
-                ) {
-                    updatePlayerHp(10);
-                    bullet.destroy();
-                }
+            if (
+                beam.y() < player.y() + player.height() &&
+                beam.y() > player.y() &&
+                beam.x() > player.x() &&
+                beam.x() < player.x() + player.width()
+            ) {
+                updatePlayerHp(10);
+                beam.destroy();
+            }
 
-                if (bullet.y() < 0 || bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
-                    bullet.destroy();
-                }
-            }, layer);
-            anim.start();
-        };
+            if (beam.y() < 0 || beam.y() > stage.height() || beam.x() < 0 || beam.x() > stage.width()) {
+                beam.destroy();
+            }
+        }, layer);
+        anim.start();
     }, Math.random() * 800 + 300); // Shoot every 300ms to 1100ms
 }
 

@@ -185,20 +185,20 @@
         if (!boss.node) return;
 
         // Create a beam using an elongated rectangle
-        const beam = new Konva.Rect({
-            x: boss.node.x() + boss.node.width() / 2 - 5, // Center the beam
-            y: boss.node.y() + boss.node.height(),
-            width: 10, // Beam's width
-            height: 30, // Beam's height
-            fill: 'red'
-        });
+       const beam = new Konva.Rect({
+    x: boss.node.x() + boss.node.width() / 2 - 5, // Center the beam
+    y: boss.node.y() + boss.node.height(), // Start just below the boss
+    width: 10, // Beam's width
+    height: 30, // Beam's height
+    fill: 'red'
+});
         layer.add(beam); // Add beam to layer
 
         const dx = player.x() + player.width() / 2 - beam.x();
         const dy = player.y() - beam.y();
         const angle = Math.atan2(dy, dx);
 
-        const beamSpeed = 5;
+        const beamSpeed = 2;
         const anim = new Konva.Animation(() => {
             beam.x(beam.x() + Math.cos(angle) * beamSpeed);
             beam.y(beam.y() + Math.sin(angle) * beamSpeed);

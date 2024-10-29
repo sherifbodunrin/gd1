@@ -184,18 +184,17 @@
 
         if (!boss.node) return;
 
-        // Create a bullet using an image
         const bulletImageObj = new Image();
         bulletImageObj.src = 'https://img.itch.zone/aW1nLzE2Nzc1NTM1LmdpZg==/315x250%23cm/PYelHk.gif';
         bulletImageObj.onload = function () {
             const bullet = new Konva.Image({
-                x: boss.node.x() + boss.node.width() / 2 - 10, // Adjust for centering
+                x: boss.node.x() + boss.node.width() / 2 - 10,
                 y: boss.node.y() + boss.node.height(),
                 image: bulletImageObj,
-                width: 20, // Define the width of the bullet
-                height: 20 // Define the height of the bullet
+                width: 20,
+                height: 20
             });
-            layer.add(bullet);
+            layer.add(bullet); // Add bullet to layer
 
             const dx = player.x() + player.width() / 2 - bullet.x();
             const dy = player.y() - bullet.y();

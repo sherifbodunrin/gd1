@@ -182,7 +182,21 @@
                 const pickedTile = pickResult.pickedMesh;
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
                     const targetPosition = new BABYLON.Vector3(pickedTile.position.x, 0.5, pickedTile.position.z);
+
+                    // Check if a piece is present at the target position
+                    const targetPiece = pieces.find(piece => piece.position.equals(targetPosition));
+
+                    if (targetPiece && targetPiece.material.diffuseColor.equals(selectedPiece.material.diffuseColor)) {
+                        // Do not allow capturing a piece of the same color
+                        return;
+                    }
+
                     if (isMoveValid(selectedPiece, targetPosition)) {
+                        if (targetPiece) {
+                            // Capture the piece
+                            targetPiece.dispose();
+                            pieces.splice(pieces.indexOf(targetPiece), 1);
+                        }
                         selectedPiece.position.x = targetPosition.x;
                         selectedPiece.position.z = targetPosition.z;
                         switchTurn();

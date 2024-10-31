@@ -6,16 +6,13 @@
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.min.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTF2Serializer.min.js"></script>
 </head>
-<body style="background-color: red;">
+<body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export GLB</button>
     
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
-        const tileSize = 1;
-        const boardSize = 8;
-        let selectedPiece = null;
 
         const createScene = () => {
             const scene = new BABYLON.Scene(engine);
@@ -27,31 +24,32 @@
             // Light
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
-            // Chessboard with purple and yellow tiles
+            // Chessboard
+            const boardSize = 8;
+            const tileSize = 1;
+
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
-                    const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, {size: tileSize}, scene);
+                    const tile = BABYLON.MeshBuilder.CreateBox(tile${row}_${col}, {size: tileSize}, scene);
                     tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
-                    const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
-                    tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(0.5, 0, 0.5) : new BABYLON.Color3(1, 1, 0);
+                    const tileMaterial = new BABYLON.StandardMaterial(tileMat${row}_${col}, scene);
+                    tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
                     tile.material = tileMaterial;
                 }
             }
-            
+
+            //scene.pickWithRay() ; 
+            // enable a more accurate picking approach for more precise raycasting.
             return scene;
         };
 
         const scene = createScene();
 
-        // Function to create and place pieces
-        const createPiece = (name, position, color) => {
-            BABYLON.SceneLoader.ImportMesh("", "./", `${name}.glb`, scene, (meshes) => {
+        const createPiece = (name, position) => {
+            BABYLON.SceneLoader.ImportMesh("", "./", ${name}.glb, scene, (meshes) => {
                 const piece = meshes[0];
                 piece.position = position;
-                piece.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
-                const pieceMaterial = new BABYLON.StandardMaterial(`pieceMat_${name}`, scene);
-                pieceMaterial.diffuseColor = color;
-                piece.material = pieceMaterial;
+                piece.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5); // Adjust scaling if needed
 
                 piece.actionManager = new BABYLON.ActionManager(scene);
                 piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
@@ -59,9 +57,12 @@
                 }));
             });
         };
+        
 
-        // Define positions for each piece and assign colors (black and white)
-        const colors = { black: new BABYLON.Color3(0, 0, 0), white: new BABYLON.Color3(1, 1, 1) };
+        const lightColor = new BABYLON.Color3(1, 1, 1);
+        const darkColor = new BABYLON.Color3(0, 0, 0);
+
+        // Place pieces with corresponding GLB files
         const positions = {
             rook: [new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Vector3(3.5, 0.5, -3.5)],
             knight: [new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Vector3(2.5, 0.5, -3.5)],
@@ -79,48 +80,20 @@
         // Load pieces
         for (const piece in positions) {
             positions[piece].forEach((pos, index) => {
-                const color = (piece === "pawn" && index < 8) || (index < 4) ? colors.white : colors.black;
-                createPiece(piece, pos, color);
+                const color = (piece === "pawn" && index < 8) ? lightColor : (index < 4 ? lightColor : darkColor); // Light pawns are first, dark pawns are second
+                createPiece(piece, pos);
             });
         }
 
-        // Valid moves for pieces
-        const isValidMove = (piece, target) => {
-            // Define basic rules for each piece's movement
-            // For example:
-            if (piece.name.includes("pawn")) {
-                // Define pawn rules (e.g., move one tile forward, capture diagonally)
-            }
-            if (piece.name.includes("rook")) {
-                // Define rook movement rules
-            }
-            // Continue defining rules for knight, bishop, queen, and king
-            return true; // Temporary, define each rule as per chess rules
-        };
+        let selectedPiece = null;
 
-        // Checkmate and winner detection
-        const checkMate = () => {
-            // Logic to check if the king is in checkmate
-        };
-
-        const declareWinner = (color) => {
-            alert(`${color} wins the game!`);
-        };
-
-        // Handle move and selection
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
-                if (pickedTile && pickedTile.name.startsWith("tile") && isValidMove(selectedPiece, pickedTile.position)) {
+                if (pickedTile && pickedTile.name.startsWith("tile")) {
                     selectedPiece.position.x = pickedTile.position.x;
                     selectedPiece.position.z = pickedTile.position.z;
                     selectedPiece = null;
-
-                    // Check for checkmate condition after each move
-                    if (checkMate()) {
-                        const winningColor = selectedPiece.material.diffuseColor.equals(colors.white) ? "White" : "Black";
-                        declareWinner(winningColor);
-                    }
                 }
             }
         };

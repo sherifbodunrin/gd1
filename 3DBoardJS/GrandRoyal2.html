@@ -43,11 +43,11 @@
             <button onclick="startGame()">Start Game</button>
         </div>
     </div>
-    
+
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="exportButton" class="controlButton" style="top: 10px; left: 10px;">Export STL</button>
     <button id="restartButton" class="controlButton" style="top: 10px; right: 10px;" onclick="restartGame()">Restart</button>
-    <button id="speechButton" class="controlButton" style="top: 50px; right: 10px;" onclick="speakStatus()">Text to Speech</button>
+    <button id="speechButton" class="controlButton" style="top: 50px; right: 10px;" onclick="toggleSpeech()">Speech: Off</button>
     <div id="turnDisplay" style="position: absolute; top: 100px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
     <div id="timerDisplay" style="position: absolute; top: 130px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
     <div id="statusDisplay" style="position: absolute; top: 160px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
@@ -66,6 +66,7 @@
         const turnDisplay = document.getElementById("turnDisplay");
         const timerDisplay = document.getElementById("timerDisplay");
         const statusDisplay = document.getElementById("statusDisplay");
+        let speechEnabled = false;
 
         const createScene = () => {
             const scene = new BABYLON.Scene(engine);
@@ -202,12 +203,22 @@
 
         const endGame = (winner) => {
             statusDisplay.textContent = `Checkmate! ${winner} wins!`;
+            if (speechEnabled) {
+                speak(statusDisplay.textContent);
+            }
             scene.onPointerDown = null;  // Disable further interactions
         };
 
-        const speakStatus = () => {
-            const message = new SpeechSynthesisUtterance(statusDisplay.textContent || "Welcome to Babylon.js Chess Game");
-            window.speechSynthesis.speak(message);
+        const speak = (text) => {
+            if (speechEnabled && 'speechSynthesis' in window) {
+                const message = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(message);
+            }
+        };
+
+        const toggleSpeech = () => {
+            speechEnabled = !speechEnabled;
+            document.getElementById("speechButton").textContent = `Speech: ${speechEnabled ? "On" : "Off"}`;
         };
 
         const startGame = () => {
@@ -237,6 +248,7 @@
                             }
                             selectedPiece.position.x = targetPosition.x;
                             selectedPiece.position.z = targetPosition.z;
+                            speak(`${selectedPiece.name} moved to ${String.fromCharCode(97 + targetPosition.x + 3.5)}${Math.abs(targetPosition.z - 3.5)}`);
                             switchTurn();
                         }
                         selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
@@ -253,6 +265,36 @@
             updateTurnDisplay();
             updateTimerDisplay();
             statusDisplay.textContent = "";
+            scene.onPointerDown = (evt, pickResult) => {
+                if (selectedPiece) {
+                    const pickedTile = pickResult.pickedMesh;
+                    if (pickedTile && pickedTile.name.startsWith("tile")) {
+                        const targetPosition = new BABYLON.Vector3(pickedTile.position.x, 0.5, pickedTile.position.z);
+                        const targetPiece = pieces.find(piece => piece.position.equals(targetPosition));
+
+                        if (targetPiece && targetPiece.material.diffuseColor.equals(selectedPiece.material.diffuseColor)) {
+                            return;
+                        }
+
+                        if (isMoveValid(selectedPiece, targetPosition, targetPiece)) {
+                            if (targetPiece) {
+                                if (targetPiece.name === "king") {
+                                    endGame(turn === "white" ? "White" : "Black");
+                                    return;
+                                }
+                                targetPiece.dispose();
+                                pieces.splice(pieces.indexOf(targetPiece), 1);
+                            }
+                            selectedPiece.position.x = targetPosition.x;
+                            selectedPiece.position.z = targetPosition.z;
+                            speak(`${selectedPiece.name} moved to ${String.fromCharCode(97 + targetPosition.x + 3.5)}${Math.abs(targetPosition.z - 3.5)}`);
+                            switchTurn();
+                        }
+                        selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
+                        selectedPiece = null;
+                    }
+                }
+            };
         };
 
         setInterval(() => {

@@ -74,7 +74,7 @@
                 let isGameOver = false;
                 let bosses = [];
                 let bossHpBars = [];
-                const speed = 4; // Base speed for bosses
+                const speed = 1; // Base speed for bosses
                 let bossMovementInterval;
 
                 function spawnNewBosses() {
@@ -232,7 +232,7 @@
                 const levelText = new Konva.Text({
                     x: stage.width() / 2 - 50,
                     y: 10,
-                    text: Level ${level},
+                    text: `Level ${level}`,
                     fontSize: 24,
                     fill: 'white'
                 });
@@ -260,7 +260,7 @@
                         if (bossesDefeated === totalBosses) {
                             score += level * 10;
                             level++;
-                            levelText.text(Level ${level});
+                            levelText.text(`Level ${level}`);
                             playerHp = Math.min(100, playerHp + 25);
                             playerHpBar.width(playerHp);
                             bossesDefeated = 0;

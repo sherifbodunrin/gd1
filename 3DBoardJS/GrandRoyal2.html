@@ -9,6 +9,8 @@
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export STL</button>
+    <div id="turnDisplay" style="position: absolute; top: 50px; left: 10px; color: white; font-size: 20px;"></div>
+    <div id="timerDisplay" style="position: absolute; top: 80px; left: 10px; color: white; font-size: 20px;"></div>
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -57,7 +59,6 @@
             labelTexture.drawText(text, null, 40, "bold 36px Arial", "white", "transparent", true);
         };
 
-        // Function to create and place pieces
         const createPiece = (name, x, z, color) => {
             let piece;
             switch (name) {
@@ -91,12 +92,15 @@
                 if (selectedPiece) {
                     selectedPiece.material.diffuseColor = selectedPieceOriginalColor;  // Reset previous selected piece color
                 }
-                selectedPiece = piece;
-                selectedPieceOriginalColor = piece.material.diffuseColor;
-                piece.material.diffuseColor = new BABYLON.Color3(1, 0, 0);  // Highlight color
-                updateLabel(name);
-                labelPlane.position = new BABYLON.Vector3(piece.position.x, piece.position.y + 1, piece.position.z);
-                labelPlane.isVisible = true;
+                if ((turn === "white" && piece.material.diffuseColor.equals(white)) ||
+                    (turn === "black" && piece.material.diffuseColor.equals(black))) {
+                    selectedPiece = piece;
+                    selectedPieceOriginalColor = piece.material.diffuseColor;
+                    piece.material.diffuseColor = new BABYLON.Color3(1, 0, 0);  // Highlight color
+                    updateLabel(name);
+                    labelPlane.position = new BABYLON.Vector3(piece.position.x, piece.position.y + 1, piece.position.z);
+                    labelPlane.isVisible = true;
+                }
             }));
 
             return piece;
@@ -127,18 +131,30 @@
         const pieces = [];
         const white = new BABYLON.Color3(1, 1, 1);
         const black = new BABYLON.Color3(0, 0, 0);
+        let turn = "white";
+        let timer = 300; // 5 minutes in seconds
+        const turnDisplay = document.getElementById("turnDisplay");
+        const timerDisplay = document.getElementById("timerDisplay");
 
-        // Place pieces according to chess rules
-        const initialPositions = [
-            { name: "rook", color: white, x: -3.5, z: 3.5 }, { name: "knight", color: white, x: -2.5, z: 3.5 },
-            { name: "bishop", color: white, x: -1.5, z: 3.5 }, { name: "queen", color: white, x: -0.5, z: 3.5 },
-            { name: "king", color: white, x: 0.5, z: 3.5 }, { name: "bishop", color: white, x: 1.5, z: 3.5 },
-            { name: "knight", color: white, x: 2.5, z: 3.5 }, { name: "rook", color: white, x: 3.5, z: 3.5 },
-            { name: "rook", color: black, x: -3.5, z: -3.5 }, { name: "knight", color: black, x: -2.5, z: -3.5 },
-            { name: "bishop", color: black, x: -1.5, z: -3.5 }, { name: "queen", color: black, x: -0.5, z: -3.5 },
-            { name: "king", color: black, x: 0.5, z: -3.5 }, { name: "bishop", color: black, x: 1.5, z: -3.5 },
-            { name: "knight", color: black, x: 2.5, z: -3.5 }, { name: "rook", color: black, x: 3.5, z: -3.5 }
-        ];
+        const updateTurnDisplay = () => {
+            turnDisplay.textContent = `Turn: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`;
+        };
+
+        const updateTimerDisplay = () => {
+            const minutes = Math.floor(timer / 60);
+            const seconds = timer % 60;
+            timerDisplay.textContent = `Time: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        };
+
+        const switchTurn = () => {
+            turn = turn === "white" ? "black" : "white";
+            timer = 300; // Reset timer for the next player
+            updateTurnDisplay();
+            updateTimerDisplay();
+        };
+
+        updateTurnDisplay();
+        updateTimerDisplay();
 
         initialPositions.forEach(pos => pieces.push(createPiece(pos.name, pos.x, pos.z, pos.color)));
         for (let i = 0; i < 8; i++) {
@@ -157,6 +173,7 @@
                     if (isMoveValid(selectedPiece, targetPosition)) {
                         selectedPiece.position.x = targetPosition.x;
                         selectedPiece.position.z = targetPosition.z;
+                        switchTurn();
                     }
                     selectedPiece.material.diffuseColor = selectedPieceOriginalColor; // Reset color
                     selectedPiece = null;
@@ -164,6 +181,15 @@
                 }
             }
         };
+
+        setInterval(() => {
+            if (timer > 0) {
+                timer--;
+                updateTimerDisplay();
+            } else {
+                switchTurn();
+            }
+        }, 1000);
 
         document.getElementById("exportButton").addEventListener("click", () => {
             pieces.forEach(piece => {

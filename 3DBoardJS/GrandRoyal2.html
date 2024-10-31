@@ -156,6 +156,18 @@
         updateTurnDisplay();
         updateTimerDisplay();
 
+        // Define the initial positions for the pieces
+        const initialPositions = [
+            { name: "rook", color: white, x: -3.5, z: 3.5 }, { name: "knight", color: white, x: -2.5, z: 3.5 },
+            { name: "bishop", color: white, x: -1.5, z: 3.5 }, { name: "queen", color: white, x: -0.5, z: 3.5 },
+            { name: "king", color: white, x: 0.5, z: 3.5 }, { name: "bishop", color: white, x: 1.5, z: 3.5 },
+            { name: "knight", color: white, x: 2.5, z: 3.5 }, { name: "rook", color: white, x: 3.5, z: 3.5 },
+            { name: "rook", color: black, x: -3.5, z: -3.5 }, { name: "knight", color: black, x: -2.5, z: -3.5 },
+            { name: "bishop", color: black, x: -1.5, z: -3.5 }, { name: "queen", color: black, x: -0.5, z: -3.5 },
+            { name: "king", color: black, x: 0.5, z: -3.5 }, { name: "bishop", color: black, x: 1.5, z: -3.5 },
+            { name: "knight", color: black, x: 2.5, z: -3.5 }, { name: "rook", color: black, x: 3.5, z: -3.5 }
+        ];
+
         initialPositions.forEach(pos => pieces.push(createPiece(pos.name, pos.x, pos.z, pos.color)));
         for (let i = 0; i < 8; i++) {
             pieces.push(createPiece("pawn", i - 3.5, 2.5, white));

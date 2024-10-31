@@ -281,7 +281,7 @@
         playerHpBar.width(playerHp);
 
         if (playerHp <= 0) {
-           isGameOver = true;
+           updatePlayerHp(10);
         }
 
         layer.batchDraw();

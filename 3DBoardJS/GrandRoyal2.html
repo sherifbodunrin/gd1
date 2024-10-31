@@ -88,7 +88,13 @@
 
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
+                if (selectedPiece) {
+                    // Reset previous selected piece to original color
+                    selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
+                }
                 selectedPiece = piece;
+                selectedPieceOriginalColor = piece.material.diffuseColor;
+                piece.material.diffuseColor = new BABYLON.Color3(1, 0, 0);  // Highlight color
                 updateLabel(name);  // Update the label text with the piece name
                 labelPlane.position = new BABYLON.Vector3(piece.position.x, piece.position.y + 1, piece.position.z);
                 labelPlane.isVisible = true;
@@ -120,6 +126,7 @@
         }
 
         let selectedPiece = null;
+        let selectedPieceOriginalColor = null;
 
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
@@ -127,6 +134,7 @@
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
                     selectedPiece.position.x = pickedTile.position.x;
                     selectedPiece.position.z = pickedTile.position.z;
+                    selectedPiece.material.diffuseColor = selectedPieceOriginalColor; // Reset color
                     selectedPiece = null;
                     labelPlane.isVisible = false;  // Hide label when piece is deselected
                 }
@@ -155,4 +163,3 @@
     </script>
 </body>
 </html>
-

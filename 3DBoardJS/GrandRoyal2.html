@@ -3,6 +3,7 @@
 <head>
     <title>Babylon.js Chessboard with STL Export</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/stlExporter/babylon.stlExporter.min.js"></script>
 </head>
@@ -42,7 +43,10 @@
 
         const scene = createScene();
 
-        // Function to create and place pieces
+        // GUI manager for text labels
+        const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+        // Function to create and place pieces with labels
         const createPiece = (name, x, z, color) => {
             let piece;
             switch (name) {
@@ -70,6 +74,24 @@
             const pieceMaterial = new BABYLON.StandardMaterial(name + "Mat", scene);
             pieceMaterial.diffuseColor = color;
             piece.material = pieceMaterial;
+
+            // Add label above each piece
+            const label = new BABYLON.GUI.TextBlock();
+            label.text = name.charAt(0).toUpperCase() + name.slice(1);
+            label.color = "white";
+            label.fontSize = 24;
+            label.background = "black";
+
+            const labelContainer = new BABYLON.GUI.Rectangle();
+            labelContainer.width = "100px";
+            labelContainer.height = "30px";
+            labelContainer.alpha = 0.75;
+            labelContainer.thickness = 0;
+            labelContainer.background = "black";
+            labelContainer.linkOffsetY = -50;
+            labelContainer.linkWithMesh(piece);
+            labelContainer.addControl(label);
+            advancedTexture.addControl(labelContainer);
 
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {

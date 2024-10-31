@@ -132,32 +132,35 @@
             }
         };
 
-        const isCheck = (king, pieces) => {
+        const isSquareAttacked = (position, attackerColor) => {
             return pieces.some(piece => {
-                if (piece.material.diffuseColor !== king.material.diffuseColor) {
-                    return isMoveValid(piece, king.position, king);
+                if (piece.material.diffuseColor.equals(attackerColor)) {
+                    return isMoveValid(piece, position, null);
                 }
                 return false;
             });
         };
 
-        const isCheckmate = (king, pieces) => {
-            if (!isCheck(king, pieces)) return false;
+        const isCheck = (king) => {
+            return isSquareAttacked(king.position, king.material.diffuseColor.equals(white) ? black : white);
+        };
+
+        const isCheckmate = (king) => {
+            if (!isCheck(king)) return false;
 
             const directions = [
                 new BABYLON.Vector3(1, 0, 0), new BABYLON.Vector3(-1, 0, 0),
                 new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1),
                 new BABYLON.Vector3(1, 0, 1), new BABYLON.Vector3(-1, 0, -1),
-                new BABYLON.Vector3(1, 0, -1), new BABYLON.Vector3(-1, 0, 1),
-                new BABYLON.Vector3(0, 0, 0)  // Current position
+                new BABYLON.Vector3(1, 0, -1), new BABYLON.Vector3(-1, 0, 1)
             ];
 
             return directions.every(direction => {
                 const newPosition = king.position.add(direction);
-                if (pieces.find(p => p.position.equals(newPosition) && p.material.diffuseColor === king.material.diffuseColor)) {
+                if (pieces.find(p => p.position.equals(newPosition) && p.material.diffuseColor.equals(king.material.diffuseColor))) {
                     return true; // Position occupied by same color piece
                 }
-                return isCheck(createPiece('king', newPosition.x, newPosition.z, king.material.diffuseColor), pieces);
+                return isSquareAttacked(newPosition, king.material.diffuseColor.equals(white) ? black : white);
             });
         };
 
@@ -189,15 +192,15 @@
             const whiteKing = pieces.find(piece => piece.name === "king" && piece.material.diffuseColor.equals(white));
             const blackKing = pieces.find(piece => piece.name === "king" && piece.material.diffuseColor.equals(black));
 
-            if (isCheckmate(whiteKing, pieces)) {
+            if (isCheckmate(whiteKing)) {
                 statusDisplay.textContent = "Checkmate! Black wins!";
                 endGame();
-            } else if (isCheckmate(blackKing, pieces)) {
+            } else if (isCheckmate(blackKing)) {
                 statusDisplay.textContent = "Checkmate! White wins!";
                 endGame();
-            } else if (isCheck(whiteKing, pieces)) {
+            } else if (isCheck(whiteKing)) {
                 statusDisplay.textContent = "Check against White!";
-            } else if (isCheck(blackKing, pieces)) {
+            } else if (isCheck(blackKing)) {
                 statusDisplay.textContent = "Check against Black!";
             } else {
                 statusDisplay.textContent = "";
@@ -205,8 +208,7 @@
         };
 
         const endGame = () => {
-            // Disable further interactions
-            scene.onPointerDown = null;
+            scene.onPointerDown = null; // Disable further interactions
         };
 
         updateTurnDisplay();
@@ -246,13 +248,21 @@
                     }
 
                     if (isMoveValid(selectedPiece, targetPosition, targetPiece)) {
-                        if (targetPiece) {
-                            targetPiece.dispose();
-                            pieces.splice(pieces.indexOf(targetPiece), 1);
-                        }
+                        const originalPosition = selectedPiece.position.clone();
                         selectedPiece.position.x = targetPosition.x;
                         selectedPiece.position.z = targetPosition.z;
-                        switchTurn();
+
+                        const king = pieces.find(piece => piece.name === "king" && piece.material.diffuseColor.equals(selectedPiece.material.diffuseColor));
+                        if (isCheck(king)) {
+                            // Revert the move if it puts own king in check
+                            selectedPiece.position = originalPosition;
+                        } else {
+                            if (targetPiece) {
+                                targetPiece.dispose();
+                                pieces.splice(pieces.indexOf(targetPiece), 1);
+                            }
+                            switchTurn();
+                        }
                     }
                     selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
                     selectedPiece = null;
@@ -291,4 +301,4 @@
         });
     </script>
 </body>
-</html>
+</ht

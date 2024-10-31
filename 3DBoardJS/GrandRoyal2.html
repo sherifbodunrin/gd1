@@ -3,7 +3,6 @@
 <head>
     <title>Babylon.js Chessboard with STL Export</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/stlExporter/babylon.stlExporter.min.js"></script>
 </head>
@@ -43,10 +42,22 @@
 
         const scene = createScene();
 
-        // GUI manager for text labels
-        const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        // Create a floating text label to show the name of the selected piece
+        const labelPlane = BABYLON.MeshBuilder.CreatePlane("labelPlane", {size: 1}, scene);
+        labelPlane.isVisible = false;  // Initially hidden
+        labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
-        // Function to create and place pieces with labels
+        const labelTexture = new BABYLON.DynamicTexture("labelTexture", {width: 256, height: 64}, scene);
+        const labelMaterial = new BABYLON.StandardMaterial("labelMaterial", scene);
+        labelMaterial.diffuseTexture = labelTexture;
+        labelPlane.material = labelMaterial;
+
+        const updateLabel = (text) => {
+            labelTexture.clear();
+            labelTexture.drawText(text, null, 40, "bold 36px Arial", "white", "transparent", true);
+        };
+
+        // Function to create and place pieces
         const createPiece = (name, x, z, color) => {
             let piece;
             switch (name) {
@@ -75,27 +86,12 @@
             pieceMaterial.diffuseColor = color;
             piece.material = pieceMaterial;
 
-            // Add label above each piece
-            const label = new BABYLON.GUI.TextBlock();
-            label.text = name.charAt(0).toUpperCase() + name.slice(1);
-            label.color = "white";
-            label.fontSize = 24;
-            label.background = "black";
-
-            const labelContainer = new BABYLON.GUI.Rectangle();
-            labelContainer.width = "100px";
-            labelContainer.height = "30px";
-            labelContainer.alpha = 0.75;
-            labelContainer.thickness = 0;
-            labelContainer.background = "black";
-            labelContainer.linkOffsetY = -50;
-            labelContainer.linkWithMesh(piece);
-            labelContainer.addControl(label);
-            advancedTexture.addControl(labelContainer);
-
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
                 selectedPiece = piece;
+                updateLabel(name);  // Update the label text with the piece name
+                labelPlane.position = new BABYLON.Vector3(piece.position.x, piece.position.y + 1, piece.position.z);
+                labelPlane.isVisible = true;
             }));
 
             return piece;
@@ -132,6 +128,7 @@
                     selectedPiece.position.x = pickedTile.position.x;
                     selectedPiece.position.z = pickedTile.position.z;
                     selectedPiece = null;
+                    labelPlane.isVisible = false;  // Hide label when piece is deselected
                 }
             }
         };

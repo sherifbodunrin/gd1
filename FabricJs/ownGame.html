@@ -24,11 +24,6 @@
         const layer = new Konva.Layer();
         stage.add(layer);
 
-        const music = new Audio('deepSpace.mp3');
-        music.loop = true;
-        music.volume = 0.5;
-        music.play();
-
         const backgroundImageObj = new Image();
         backgroundImageObj.src = 'https://wallpapercave.com/wp/wp9288093.jpg';
         backgroundImageObj.onload = function () {
@@ -57,338 +52,81 @@
                 });
                 layer.add(player);
 
-                let playerHp = 100;
-                const playerHpBar = new Konva.Rect({
-                    x: player.x() - 30,
-                    y: player.y() + 40,
-                    width: playerHp,
-                    height: 10,
-                    fill: 'green'
-                });
-                layer.add(playerHpBar);
-
-                let level = 1;
-                let score = 0;
-                let bossesDefeated = 0;
-                let totalBosses = 1; // Start with one boss
+                const bosses = [];
                 let isGameOver = false;
-                let bosses = [];
-                let bossHpBars = [];
-                const speed = 1; // Base speed for bosses
-                let bossMovementInterval;
 
                 function spawnNewBosses() {
                     const bossImages = [
-                        'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623',
-                        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5d6611b0-74f3-4f32-b8f7-25f20e4f64aa/d8o8amy-0b47096c-f464-45c5-a768-60eb1eb2e236.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzVkNjYxMWIwLTc0ZjMtNGYzMi1iOGY3LTI1ZjIwZTRmNjRhYVwvZDhvOGFteS0wYjQ3MDk2Yy1mNDY0LTQ1YzUtYTc2OC02MGViMWViMmUyMzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.AcUpr0zYHWAWss-7YJNZbtYNOg1ygOFHzAXQG36tqQ8',
-                        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/f4c2aa35-b577-450c-9ce3-714ca13fa37e/d3ea9oa-c44029f3-049f-4a8e-b3a1-9b73e7ccee42.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2Y0YzJhYTM1LWI1NzctNDUwYy05Y2UzLTcxNGNhMTNmYTM3ZVwvZDNlYTlvYS1jNDQwMjlmMy0wNDlmLTRhOGUtYjNhMS05YjczZTdjY2VlNDIuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.u4yWarWF3leA7DwVLU3L9j_PXPEViMIPy6hgHAPDfOw',
-                        'https://static.wikia.nocookie.net/avp/images/3/38/Smasher.png/revision/latest/thumbnail/width/360/height/360?cb=20200412024702',
-                        'https://preview.redd.it/c6th25lyadh11.png?auto=webp&s=bd13ab59dc487e8afad5cc333595265728537d8d',
-                        'https://img.itch.zone/aW1nLzE0MDMyMDc3LnBuZw==/315x250%23c/3AQqBO.png',
-                        'https://static.wikia.nocookie.net/metroid/images/c/c4/Kraid_%28Zero_Mission_Animation%29.gif/revision/latest/thumbnail/width/360/height/360?cb=20190509144249',
-                        'https://preview.redd.it/i-didnt-even-realize-theyre-two-different-enemies-v0-r0hsk4z214cc1.png?width=640&crop=smart&auto=webp&s=5004d186f327840457a26a0581ba64592edd6e80',   
-                        'https://cdn.fusiondex.org/lQXotH5ARel7U8J8RW93S2sN/dn/pif/1.139.png',
-                        'https://i.pinimg.com/originals/5b/44/e0/5b44e047cec68c8bf151b5e6b6e5aca3.gif',  
-                        'https://static.wikia.nocookie.net/contra/images/d/d6/Alien_Cell_-_Hard_Corps_-_01.png/revision/latest?cb=20120618223341',   
-                        'https://i.redd.it/y4lnvq3qe7751.gif'
+                        'https://cdna.artstation.com/p/assets/images/images/006/503/674/original/william-robinson-gun-alien-firing-animation.gif?1499108623'
                     ];
 
-                    bosses = [];
-                    bossHpBars = [];
+                    const bossImageObj = new Image();
+                    bossImageObj.src = bossImages[0];
 
-                    for (let i = 0; i < totalBosses; i++) {
-                        const randomBossImage = bossImages[Math.floor(Math.random() * bossImages.length)];
-                        const bossImageObj = new Image();
-                        bossImageObj.src = randomBossImage;
+                    bossImageObj.onload = function () {
+                        const boss = new Konva.Image({
+                            x: Math.random() * (stage.width() - 100),
+                            y: Math.random() * (stage.height() / 2),
+                            image: bossImageObj,
+                            width: 100,
+                            height: 100
+                        });
 
-                        bossImageObj.onload = function () {
-                            const boss = new Konva.Image({
-                                x: Math.random() * (stage.width() - 100),
-                                y: Math.random() * (stage.height() / 2),
-                                image: bossImageObj,
-                                width: 100,
-                                height: 100
-                            });
+                        layer.add(boss);
+                        bosses.push(boss);
 
-                            layer.add(boss);
-
-                            const bossHealth = 100;
-                            bosses.push({ node: boss, hp: bossHealth, direction: Math.random() * Math.PI * 2 });
-
-                            const bossHpBar = new Konva.Rect({
-                                x: boss.x(),
-                                y: boss.y() - 20,
-                                width: bossHealth,
-                                height: 10,
-                                fill: 'green'
-                            });
-
-                            layer.add(bossHpBar);
-                            bossHpBars.push(bossHpBar);
-
-                            shootAtPlayer(boss, i); // Bosses start shooting after loading
-                        };
-                    }
-
-                    layer.batchDraw();
-                    moveBoss();
+                        shootAtPlayer(boss);  // Boss starts shooting at the player
+                    };
                 }
 
-                function moveBoss() {
-                    if (bossMovementInterval) {
-                        clearInterval(bossMovementInterval);
-                    }
-
-                    bossMovementInterval = setInterval(() => {
+                function shootAtPlayer(boss) {
+                    const shootInterval = setInterval(() => {
                         if (isGameOver) {
-                            clearInterval(bossMovementInterval);
+                            clearInterval(shootInterval);
                             return;
                         }
 
-                        bosses.forEach((boss, index) => {
-                            if (!boss) return;
+                        const bulletImageObj = new Image();
+                        bulletImageObj.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/a23b539f-36f1-4675-8f36-64dda35ea03e/dhfsc7z-89a47d9f-68d0-4c81-a224-4dc0bc5688a3.png';
 
-                            if (Math.random() < 0.01) {
-                                boss.direction = Math.random() * Math.PI * 2;
-                            }
+                        bulletImageObj.onload = function () {
+                            const bullet = new Konva.Image({
+                                x: boss.x() + boss.width() / 2 - 10,
+                                y: boss.y() + boss.height(),
+                                image: bulletImageObj,
+                                width: 20,
+                                height: 20
+                            });
+                            layer.add(bullet);
 
-                            const dx = Math.cos(boss.direction) * speed;
-                            const dy = Math.sin(boss.direction) * speed;
+                            const dx = player.x() + player.width() / 2 - bullet.x();
+                            const dy = player.y() - bullet.y();
+                            const angle = Math.atan2(dy, dx);
 
-                            boss.node.x(boss.node.x() + dx);
-                            boss.node.y(boss.node.y() + dy);
+                            const bulletSpeed = 2;
+                            const anim = new Konva.Animation(() => {
+                                bullet.x(bullet.x() + Math.cos(angle) * bulletSpeed);
+                                bullet.y(bullet.y() + Math.sin(angle) * bulletSpeed);
 
-                            if (boss.node.x() <= 0 || boss.node.x() + boss.node.width() >= stage.width()) {
-                                boss.direction = Math.PI - boss.direction;
-                            }
-                            if (boss.node.y() <= 0 || boss.node.y() + boss.node.height() >= stage.height()) {
-                                boss.direction = -boss.direction;
-                            }
+                                if (
+                                    bullet.y() < player.y() + player.height() &&
+                                    bullet.y() > player.y() &&
+                                    bullet.x() > player.x() &&
+                                    bullet.x() < player.x() + player.width()
+                                ) {
+                                    // Handle collision with player
+                                    bullet.destroy();
+                                }
 
-                            bossHpBars[index].x(boss.node.x());
-                            bossHpBars[index].y(boss.node.y() - 20);
-                        });
-
-                        layer.batchDraw();
-                    }, 1000 / 60);
+                                if (bullet.y() < 0 || bullet.y() > stage.height() || bullet.x() < 0 || bullet.x() > stage.width()) {
+                                    bullet.destroy();
+                                }
+                            }, layer);
+                            anim.start();
+                        };
+                    }, Math.random() * 800 + 300);
                 }
 
-              function shootAtPlayer(boss, index) {
-    const shootInterval = setInterval(() => {
-        if (isGameOver) {
-            clearInterval(shootInterval);
-            return;
-        }
-
-        if (!boss.node) return;
-
-        const bulletImageObj = new Image();
-        bulletImageObj.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/a23b539f-36f1-4675-8f36-64dda35ea03e/dhfsc7z-89a47d9f-68d0-4c81-a224-4dc0bc5688a3.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2EyM2I1MzlmLTM2ZjEtNDY3NS04ZjM2LTY0ZGRhMzVlYTAzZVwvZGhmc2M3ei04OWE0N2Q5Zi02OGQwLTRjODEtYTIyNC00ZGMwYmM1Njg4YTMucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.CIxgRM_w9v8JCtDB4MEvQn4ZHHaL5x6e-k_79O2a3kU';
-
-        bulletImageObj.onload = function() {
-            const beam = new Konva.Image({
-                x: boss.node.x() + boss.node.width() / 2 - 10,
-                y: boss.node.y() + boss.node.height(),
-                image: bulletImageObj,
-                width: 20, // Adjust width if needed
-                height: 20 // Adjust height if needed
-            });
-            layer.add(beam);
-
-            const dx = player.x() + player.width() / 2 - beam.x();
-            const dy = player.y() - beam.y();
-            const angle = Math.atan2(dy, dx);
-
-            const beamSpeed = 2;
-            const anim = new Konva.Animation(() => {
-                beam.x(beam.x() + Math.cos(angle) * beamSpeed);
-                beam.y(beam.y() + Math.sin(angle) * beamSpeed);
-
-                if (
-                    beam.y() < player.y() + player.height() &&
-                    beam.y() > player.y() &&
-                    beam.x() > player.x() &&
-                    beam.x() < player.x() + player.width()
-                ) {
-                    updatePlayerHp(10);
-                    beam.destroy();
-                }
-
-                if (beam.y() < 0 || beam.y() > stage.height() || beam.x() < 0 || beam.x() > stage.width()) {
-                    beam.destroy();
-                }
-            }, layer);
-            anim.start();
-        };
-
-        // Optionally handle image loading errors
-        bulletImageObj.onerror = function() {
-            console.error('Bullet image failed to load.');
-        };
-    }, Math.random() * 800 + 300);
-}
-
-
-                const levelText = new Konva.Text({
-                    x: stage.width() / 2 - 50,
-                    y: 10,
-                    text: `Level ${level}`,
-                    fontSize: 24,
-                    fill: 'white'
-                });
-                layer.add(levelText);
-
-                function updateBossHp(bossIndex, damage) {
-                    if (isGameOver) return;
-
-                    const boss = bosses[bossIndex];
-                    if (!boss) return;
-
-                    boss.hp = Math.max(0, boss.hp - damage);
-                    bossHpBars[bossIndex].width(boss.hp);
-
-                    if (boss.hp <= 0) {
-                        boss.node.destroy();
-                        bossHpBars[bossIndex].destroy();
-                        bossesDefeated++;
-
-                        bosses = bosses.filter((b) => b && b.hp > 0);
-                        bossHpBars = bossHpBars.filter((bar, index) => index !== bossIndex);
-
-                        layer.batchDraw();
-
-                        if (bossesDefeated === totalBosses) {
-                            score += level * 10;
-                            level++;
-                            levelText.text(`Level ${level}`);
-                            playerHp = Math.min(100, playerHp + 25);
-                            playerHpBar.width(playerHp);
-                            bossesDefeated = 0;
-
-                            const sound1 = new Audio('level.mp3');
-                            sound1.volume = 0.5;
-                            sound1.play();
-
-                            spawnNewBosses();
-                        }
-                    }
-                    layer.batchDraw();
-                }
-
-                function updatePlayerHp(damage) {
-                    if (isGameOver) return;
-                    playerHp = Math.max(0, playerHp - damage);
-                    playerHpBar.width(playerHp);
-                    if (playerHp === 0) {
-                        const gameOverOverlay = new Konva.Rect({
-                            x: 0,
-                            y: 0,
-                            width: stage.width(),
-                            height: stage.height(),
-                            fill: 'black',
-                            opacity: 0.8
-                        });
-                        layer.add(gameOverOverlay);
-
-                        const highestLevelText = new Konva.Text({
-                            x: stage.width() / 2 - 150,
-                            y: stage.height() / 2 - 50,
-                            text: 'Game Over! Your highest level: ' + level,
-                            fontSize: 36,
-                            fill: 'white'
-                        });
-                        layer.add(highestLevelText);
-                        layer.batchDraw();
-                        isGameOver = true;
-                    }
-                    layer.batchDraw();
-                }
-
-                function shootBullet() {
-                    if (isGameOver) return;
-                    const bullet = new Konva.Circle({
-                        x: player.x() + player.width() / 2,
-                        y: player.y() - 30,
-                        radius: 5,
-                        fill: 'lime'
-                    });
-                    layer.add(bullet);
-                    bullet.hasDamagedBoss = false;
-
-                    const sound2 = new Audio('shoot.mp3');
-                    sound2.volume = 0.25;
-                    sound2.play();
-
-                    const anim = new Konva.Animation(() => {
-                        bullet.y(bullet.y() - 10);
-
-                        bosses.forEach((boss, index) => {
-                            if (!bullet.hasDamagedBoss &&
-                                bullet.y() <= boss.node.y() + boss.node.height() &&
-                                bullet.y() >= boss.node.y() &&
-                                bullet.x() >= boss.node.x() - 10 &&
-                                bullet.x() <= boss.node.x() + boss.node.width() + 10) {
-                                updateBossHp(index, 20);
-                                bullet.hasDamagedBoss = true;
-                                bullet.destroy();
-                                const soundc = new Audio('hit.mp3');
-                                soundc.volume = 0.5;
-                                soundc.play();
-                            }
-                        });
-
-                        if (bullet.y() < 0) {
-                            bullet.destroy();
-                        }
-                    }, layer);
-                    anim.start();
-                }
-
-                const keysPressed = {};
-
-                window.addEventListener('keydown', (e) => {
-                    keysPressed[e.key] = true;
-
-                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                        e.preventDefault();
-                    }
-
-                    if (e.key === ' ' && !isGameOver) {
-                        shootBullet();
-                    }
-                });
-
-                window.addEventListener('keyup', (e) => {
-                    keysPressed[e.key] = false;
-                });
-
-                function movePlayer() {
-                    if (isGameOver) return;
-                    if (keysPressed['ArrowLeft']) {
-                        player.x(Math.max(0, player.x() - 5));
-                        playerHpBar.x(player.x() - 30);
-                    }
-                    if (keysPressed['ArrowRight']) {
-                        player.x(Math.min(stage.width() - player.width(), player.x() + 5));
-                        playerHpBar.x(player.x() - 30);
-                    }
-                    if (keysPressed['ArrowUp']) {
-                        player.y(Math.max(0, player.y() - 5));
-                        playerHpBar.y(player.y() + 40);
-                    }
-                    if (keysPressed['ArrowDown']) {
-                        player.y(Math.min(stage.height() - player.height(), player.y() + 5));
-                        playerHpBar.y(player.y() + 40);
-                    }
-
-                    layer.batchDraw();
-                }
-
-                const gameLoop = () => {
-                    movePlayer();
-                    requestAnimationFrame(gameLoop);
-                };
-                gameLoop();
                 spawnNewBosses();
             };
         }

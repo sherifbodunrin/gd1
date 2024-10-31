@@ -90,7 +90,7 @@
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
                 if (selectedPiece) {
-                    selectedPiece.material.diffuseColor = selectedPieceOriginalColor;  // Reset previous selected piece color
+                    selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
                 }
                 if ((turn === "white" && piece.material.diffuseColor.equals(white)) ||
                     (turn === "black" && piece.material.diffuseColor.equals(black))) {
@@ -106,12 +106,16 @@
             return piece;
         };
 
-        const isMoveValid = (piece, targetPosition) => {
+        const isMoveValid = (piece, targetPosition, targetPiece) => {
             const dx = Math.abs(piece.position.x - targetPosition.x);
             const dz = Math.abs(piece.position.z - targetPosition.z);
 
             switch (piece.name) {
                 case "pawn":
+                    if (targetPiece) {
+                        // Allow diagonal capture
+                        return dz === 1 && dx === 1;
+                    }
                     return dz === 1 && dx === 0;
                 case "rook":
                     return dx === 0 || dz === 0;
@@ -191,7 +195,7 @@
                         return;
                     }
 
-                    if (isMoveValid(selectedPiece, targetPosition)) {
+                    if (isMoveValid(selectedPiece, targetPosition, targetPiece)) {
                         if (targetPiece) {
                             // Capture the piece
                             targetPiece.dispose();

@@ -35,7 +35,7 @@
         }
     </style>
 </head>
-<body>
+<body style="margin:0; overflow:hidden; background-color: red;">
     <div id="introOverlay">
         <div>
             <h1>Welcome to Babylon.js Chess Game</h1>
@@ -87,7 +87,7 @@
                     const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, { size: tileSize }, scene);
                     tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
                     const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
-                    tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
+                    tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 0) : new BABYLON.Color3(0.5, 0, 0.5); // Yellow and Purple
                     tile.material = tileMaterial;
                 }
             }

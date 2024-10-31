@@ -11,6 +11,7 @@
     <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export STL</button>
     <div id="turnDisplay" style="position: absolute; top: 50px; left: 10px; color: white; font-size: 20px;"></div>
     <div id="timerDisplay" style="position: absolute; top: 80px; left: 10px; color: white; font-size: 20px;"></div>
+    <div id="statusDisplay" style="position: absolute; top: 110px; left: 10px; color: white; font-size: 20px;"></div>
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -113,7 +114,6 @@
             switch (piece.name) {
                 case "pawn":
                     if (targetPiece) {
-                        // Allow diagonal capture
                         return dz === 1 && dx === 1;
                     }
                     return dz === 1 && dx === 0;
@@ -132,6 +132,35 @@
             }
         };
 
+        const isCheck = (king, pieces) => {
+            return pieces.some(piece => {
+                if (piece.material.diffuseColor !== king.material.diffuseColor) {
+                    return isMoveValid(piece, king.position, king);
+                }
+                return false;
+            });
+        };
+
+        const isCheckmate = (king, pieces) => {
+            if (!isCheck(king, pieces)) return false;
+
+            const directions = [
+                new BABYLON.Vector3(1, 0, 0), new BABYLON.Vector3(-1, 0, 0),
+                new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, -1),
+                new BABYLON.Vector3(1, 0, 1), new BABYLON.Vector3(-1, 0, -1),
+                new BABYLON.Vector3(1, 0, -1), new BABYLON.Vector3(-1, 0, 1),
+                new BABYLON.Vector3(0, 0, 0)  // Current position
+            ];
+
+            return directions.every(direction => {
+                const newPosition = king.position.add(direction);
+                if (pieces.find(p => p.position.equals(newPosition) && p.material.diffuseColor === king.material.diffuseColor)) {
+                    return true; // Position occupied by same color piece
+                }
+                return isCheck(createPiece('king', newPosition.x, newPosition.z, king.material.diffuseColor), pieces);
+            });
+        };
+
         const pieces = [];
         const white = new BABYLON.Color3(1, 1, 1);
         const black = new BABYLON.Color3(0, 0, 0);
@@ -139,6 +168,7 @@
         let timer = 300; // 5 minutes in seconds
         const turnDisplay = document.getElementById("turnDisplay");
         const timerDisplay = document.getElementById("timerDisplay");
+        const statusDisplay = document.getElementById("statusDisplay");
 
         const updateTurnDisplay = () => {
             turnDisplay.textContent = `Turn: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`;
@@ -155,6 +185,28 @@
             timer = 300; // Reset timer for the next player
             updateTurnDisplay();
             updateTimerDisplay();
+
+            const whiteKing = pieces.find(piece => piece.name === "king" && piece.material.diffuseColor.equals(white));
+            const blackKing = pieces.find(piece => piece.name === "king" && piece.material.diffuseColor.equals(black));
+
+            if (isCheckmate(whiteKing, pieces)) {
+                statusDisplay.textContent = "Checkmate! Black wins!";
+                endGame();
+            } else if (isCheckmate(blackKing, pieces)) {
+                statusDisplay.textContent = "Checkmate! White wins!";
+                endGame();
+            } else if (isCheck(whiteKing, pieces)) {
+                statusDisplay.textContent = "Check against White!";
+            } else if (isCheck(blackKing, pieces)) {
+                statusDisplay.textContent = "Check against Black!";
+            } else {
+                statusDisplay.textContent = "";
+            }
+        };
+
+        const endGame = () => {
+            // Disable further interactions
+            scene.onPointerDown = null;
         };
 
         updateTurnDisplay();
@@ -187,17 +239,14 @@
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
                     const targetPosition = new BABYLON.Vector3(pickedTile.position.x, 0.5, pickedTile.position.z);
 
-                    // Check if a piece is present at the target position
                     const targetPiece = pieces.find(piece => piece.position.equals(targetPosition));
 
                     if (targetPiece && targetPiece.material.diffuseColor.equals(selectedPiece.material.diffuseColor)) {
-                        // Do not allow capturing a piece of the same color
                         return;
                     }
 
                     if (isMoveValid(selectedPiece, targetPosition, targetPiece)) {
                         if (targetPiece) {
-                            // Capture the piece
                             targetPiece.dispose();
                             pieces.splice(pieces.indexOf(targetPiece), 1);
                         }
@@ -205,9 +254,9 @@
                         selectedPiece.position.z = targetPosition.z;
                         switchTurn();
                     }
-                    selectedPiece.material.diffuseColor = selectedPieceOriginalColor; // Reset color
+                    selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
                     selectedPiece = null;
-                    labelPlane.isVisible = false;  // Hide label when piece is deselected
+                    labelPlane.isVisible = false;
                 }
             }
         };

@@ -27,6 +27,12 @@
             padding: 10px 20px;
             font-size: 18px;
         }
+        .controlButton {
+            position: absolute;
+            z-index: 10;
+            padding: 10px 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -39,13 +45,27 @@
     </div>
     
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
-    <button id="exportButton" style="position: absolute; top: 10px; left: 10px; z-index: 10;">Export STL</button>
-    <div id="turnDisplay" style="position: absolute; top: 50px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
-    <div id="timerDisplay" style="position: absolute; top: 80px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
-    <div id="statusDisplay" style="position: absolute; top: 110px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
+    <button id="exportButton" class="controlButton" style="top: 10px; left: 10px;">Export STL</button>
+    <button id="restartButton" class="controlButton" style="top: 10px; right: 10px;" onclick="restartGame()">Restart</button>
+    <button id="speechButton" class="controlButton" style="top: 50px; right: 10px;" onclick="speakStatus()">Text to Speech</button>
+    <div id="turnDisplay" style="position: absolute; top: 100px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
+    <div id="timerDisplay" style="position: absolute; top: 130px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
+    <div id="statusDisplay" style="position: absolute; top: 160px; left: 10px; color: white; font-size: 20px; z-index: 10;"></div>
+
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
+        let scene;
+        let pieces = [];
+        let selectedPiece = null;
+        let selectedPieceOriginalColor = null;
+        const white = new BABYLON.Color3(1, 1, 1);
+        const black = new BABYLON.Color3(0, 0, 0);
+        let turn = "white";
+        let timer = 300; // 5 minutes in seconds
+        const turnDisplay = document.getElementById("turnDisplay");
+        const timerDisplay = document.getElementById("timerDisplay");
+        const statusDisplay = document.getElementById("statusDisplay");
 
         const createScene = () => {
             const scene = new BABYLON.Scene(engine);
@@ -74,21 +94,24 @@
             return scene;
         };
 
-        const scene = createScene();
-
-        // Create a floating text label to show the name of the selected piece
-        const labelPlane = BABYLON.MeshBuilder.CreatePlane("labelPlane", { size: 1 }, scene);
-        labelPlane.isVisible = false;  // Initially hidden
-        labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-
-        const labelTexture = new BABYLON.DynamicTexture("labelTexture", { width: 256, height: 64 }, scene);
-        const labelMaterial = new BABYLON.StandardMaterial("labelMaterial", scene);
-        labelMaterial.diffuseTexture = labelTexture;
-        labelPlane.material = labelMaterial;
-
-        const updateLabel = (text) => {
-            labelTexture.clear();
-            labelTexture.drawText(text, null, 40, "bold 36px Arial", "white", "transparent", true);
+        const initializePieces = () => {
+            pieces.forEach(piece => piece.dispose());
+            pieces = [];
+            const initialPositions = [
+                { name: "rook", color: white, x: -3.5, z: 3.5 }, { name: "knight", color: white, x: -2.5, z: 3.5 },
+                { name: "bishop", color: white, x: -1.5, z: 3.5 }, { name: "queen", color: white, x: -0.5, z: 3.5 },
+                { name: "king", color: white, x: 0.5, z: 3.5 }, { name: "bishop", color: white, x: 1.5, z: 3.5 },
+                { name: "knight", color: white, x: 2.5, z: 3.5 }, { name: "rook", color: white, x: 3.5, z: 3.5 },
+                { name: "rook", color: black, x: -3.5, z: -3.5 }, { name: "knight", color: black, x: -2.5, z: -3.5 },
+                { name: "bishop", color: black, x: -1.5, z: -3.5 }, { name: "queen", color: black, x: -0.5, z: -3.5 },
+                { name: "king", color: black, x: 0.5, z: -3.5 }, { name: "bishop", color: black, x: 1.5, z: -3.5 },
+                { name: "knight", color: black, x: 2.5, z: -3.5 }, { name: "rook", color: black, x: 3.5, z: -3.5 }
+            ];
+            initialPositions.forEach(pos => pieces.push(createPiece(pos.name, pos.x, pos.z, pos.color)));
+            for (let i = 0; i < 8; i++) {
+                pieces.push(createPiece("pawn", i - 3.5, 2.5, white));
+                pieces.push(createPiece("pawn", i - 3.5, -2.5, black));
+            }
         };
 
         const createPiece = (name, x, z, color) => {
@@ -129,9 +152,6 @@
                     selectedPiece = piece;
                     selectedPieceOriginalColor = piece.material.diffuseColor;
                     piece.material.diffuseColor = new BABYLON.Color3(1, 0, 0);  // Highlight color
-                    updateLabel(name);
-                    labelPlane.position = new BABYLON.Vector3(piece.position.x, piece.position.y + 1, piece.position.z);
-                    labelPlane.isVisible = true;
                 }
             }));
 
@@ -163,15 +183,6 @@
             }
         };
 
-        const pieces = [];
-        const white = new BABYLON.Color3(1, 1, 1);
-        const black = new BABYLON.Color3(0, 0, 0);
-        let turn = "white";
-        let timer = 300; // 5 minutes in seconds
-        const turnDisplay = document.getElementById("turnDisplay");
-        const timerDisplay = document.getElementById("timerDisplay");
-        const statusDisplay = document.getElementById("statusDisplay");
-
         const updateTurnDisplay = () => {
             turnDisplay.textContent = `Turn: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`;
         };
@@ -194,61 +205,54 @@
             scene.onPointerDown = null;  // Disable further interactions
         };
 
-        updateTurnDisplay();
-        updateTimerDisplay();
+        const speakStatus = () => {
+            const message = new SpeechSynthesisUtterance(statusDisplay.textContent || "Welcome to Babylon.js Chess Game");
+            window.speechSynthesis.speak(message);
+        };
 
-        // Define the initial positions for the pieces
-        const initialPositions = [
-            { name: "rook", color: white, x: -3.5, z: 3.5 }, { name: "knight", color: white, x: -2.5, z: 3.5 },
-            { name: "bishop", color: white, x: -1.5, z: 3.5 }, { name: "queen", color: white, x: -0.5, z: 3.5 },
-            { name: "king", color: white, x: 0.5, z: 3.5 }, { name: "bishop", color: white, x: 1.5, z: 3.5 },
-            { name: "knight", color: white, x: 2.5, z: 3.5 }, { name: "rook", color: white, x: 3.5, z: 3.5 },
-            { name: "rook", color: black, x: -3.5, z: -3.5 }, { name: "knight", color: black, x: -2.5, z: -3.5 },
-            { name: "bishop", color: black, x: -1.5, z: -3.5 }, { name: "queen", color: black, x: -0.5, z: -3.5 },
-            { name: "king", color: black, x: 0.5, z: -3.5 }, { name: "bishop", color: black, x: 1.5, z: -3.5 },
-            { name: "knight", color: black, x: 2.5, z: -3.5 }, { name: "rook", color: black, x: 3.5, z: -3.5 }
-        ];
+        const startGame = () => {
+            const introOverlay = document.getElementById("introOverlay");
+            introOverlay.style.display = "none"; // Hide the intro overlay
+            scene = createScene();
+            initializePieces();
+            scene.onPointerDown = (evt, pickResult) => {
+                if (selectedPiece) {
+                    const pickedTile = pickResult.pickedMesh;
+                    if (pickedTile && pickedTile.name.startsWith("tile")) {
+                        const targetPosition = new BABYLON.Vector3(pickedTile.position.x, 0.5, pickedTile.position.z);
+                        const targetPiece = pieces.find(piece => piece.position.equals(targetPosition));
 
-        initialPositions.forEach(pos => pieces.push(createPiece(pos.name, pos.x, pos.z, pos.color)));
-        for (let i = 0; i < 8; i++) {
-            pieces.push(createPiece("pawn", i - 3.5, 2.5, white));
-            pieces.push(createPiece("pawn", i - 3.5, -2.5, black));
-        }
-
-        let selectedPiece = null;
-        let selectedPieceOriginalColor = null;
-
-        scene.onPointerDown = (evt, pickResult) => {
-            if (selectedPiece) {
-                const pickedTile = pickResult.pickedMesh;
-                if (pickedTile && pickedTile.name.startsWith("tile")) {
-                    const targetPosition = new BABYLON.Vector3(pickedTile.position.x, 0.5, pickedTile.position.z);
-
-                    const targetPiece = pieces.find(piece => piece.position.equals(targetPosition));
-
-                    if (targetPiece && targetPiece.material.diffuseColor.equals(selectedPiece.material.diffuseColor)) {
-                        return;
-                    }
-
-                    if (isMoveValid(selectedPiece, targetPosition, targetPiece)) {
-                        if (targetPiece) {
-                            // Check if the king is captured
-                            if (targetPiece.name === "king") {
-                                endGame(turn === "white" ? "White" : "Black");
-                                return;
-                            }
-                            targetPiece.dispose();
-                            pieces.splice(pieces.indexOf(targetPiece), 1);
+                        if (targetPiece && targetPiece.material.diffuseColor.equals(selectedPiece.material.diffuseColor)) {
+                            return;
                         }
-                        selectedPiece.position.x = targetPosition.x;
-                        selectedPiece.position.z = targetPosition.z;
-                        switchTurn();
+
+                        if (isMoveValid(selectedPiece, targetPosition, targetPiece)) {
+                            if (targetPiece) {
+                                if (targetPiece.name === "king") {
+                                    endGame(turn === "white" ? "White" : "Black");
+                                    return;
+                                }
+                                targetPiece.dispose();
+                                pieces.splice(pieces.indexOf(targetPiece), 1);
+                            }
+                            selectedPiece.position.x = targetPosition.x;
+                            selectedPiece.position.z = targetPosition.z;
+                            switchTurn();
+                        }
+                        selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
+                        selectedPiece = null;
                     }
-                    selectedPiece.material.diffuseColor = selectedPieceOriginalColor;
-                    selectedPiece = null;
-                    labelPlane.isVisible = false;
                 }
-            }
+            };
+        };
+
+        const restartGame = () => {
+            initializePieces();
+            turn = "white";
+            timer = 300;
+            updateTurnDisplay();
+            updateTimerDisplay();
+            statusDisplay.textContent = "";
         };
 
         setInterval(() => {
@@ -273,17 +277,14 @@
         });
 
         engine.runRenderLoop(() => {
-            scene.render();
+            if (scene) {
+                scene.render();
+            }
         });
 
         window.addEventListener("resize", () => {
             engine.resize();
         });
-
-        const startGame = () => {
-            const introOverlay = document.getElementById("introOverlay");
-            introOverlay.style.display = "none"; // Hide the intro overlay
-        };
     </script>
 </body>
 </html>

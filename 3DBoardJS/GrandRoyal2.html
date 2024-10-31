@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Babylon.js Chessboard with STL Export and Move Validation</title>
+    <title>Babylon.js Chessboard with STL Export</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/stlExporter/babylon.stlExporter.min.js"></script>
@@ -29,9 +29,9 @@
 
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
-                    const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, {size: tileSize}, scene);
+                    const tile = BABYLON.MeshBuilder.CreateBox(tile${row}_${col}, {size: tileSize}, scene);
                     tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
-                    const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
+                    const tileMaterial = new BABYLON.StandardMaterial(tileMat${row}_${col}, scene);
                     tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
                     tile.material = tileMaterial;
                 }
@@ -42,15 +42,66 @@
 
         const scene = createScene();
 
+        // Create a floating text label to show the name of the selected piece
+        const labelPlane = BABYLON.MeshBuilder.CreatePlane("labelPlane", {size: 1}, scene);
+        labelPlane.isVisible = false;  // Initially hidden
+        labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+        const labelTexture = new BABYLON.DynamicTexture("labelTexture", {width: 256, height: 64}, scene);
+        const labelMaterial = new BABYLON.StandardMaterial("labelMaterial", scene);
+        labelMaterial.diffuseTexture = labelTexture;
+        labelPlane.material = labelMaterial;
+
         const updateLabel = (text) => {
             labelTexture.clear();
             labelTexture.drawText(text, null, 40, "bold 36px Arial", "white", "transparent", true);
+        };
+
+        // Function to create and place pieces
+        const createPiece = (name, x, z, color) => {
+            let piece;
+            switch (name) {
+                case "pawn":
+                    piece = BABYLON.MeshBuilder.CreateSphere(name, {diameter: 0.5}, scene);
+                    break;
+                case "rook":
+                    piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
+                    break;
+                case "knight":
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.5, height: 1}, scene);
+                    break;
+                case "bishop":
+                    piece = BABYLON.MeshBuilder.CreateTorus(name, {diameter: 0.5, thickness: 0.15}, scene);
+                    break;
+                case "queen":
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.2}, scene);
+                    break;
+                case "king":
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.3}, scene);
+                    break;
+            }
+
+            piece.position = new BABYLON.Vector3(x, 0.5, z);
+            const pieceMaterial = new BABYLON.StandardMaterial(name + "Mat", scene);
+            pieceMaterial.diffuseColor = color;
+            piece.material = pieceMaterial;
+
+            piece.actionManager = new BABYLON.ActionManager(scene);
+            piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
+                selectedPiece = piece;
+                updateLabel(name);  // Update the label text with the piece name
+                labelPlane.position = new BABYLON.Vector3(piece.position.x, piece.position.y + 1, piece.position.z);
+                labelPlane.isVisible = true;
+            }));
+
+            return piece;
         };
 
         const pieces = [];
         const white = new BABYLON.Color3(1, 1, 1);
         const black = new BABYLON.Color3(0, 0, 0);
 
+        // Place pieces according to chess rules
         const initialPositions = [
             {name: "rook", color: white, x: -3.5, z: 3.5}, {name: "knight", color: white, x: -2.5, z: 3.5},
             {name: "bishop", color: white, x: -1.5, z: 3.5}, {name: "queen", color: white, x: -0.5, z: 3.5},
@@ -70,41 +121,14 @@
 
         let selectedPiece = null;
 
-        const isValidMove = (piece, newX, newZ) => {
-            const dx = Math.abs(newX - piece.position.x);
-            const dz = Math.abs(newZ - piece.position.z);
-
-            switch (piece.name) {
-                case "pawn":
-                    return dz === 1 && dx === 0;
-                case "rook":
-                    return dx === 0 || dz === 0;
-                case "knight":
-                    return (dx === 1 && dz === 2) || (dx === 2 && dz === 1);
-                case "bishop":
-                    return dx === dz;
-                case "queen":
-                    return dx === dz || dx === 0 || dz === 0;
-                case "king":
-                    return dx <= 1 && dz <= 1;
-                default:
-                    return false;
-            }
-        };
-
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
-                    const newX = pickedTile.position.x;
-                    const newZ = pickedTile.position.z;
-                    if (isValidMove(selectedPiece, newX, newZ)) {
-                        selectedPiece.position.x = newX;
-                        selectedPiece.position.z = newZ;
-                    } else {
-                        alert("Invalid move for this piece!");
-                    }
+                    selectedPiece.position.x = pickedTile.position.x;
+                    selectedPiece.position.z = pickedTile.position.z;
                     selectedPiece = null;
+                    labelPlane.isVisible = false;  // Hide label when piece is deselected
                 }
             }
         };
@@ -116,7 +140,7 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `${piece.name}.stl`;
+                link.download = ${piece.name}.stl;
                 link.click();
             });
         });

@@ -44,7 +44,7 @@
         const scene = createScene();
 
         const createPiece = (name, position, color) => {
-            BABYLON.SceneLoader.ImportMesh("", "./", `${name}.glb`, scene, (meshes) => {
+           BABYLON.SceneLoader.ImportMesh("", "./models/", `${name}.glb`, scene, (meshes) => {
                 const piece = meshes[0];
                 piece.position = position;
                 piece.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);

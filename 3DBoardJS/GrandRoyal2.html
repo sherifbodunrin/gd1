@@ -9,7 +9,7 @@
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export GLB</button>
-
+    
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -30,35 +30,37 @@
 
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
-                    const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, {size: tileSize}, scene);
+                    const tile = BABYLON.MeshBuilder.CreateBox(tile${row}_${col}, {size: tileSize}, scene);
                     tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
-                    const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
+                    const tileMaterial = new BABYLON.StandardMaterial(tileMat${row}_${col}, scene);
                     tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
                     tile.material = tileMaterial;
                 }
             }
 
+            //scene.pickWithRay() ; 
+            // enable a more accurate picking approach for more precise raycasting.
             return scene;
         };
 
         const scene = createScene();
 
-        const createPiece = (name, position, color) => {
-           BABYLON.SceneLoader.ImportMesh("", "./models/", `${name}.glb`, scene, (meshes) => {
+        const createPiece = (name, position) => {
+            BABYLON.SceneLoader.ImportMesh("", "./", ${name}.glb, scene, (meshes) => {
                 const piece = meshes[0];
                 piece.position = position;
-                piece.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
-
-                const pieceMaterial = new BABYLON.StandardMaterial(`material_${name}`, scene);
-                pieceMaterial.diffuseColor = color === "white" ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
-                piece.material = pieceMaterial;
+                piece.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5); // Adjust scaling if needed
 
                 piece.actionManager = new BABYLON.ActionManager(scene);
                 piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-                    selectedPiece = { piece, type: name, color };
+                    selectedPiece = piece;
                 }));
             });
         };
+        
+
+        const lightColor = new BABYLON.Color3(1, 1, 1);
+        const darkColor = new BABYLON.Color3(0, 0, 0);
 
         // Place pieces with corresponding GLB files
         const positions = {
@@ -75,11 +77,11 @@
             ]
         };
 
-        // Load pieces with color distinction
+        // Load pieces
         for (const piece in positions) {
             positions[piece].forEach((pos, index) => {
-                const color = (piece === "pawn" && index < 8) || (index < 2) ? "white" : "black";
-                createPiece(piece, pos, color);
+                const color = (piece === "pawn" && index < 8) ? lightColor : (index < 4 ? lightColor : darkColor); // Light pawns are first, dark pawns are second
+                createPiece(piece, pos);
             });
         }
 
@@ -89,9 +91,8 @@
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
-                    // Check for valid moves based on piece type here
-                    selectedPiece.piece.position.x = pickedTile.position.x;
-                    selectedPiece.piece.position.z = pickedTile.position.z;
+                    selectedPiece.position.x = pickedTile.position.x;
+                    selectedPiece.position.z = pickedTile.position.z;
                     selectedPiece = null;
                 }
             }

@@ -80,17 +80,6 @@
                 })
             });
 
-          BABYLON.SceneLoader.Append("./", "troll.glb", scene, function (newMeshes) {
-                 newMeshes[0].scaling = new BABYLON.Vector3(0.00001, 0.00001, 0.00001);
-    newMeshes[0].position = new BABYLON.Vector3(1, 2, 0);
-               
-});
-
-            BABYLON.SceneLoader.Append("./", "StanfordBunny.obj", scene, function (newMeshes) {
-    newMeshes[0].position = new BABYLON.Vector3(0, 0, 8);
-                newMeshes[0].scaling = new BABYLON.Vector3(2, 2, 2);
-});
-            
             // Create the sphere
 var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
     diameter: 0.5, // diameter of the sphere
@@ -100,7 +89,7 @@ var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
 // Position the sphere
 sphere.position = new BABYLON.Vector3(0, 0, 6);
 var material = new BABYLON.StandardMaterial("material", scene); 
-material.diffuseColor = new BABYLON.Color3(1, 0.5, 0.5); // red color // Create red material
+material.diffuseColor = new BABYLON.Color3(1, 0, 0); // red color // Create red material
 sphere.material = material;// Assign material to sphere
 
             // Define sphere properties
@@ -134,7 +123,7 @@ for (var i = 0; i < 3; i++) {
     sphere.material = materials[i];
 }
             
-            /*
+            
             // Load the bunny OBJ model
             BABYLON.SceneLoader.ImportMesh(
                 "",                        // No name filter; load all meshes
@@ -154,9 +143,7 @@ for (var i = 0; i < 3; i++) {
                     console.error("Error loading OBJ file:", message, exception);
                 }
             );
-
-            */
-                   alert("have fun & be creative");
+                   alert("village, dude and bunny should have been loaded with animation.");
             
             return scene;
         };
@@ -185,3 +172,4 @@ for (var i = 0; i < 3; i++) {
     </script>
 </body>
 </html>
+

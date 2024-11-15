@@ -16,7 +16,7 @@
     <script>
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
-        var snow, rain, heatParticles; // Declare particle systems for clearing
+        var snow, rain, heatParticles, acidRain, meteor; // Declare particle systems for clearing
 
         const createScene = function () {
             const scene = new BABYLON.Scene(engine);
@@ -120,6 +120,8 @@
                 if (snow) snow.stop();
                 if (rain) rain.stop();
                 if (heatParticles) heatParticles.stop();
+                if (acidRain) acidRain.stop();
+                if (meteor) scene.removeMesh(meteor);
             };
 
             const rainyWeather = () => {
@@ -156,7 +158,7 @@
                 scene.fogDensity = 0.02;
 
                 if (snow) snow.stop(); // Stop existing snow
-                snow = new BABYLON.ParticleSystem("snow", 4000, scene);
+                snow = new BABYLON.ParticleSystem("snow", 7000, scene);
                 snow.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
                 snow.emitter = new BABYLON.Vector3(0, 20, 0);
                 snow.minEmitBox = new BABYLON.Vector3(-20, 0, -20); // Emitter starts
@@ -165,7 +167,7 @@
                 snow.maxSize = 0.3;
                 snow.minLifeTime = 2;
                 snow.maxLifeTime = 3.5;
-                snow.emitRate = 4000;
+                snow.emitRate = 7000;
                 snow.direction1 = new BABYLON.Vector3(-1, -1, 0);
                 snow.direction2 = new BABYLON.Vector3(1, -1, 0);
                 snow.gravity = new BABYLON.Vector3(0, -0.5, 0);
@@ -223,13 +225,65 @@
                 heatParticles.start();
             };
 
+            const acidRain = () => {
+                scene.clearColor = new BABYLON.Color3(0.3, 0.6, 0.3);
+
+                if (acidRain) acidRain.stop(); // Stop existing acid rain
+                acidRain = new BABYLON.ParticleSystem("acidRain", 10000, scene);
+                acidRain.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
+                acidRain.emitter = new BABYLON.Vector3(0, 20, 0);
+                acidRain.minEmitBox = new BABYLON.Vector3(-20, 0, -20); // Emitter starts
+                acidRain.maxEmitBox = new BABYLON.Vector3(20, 0, 20); // Emitter ends
+                acidRain.minSize = 0.1;
+                acidRain.maxSize = 0.2;
+                acidRain.minLifeTime = 0.3;
+                acidRain.maxLifeTime = 1.0;
+                acidRain.emitRate = 10000;
+                acidRain.direction1 = new BABYLON.Vector3(-1, -9.8, 0);
+                acidRain.direction2 = new BABYLON.Vector3(1, -9.8, 0);
+                acidRain.gravity = new BABYLON.Vector3(0, -9.8, 0);
+                acidRain.color1 = new BABYLON.Color4(0.5, 1.0, 0.5, 1.0);
+                acidRain.color2 = new BABYLON.Color4(0.3, 1.0, 0.3, 1.0);
+                acidRain.start();
+            };
+
+            const meteorStrike = () => {
+                scene.clearColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+
+                if (meteor) scene.removeMesh(meteor);
+
+                for (let i = 0; i < 5; i++) {
+                    meteor = BABYLON.MeshBuilder.CreateSphere("meteor", {diameter: 1}, scene);
+                    meteor.position = new BABYLON.Vector3(Math.random() * 20 - 10, 20, Math.random() * 20 - 10);
+                    meteor.material = new BABYLON.StandardMaterial("meteorMat", scene);
+                    meteor.material.diffuseColor = new BABYLON.Color3(0.8, 0.5, 0.2);
+
+                    scene.beginAnimation(meteor, 0, 100, true);
+                    meteor.animations = [];
+
+                    // Falling animation
+                    var fallAnimation = new BABYLON.Animation("fall", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                    var keys = [];
+                    keys.push({frame: 0, value: 20});
+                    keys.push({frame: 100, value: -1});
+                    fallAnimation.setKeys(keys);
+                    meteor.animations.push(fallAnimation);
+
+                    scene.beginAnimation(meteor, 0, 100, false, 1, () => {
+                        meteor.dispose(); // Remove meteor after animation
+                    });
+                }
+            };
+
             // Create buttons for different weather conditions
-            createWeatherButton("Clear", "-150px", clearWeather);
-            createWeatherButton("Rainy", "-100px", rainyWeather);
-            createWeatherButton("Foggy", "-50px", foggyWeather);
-            createWeatherButton("Snowy", "0px", snowyWeather);
-            createWeatherButton("Stormy", "50px", stormyWeather);
-            createWeatherButton("Volcano", "100px", volcano);
+            createWeatherButton("Clear", "-200px", clearWeather);
+            createWeatherButton("Rainy", "-150px", rainyWeather);
+            createWeatherButton("Foggy", "-100px", foggyWeather);
+            createWeatherButton("Snowy", "-50px", snowyWeather);
+            createWeatherButton("Stormy", "0px", stormyWeather);
+            createWeatherButton("Volcano", "50px", volcano);
+            createWeatherButton("Acid Rain", "100px", acidRain);
+            createWeatherButton("Meteor Strike", "150px", meteorStrike);
 
             return scene;
         };

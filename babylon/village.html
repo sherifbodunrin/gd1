@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babylon.js Village </title>
+    <title>Babylon.js Village</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
@@ -76,7 +76,7 @@
             BABYLON.SceneLoader.ImportMesh(
                 "", "./", "StanfordBunny.obj", scene,
                 function (meshes) {
-                    alert("How many meshes?", mesh.length)
+                    alert("How many meshes?", meshes.length)
                     meshes.forEach(mesh => {
                         mesh.position = new BABYLON.Vector3(0, 0, 0);
                         mesh.scaling = new BABYLON.Vector3(2, 2, 2);
@@ -134,21 +134,55 @@
                 scene.clearColor = new BABYLON.Color3(0.9, 0.9, 1.0);
                 scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
                 scene.fogDensity = 0.02;
-                // Add snow particle system here if desired
+
+                // Snow particle system
+                var snow = new BABYLON.ParticleSystem("snow", 2000, scene);
+                snow.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
+                snow.emitter = new BABYLON.Vector3(0, 5, 0);
+                snow.minSize = 0.1;
+                snow.maxSize = 0.3;
+                snow.minLifeTime = 2;
+                snow.maxLifeTime = 3.5;
+                snow.emitRate = 1000;
+                snow.direction1 = new BABYLON.Vector3(-1, -1, 0);
+                snow.direction2 = new BABYLON.Vector3(1, -1, 0);
+                snow.gravity = new BABYLON.Vector3(0, -0.5, 0);
+                snow.start();
             };
 
             const stormyWeather = () => {
                 scene.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
                 scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
                 scene.fogDensity = 0.05;
-                // Add lightning effect or heavy rain particles here if desired
+
+                // Rain particle system
+                var rain = new BABYLON.ParticleSystem("rain", 5000, scene);
+                rain.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
+                rain.emitter = new BABYLON.Vector3(0, 10, 0);
+                rain.minSize = 0.1;
+                rain.maxSize = 0.2;
+                rain.minLifeTime = 0.3;
+                rain.maxLifeTime = 1.0;
+                rain.emitRate = 5000;
+                rain.direction1 = new BABYLON.Vector3(-1, -9.8, 0);
+                rain.direction2 = new BABYLON.Vector3(1, -9.8, 0);
+                rain.gravity = new BABYLON.Vector3(0, -9.8, 0);
+                rain.start();
+
+                // Simple lightning effect
+                var lightning = new BABYLON.PointLight("lightning", new BABYLON.Vector3(0, 100, 0), scene);
+                lightning.intensity = 0;
+                setInterval(() => {
+                    lightning.intensity = Math.random() > 0.9 ? 10 : 0;
+                }, 100);
             };
 
             const earthquake = () => {
                 scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+
                 // Simulate shaking effect
-                let shakeIntensity = 0.05;
-                let shakeDuration = 50;
+                let shakeIntensity = 0.1;
+                let shakeDuration = 100;
                 let shakeCounter = 0;
 
                 engine.runRenderLoop(() => {
@@ -156,6 +190,8 @@
                         camera.position.x += (Math.random() - 0.5) * shakeIntensity;
                         camera.position.y += (Math.random() - 0.5) * shakeIntensity;
                         shakeCounter++;
+                    } else {
+                        shakeCounter = 0; // Reset to stop shaking after duration
                     }
                 });
             };

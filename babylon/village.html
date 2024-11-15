@@ -130,10 +130,43 @@
                 scene.fogDensity = 0.1;
             };
 
+            const snowyWeather = () => {
+                scene.clearColor = new BABYLON.Color3(0.9, 0.9, 1.0);
+                scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+                scene.fogDensity = 0.02;
+                // Add snow particle system here if desired
+            };
+
+            const stormyWeather = () => {
+                scene.clearColor = new BABYLON.Color3(0.2, 0.2, 0.3);
+                scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+                scene.fogDensity = 0.05;
+                // Add lightning effect or heavy rain particles here if desired
+            };
+
+            const earthquake = () => {
+                scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+                // Simulate shaking effect
+                let shakeIntensity = 0.05;
+                let shakeDuration = 50;
+                let shakeCounter = 0;
+
+                engine.runRenderLoop(() => {
+                    if (shakeCounter < shakeDuration) {
+                        camera.position.x += (Math.random() - 0.5) * shakeIntensity;
+                        camera.position.y += (Math.random() - 0.5) * shakeIntensity;
+                        shakeCounter++;
+                    }
+                });
+            };
+
             // Create buttons for different weather conditions
-            createWeatherButton("Clear", "-100px", clearWeather);
-            createWeatherButton("Rainy", "-50px", rainyWeather);
-            createWeatherButton("Foggy", "0px", foggyWeather);
+            createWeatherButton("Clear", "-150px", clearWeather);
+            createWeatherButton("Rainy", "-100px", rainyWeather);
+            createWeatherButton("Foggy", "-50px", foggyWeather);
+            createWeatherButton("Snowy", "0px", snowyWeather);
+            createWeatherButton("Stormy", "50px", stormyWeather);
+            createWeatherButton("Earthquake", "100px", earthquake);
 
             return scene;
         };

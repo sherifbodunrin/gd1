@@ -128,16 +128,18 @@
                 scene.fogDensity = 0.03;
 
                 if (rain) rain.stop(); // Stop existing rain
-                rain = new BABYLON.ParticleSystem("rain", 5000, scene);
+                rain = new BABYLON.ParticleSystem("rain", 10000, scene);
                 rain.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
-                rain.emitter = new BABYLON.Vector3(0, 10, 0);
+                rain.emitter = new BABYLON.Vector3(0, 20, 0);
+                rain.minEmitBox = new BABYLON.Vector3(-20, 0, -20); // Emitter starts
+                rain.maxEmitBox = new BABYLON.Vector3(20, 0, 20); // Emitter ends
                 rain.minSize = 0.1;
                 rain.maxSize = 0.2;
                 rain.minLifeTime = 0.3;
                 rain.maxLifeTime = 1.0;
-                rain.emitRate = 5000;
-                rain.direction1 = new BABYLON.Vector3(-2, -9.8, 0);
-                rain.direction2 = new BABYLON.Vector3(2, -9.8, 0);
+                rain.emitRate = 10000;
+                rain.direction1 = new BABYLON.Vector3(-1, -9.8, 0);
+                rain.direction2 = new BABYLON.Vector3(1, -9.8, 0);
                 rain.gravity = new BABYLON.Vector3(0, -9.8, 0);
                 rain.start();
             };
@@ -154,16 +156,18 @@
                 scene.fogDensity = 0.02;
 
                 if (snow) snow.stop(); // Stop existing snow
-                snow = new BABYLON.ParticleSystem("snow", 2000, scene);
+                snow = new BABYLON.ParticleSystem("snow", 4000, scene);
                 snow.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
-                snow.emitter = new BABYLON.Vector3(0, 5, 0);
+                snow.emitter = new BABYLON.Vector3(0, 20, 0);
+                snow.minEmitBox = new BABYLON.Vector3(-20, 0, -20); // Emitter starts
+                snow.maxEmitBox = new BABYLON.Vector3(20, 0, 20); // Emitter ends
                 snow.minSize = 0.1;
                 snow.maxSize = 0.3;
                 snow.minLifeTime = 2;
                 snow.maxLifeTime = 3.5;
-                snow.emitRate = 1000;
-                snow.direction1 = new BABYLON.Vector3(-2, -1, 0);
-                snow.direction2 = new BABYLON.Vector3(2, -1, 0);
+                snow.emitRate = 4000;
+                snow.direction1 = new BABYLON.Vector3(-1, -1, 0);
+                snow.direction2 = new BABYLON.Vector3(1, -1, 0);
                 snow.gravity = new BABYLON.Vector3(0, -0.5, 0);
                 snow.start();
             };
@@ -174,16 +178,18 @@
                 scene.fogDensity = 0.05;
 
                 if (rain) rain.stop(); // Stop existing rain
-                rain = new BABYLON.ParticleSystem("rain", 5000, scene);
+                rain = new BABYLON.ParticleSystem("rain", 10000, scene);
                 rain.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
-                rain.emitter = new BABYLON.Vector3(0, 10, 0);
+                rain.emitter = new BABYLON.Vector3(0, 20, 0);
+                rain.minEmitBox = new BABYLON.Vector3(-20, 0, -20); // Emitter starts
+                rain.maxEmitBox = new BABYLON.Vector3(20, 0, 20); // Emitter ends
                 rain.minSize = 0.1;
                 rain.maxSize = 0.2;
                 rain.minLifeTime = 0.3;
                 rain.maxLifeTime = 1.0;
-                rain.emitRate = 5000;
-                rain.direction1 = new BABYLON.Vector3(-2, -9.8, 0);
-                rain.direction2 = new BABYLON.Vector3(2, -9.8, 0);
+                rain.emitRate = 10000;
+                rain.direction1 = new BABYLON.Vector3(-1, -9.8, 0);
+                rain.direction2 = new BABYLON.Vector3(1, -9.8, 0);
                 rain.gravity = new BABYLON.Vector3(0, -9.8, 0);
                 rain.start();
 
@@ -199,16 +205,18 @@
                 scene.clearColor = new BABYLON.Color3(0.5, 0.2, 0.2);
 
                 if (heatParticles) heatParticles.stop(); // Stop existing heat particles
-                heatParticles = new BABYLON.ParticleSystem("heat", 2000, scene);
+                heatParticles = new BABYLON.ParticleSystem("heat", 4000, scene);
                 heatParticles.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/flare.png", scene);
                 heatParticles.emitter = new BABYLON.Vector3(0, 0, 0);
+                heatParticles.minEmitBox = new BABYLON.Vector3(-5, 0, -5); // Emitter starts
+                heatParticles.maxEmitBox = new BABYLON.Vector3(5, 0, 5); // Emitter ends
                 heatParticles.minSize = 0.1;
                 heatParticles.maxSize = 0.3;
                 heatParticles.minLifeTime = 1;
                 heatParticles.maxLifeTime = 2;
-                heatParticles.emitRate = 1000;
-                heatParticles.direction1 = new BABYLON.Vector3(-1, 1, 0);
-                heatParticles.direction2 = new BABYLON.Vector3(1, 1, 0);
+                heatParticles.emitRate = 4000;
+                heatParticles.direction1 = new BABYLON.Vector3(-1, 5, 0);
+                heatParticles.direction2 = new BABYLON.Vector3(1, 5, 0);
                 heatParticles.color1 = new BABYLON.Color4(1, 0.5, 0, 1.0);
                 heatParticles.color2 = new BABYLON.Color4(1, 0, 0, 1.0);
                 heatParticles.gravity = new BABYLON.Vector3(0, -0.5, 0);

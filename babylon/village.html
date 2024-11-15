@@ -7,6 +7,7 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
 </head>
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
@@ -97,7 +98,42 @@
                 });
             });
 
-            alert("Village, dude, and bunny should have been loaded with animation.");
+            // Weather system
+            var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+            var createWeatherButton = function(text, position, handler) {
+                var button = BABYLON.GUI.Button.CreateSimpleButton("but", text);
+                button.width = "150px";
+                button.height = "40px";
+                button.color = "white";
+                button.background = "black";
+                button.onPointerUpObservable.add(handler);
+                button.top = position;
+                advancedTexture.addControl(button); 
+            };
+
+            // Example weather/disaster effects
+            const clearWeather = () => {
+                scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8); // Clear sky color
+                scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
+            };
+
+            const rainyWeather = () => {
+                scene.clearColor = new BABYLON.Color3(0.4, 0.4, 0.5); // Darker cloudy color
+                scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+                scene.fogDensity = 0.03;
+            };
+
+            const foggyWeather = () => {
+                scene.clearColor = new BABYLON.Color3(0.7, 0.7, 0.8); // Light foggy color
+                scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+                scene.fogDensity = 0.1;
+            };
+
+            // Create buttons for different weather conditions
+            createWeatherButton("Clear", "-100px", clearWeather);
+            createWeatherButton("Rainy", "-50px", rainyWeather);
+            createWeatherButton("Foggy", "0px", foggyWeather);
 
             return scene;
         };

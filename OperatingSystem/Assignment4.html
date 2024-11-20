@@ -35,26 +35,21 @@
 <body>
     <h1>Banker's Algorithm - Safe State Check</h1>
     <div class="container">
-        <label for="processes">Number of Processes: </label>
-        <input type="number" id="processes" min="1">
-        <br>
-        <label for="resources">Number of Resource Types: </label>
-        <input type="number" id="resources" min="1">
-        <br>
-        <button onclick="initialize()">Initialize</button>
+        <label for="file-upload">Upload Input File:</label>
+        <input type="file" id="file-upload" accept=".txt">
+        <br><br>
+        <button onclick="processFile()">Process File</button>
     </div>
 
     <div class="matrix-container" id="matrix-container" style="display: none;">
-        <h3>Enter Allocation Matrix</h3>
-        <table class="matrix" id="allocation-matrix">
-        </table>
+        <h3>Allocation Matrix</h3>
+        <table class="matrix" id="allocation-matrix"></table>
 
-        <h3>Enter Maximum Matrix</h3>
-        <table class="matrix" id="max-matrix">
-        </table>
+        <h3>Maximum Matrix</h3>
+        <table class="matrix" id="max-matrix"></table>
 
-        <h3>Enter Available Resources</h3>
-        <input type="text" id="available-resources" placeholder="e.g. 1 2 3">
+        <h3>Available Resources</h3>
+        <p id="available-resources-display"></p>
 
         <br><br>
         <button onclick="checkSafety()">Check Safe State</button>
@@ -65,24 +60,53 @@
 
     <script>
         let numProcesses, numResources;
-        let allocation, max, available;
+        let allocation = [], max = [], available = [];
 
-        function initialize() {
-            numProcesses = parseInt(document.getElementById('processes').value);
-            numResources = parseInt(document.getElementById('resources').value);
-
-            if (isNaN(numProcesses) || isNaN(numResources) || numProcesses <= 0 || numResources <= 0) {
-                alert("Please enter valid numbers for processes and resources.");
+        function processFile() {
+            const fileInput = document.getElementById('file-upload');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please upload a file.");
                 return;
             }
 
-            allocation = Array(numProcesses).fill().map(() => Array(numResources).fill(0));
-            max = Array(numProcesses).fill().map(() => Array(numResources).fill(0));
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const lines = event.target.result.trim().split('\n');
+                parseInput(lines);
+            };
+            reader.readAsText(file);
+        }
 
-            // Display the input tables for allocation and maximum matrices
-            displayMatrix('allocation-matrix', allocation, 'Enter Allocation');
-            displayMatrix('max-matrix', max, 'Enter Maximum');
+        function parseInput(lines) {
+            // First line: number of processes and resources
+            const [p, r] = lines[0].split(' ').map(Number);
+            numProcesses = p;
+            numResources = r;
+
+            // Next p lines: Allocation matrix
+            allocation = lines.slice(1, 1 + numProcesses).map(line => line.split(' ').map(Number));
+
+            // Next p lines: Maximum matrix
+            max = lines.slice(1 + numProcesses, 1 + 2 * numProcesses).map(line => line.split(' ').map(Number));
+
+            // Last line: Available resources
+            available = lines[1 + 2 * numProcesses].split(' ').map(Number);
+
+            displayMatrices();
+        }
+
+        function displayMatrices() {
             document.getElementById('matrix-container').style.display = 'block';
+
+            // Display Allocation matrix
+            displayMatrix('allocation-matrix', allocation, "Allocation");
+
+            // Display Maximum matrix
+            displayMatrix('max-matrix', max, "Maximum");
+
+            // Display Available resources
+            document.getElementById('available-resources-display').textContent = `Available: ${available.join(' ')}`;
         }
 
         function displayMatrix(tableId, matrix, title) {
@@ -91,7 +115,7 @@
             for (let i = 0; i < numProcesses; i++) {
                 let row = `<tr><td>Process ${i + 1}</td>`;
                 for (let j = 0; j < numResources; j++) {
-                    row += `<td><input type="number" id="${tableId}-${i}-${j}" value="${matrix[i][j]}"></td>`;
+                    row += `<td>${matrix[i][j]}</td>`;
                 }
                 row += `</tr>`;
                 table.innerHTML += row;
@@ -99,29 +123,18 @@
         }
 
         function checkSafety() {
-            // Get available resources
-            available = document.getElementById('available-resources').value.split(' ').map(Number);
+            const need = Array(numProcesses).fill().map(() => Array(numResources).fill(0));
 
-            // Fill in the allocation and maximum matrices
-            for (let i = 0; i < numProcesses; i++) {
-                for (let j = 0; j < numResources; j++) {
-                    allocation[i][j] = parseInt(document.getElementById(`allocation-matrix-${i}-${j}`).value);
-                    max[i][j] = parseInt(document.getElementById(`max-matrix-${i}-${j}`).value);
-                }
-            }
-
-            let need = Array(numProcesses).fill().map(() => Array(numResources).fill(0));
-
-            // Calculate the need matrix
+            // Calculate Need matrix
             for (let i = 0; i < numProcesses; i++) {
                 for (let j = 0; j < numResources; j++) {
                     need[i][j] = max[i][j] - allocation[i][j];
                 }
             }
 
-            let work = [...available];
-            let finish = Array(numProcesses).fill(false);
-            let safeSequence = [];
+            const work = [...available];
+            const finish = Array(numProcesses).fill(false);
+            const safeSequence = [];
 
             let found;
             do {

@@ -24,7 +24,7 @@
 </head>
 <body>
     <h1>C++ Code Example</h1>
-    <p>This is the C++ code that reads resource allocation data from a file:</p>
+    <p>This is the C++ code that reads resource allocation data from a file (input1.txt):</p>
     <pre><code>
 #include &lt;iostream&gt;
 #include &lt;string&gt;
@@ -47,9 +47,7 @@ int main()
     string filename;
     ifstream datafile;
 
-   // cout &lt;&lt; "Please input file name: " &lt;&lt; endl;
-   // getline(cin, filename);
-   // cout &lt;&lt; "Your input is " &lt;&lt; filename;
+    // File input is directly referred as "input1.txt"
     datafile.open("input1.txt");
 
     if (!datafile.good())
@@ -79,5 +77,6 @@ int main()
     return 0;
 }
     </code></pre>
+    <p><b>Note:</b> The file input1.txt needs to be placed in the same directory as the C++ executable for it to be read correctly.</p>
 </body>
 </html>

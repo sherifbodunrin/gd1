@@ -3,44 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input File Content Display</title>
+    <title>Banker's Algorithm - Safe State Check</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        .file-content {
+        .container {
             margin-top: 20px;
-            padding: 10px;
-            background-color: #e4e4e4;
+        }
+        label, input, button {
+            margin: 5px;
+        }
+        .matrix-container {
+            margin-top: 20px;
+        }
+        .matrix {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .matrix td, .matrix th {
             border: 1px solid #ddd;
-            border-radius: 5px;
-            white-space: pre-wrap; /* To preserve the formatting of text */
+            padding: 5px;
+            text-align: center;
+        }
+        .matrix th {
+            background-color: #f4f4f4;
         }
     </style>
 </head>
 <body>
-    <h1>Contents of input1.txt</h1>
-    <div id="file-content" class="file-content">
-        Loading content...
+    <h1>Banker's Algorithm - Safe State Check</h1>
+    <div class="container">
+        <label for="processes">Number of Processes: </label>
+        <input type="number" id="processes" min="1">
+        <br>
+        <label for="resources">Number of Resource Types: </label>
+        <input type="number" id="resources" min="1">
+        <br>
+        <button onclick="initialize()">Initialize</button>
     </div>
 
+    <div class="matrix-container" id="matrix-container" style="display: none;">
+        <h3>Enter Allocation Matrix</h3>
+        <table class="matrix" id="allocation-matrix">
+        </table>
+
+        <h3>Enter Maximum Matrix</h3>
+        <table class="matrix" id="max-matrix">
+        </table>
+
+        <h3>Enter Available Resources</h3>
+        <input type="text" id="available-resources" placeholder="e.g. 1 2 3">
+
+        <br><br>
+        <button onclick="checkSafety()">Check Safe State</button>
+    </div>
+
+    <h2>Result:</h2>
+    <div id="result"></div>
+
     <script>
-        // Fetch the content of input1.txt using Fetch API
-        fetch('input1.txt')
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
+        let numProcesses, numResources;
+        let allocation, max, available;
+
+        function initialize() {
+            numProcesses = parseInt(document.getElementById('processes').value);
+            numResources = parseInt(document.getElementById('resources').value);
+
+            if (isNaN(numProcesses) || isNaN(numResources) || numProcesses <= 0 || numResources <= 0) {
+                alert("Please enter valid numbers for processes and resources.");
+                return;
+            }
+
+            allocation = Array(numProcesses).fill().map(() => Array(numResources).fill(0));
+            max = Array(numProcesses).fill().map(() => Array(numResources).fill(0));
+
+            // Display the input tables for allocation and maximum matrices
+            displayMatrix('allocation-matrix', allocation, 'Enter Allocation');
+            displayMatrix('max-matrix', max, 'Enter Maximum');
+            document.getElementById('matrix-container').style.display = 'block';
+        }
+
+        function displayMatrix(tableId, matrix, title) {
+            const table = document.getElementById(tableId);
+            table.innerHTML = `<tr><th>Process</th>${Array(numResources).fill().map((_, i) => `<th>Resource ${i + 1}</th>`).join('')}</tr>`;
+            for (let i = 0; i < numProcesses; i++) {
+                let row = `<tr><td>Process ${i + 1}</td>`;
+                for (let j = 0; j < numResources; j++) {
+                    row += `<td><input type="number" id="${tableId}-${i}-${j}" value="${matrix[i][j]}"></td>`;
                 }
-                throw new Error('File not found');
-            })
-            .then(data => {
-                // Display the content of input1.txt in the div
-                document.getElementById('file-content').textContent = data;
-            })
-            .catch(error => {
-                document.getElementById('file-content').textContent = 'Error loading file: ' + error.message;
-            });
+                row += `</tr>`;
+                table.innerHTML += row;
+            }
+        }
+
+        function checkSafety() {
+            // Get available resources
+            available = document.getElementById('available-resources').value.split(' ').map(Number);
+
+            // Fill in the allocation and maximum matrices
+            for (let i = 0; i < numProcesses; i++) {
+                for (let j = 0; j < numResources; j++) {
+                    allocation[i][j] = parseInt(document.getElementById(`allocation-matrix-${i}-${j}`).value);
+                    max[i][j] = parseInt(document.getElementById(`max-matrix-${i}-${j}`).value);
+                }
+            }
+
+            let need = Array(numProcesses).fill().map(() => Array(numResources).fill(0));
+
+            // Calculate the need matrix
+            for (let i = 0; i < numProcesses; i++) {
+                for (let j = 0; j < numResources; j++) {
+                    need[i][j] = max[i][j] - allocation[i][j];
+                }
+            }
+
+            let work = [...available];
+            let finish = Array(numProcesses).fill(false);
+            let safeSequence = [];
+
+            let found;
+            do {
+                found = false;
+                for (let i = 0; i < numProcesses; i++) {
+                    if (!finish[i] && canAllocate(i, need, work)) {
+                        safeSequence.push(i + 1);
+                        for (let j = 0; j < numResources; j++) {
+                            work[j] += allocation[i][j];
+                        }
+                        finish[i] = true;
+                        found = true;
+                        break;
+                    }
+                }
+            } while (found);
+
+            if (safeSequence.length === numProcesses) {
+                document.getElementById('result').innerHTML = `The system is in a safe state. Safe sequence: ${safeSequence.join(' -> ')}`;
+            } else {
+                document.getElementById('result').innerHTML = "The system is not in a safe state.";
+            }
+        }
+
+        function canAllocate(i, need, work) {
+            for (let j = 0; j < numResources; j++) {
+                if (need[i][j] > work[j]) {
+                    return false;
+                }
+            }
+            return true;
+        }
     </script>
 </body>
 </html>

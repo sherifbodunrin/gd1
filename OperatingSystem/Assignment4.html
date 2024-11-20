@@ -3,80 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C++ Code Display</title>
+    <title>Input File Content Display</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        pre {
-            background-color: #f4f4f4;
+        .file-content {
+            margin-top: 20px;
             padding: 10px;
-            border: 1px solid #ccc;
+            background-color: #e4e4e4;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 1.2em;
-            overflow-x: auto;
-        }
-        code {
-            color: #333;
+            white-space: pre-wrap; /* To preserve the formatting of text */
         }
     </style>
 </head>
 <body>
-    <h1>C++ Code Example</h1>
-    <p>This is the C++ code that reads resource allocation data from a file (input1.txt):</p>
-    <pre><code>
-#include &lt;iostream&gt;
-#include &lt;string&gt;
-#include &lt;fstream&gt;
-using namespace std;
+    <h1>Contents of input1.txt</h1>
+    <div id="file-content" class="file-content">
+        Loading content...
+    </div>
 
-bool issafe()
-{
-    return true;
-}
-
-int n;
-int m;
-int* available;
-int** allocation;
-int** max;
-
-int main()
-{
-    string filename;
-    ifstream datafile;
-
-    // File input is directly referred as "input1.txt"
-    datafile.open("input1.txt");
-
-    if (!datafile.good())
-    {
-        cout &lt;&lt; "File not opened correctly";
-        return -1;
-    }
-
-    datafile &gt;&gt; n;
-    datafile &gt;&gt; m;
-
-    available = new int[m];
-    for (int count = 0; count &lt; m; count++)
-        datafile &gt;&gt; available[count];
-
-    cout &lt;&lt; "Number of processes: " &lt;&lt; n &lt;&lt; endl;
-    cout &lt;&lt; "Number of types of resources: " &lt;&lt; m &lt;&lt; endl;
-
-    for (int count = 0; count &lt; m; count++)
-        cout &lt;&lt; available[count] &lt;&lt; ", ";
-
-    datafile.close();
-    cout &lt;&lt; issafe() &lt;&lt; endl;
-
-    delete[] available;
-
-    return 0;
-}
-    </code></pre>
-    <p><b>Note:</b> The file input1.txt needs to be placed in the same directory as the C++ executable for it to be read correctly.</p>
+    <script>
+        // Fetch the content of input1.txt using Fetch API
+        fetch('input1.txt')
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                }
+                throw new Error('File not found');
+            })
+            .then(data => {
+                // Display the content of input1.txt in the div
+                document.getElementById('file-content').textContent = data;
+            })
+            .catch(error => {
+                document.getElementById('file-content').textContent = 'Error loading file: ' + error.message;
+            });
+    </script>
 </body>
 </html>

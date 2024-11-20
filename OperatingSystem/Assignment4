@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ Code Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1.2em;
+            overflow-x: auto;
+        }
+        code {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>C++ Code Example</h1>
+    <p>This is the C++ code that reads resource allocation data from a file:</p>
+    <pre><code>
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;fstream&gt;
+using namespace std;
+
+bool issafe()
+{
+    return true;
+}
+
+int n;
+int m;
+int* available;
+int** allocation;
+int** max;
+
+int main()
+{
+    string filename;
+    ifstream datafile;
+
+   // cout &lt;&lt; "Please input file name: " &lt;&lt; endl;
+   // getline(cin, filename);
+   // cout &lt;&lt; "Your input is " &lt;&lt; filename;
+    datafile.open("input1.txt");
+
+    if (!datafile.good())
+    {
+        cout &lt;&lt; "File not opened correctly";
+        return -1;
+    }
+
+    datafile &gt;&gt; n;
+    datafile &gt;&gt; m;
+
+    available = new int[m];
+    for (int count = 0; count &lt; m; count++)
+        datafile &gt;&gt; available[count];
+
+    cout &lt;&lt; "Number of processes: " &lt;&lt; n &lt;&lt; endl;
+    cout &lt;&lt; "Number of types of resources: " &lt;&lt; m &lt;&lt; endl;
+
+    for (int count = 0; count &lt; m; count++)
+        cout &lt;&lt; available[count] &lt;&lt; ", ";
+
+    datafile.close();
+    cout &lt;&lt; issafe() &lt;&lt; endl;
+
+    delete[] available;
+
+    return 0;
+}
+    </code></pre>
+</body>
+</html>

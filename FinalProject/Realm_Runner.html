@@ -72,13 +72,14 @@
 
     // Spawn obstacles
     function spawnObstacle() {
-      const obstacleHeight = Math.random() > 0.5 ? Math.random() * 50 + 30 : Math.random() * 50 + 150; // Ground or flying obstacles
+      const obstacleHeight = 30;
       const obstacleWidth = 20;
+      const groundLevel = canvas.height - 100 - obstacleHeight; // Spawn just above the black line
       obstacles.push({
         x: canvas.width,
-        y: canvas.height - obstacleHeight,
+        y: groundLevel,
         width: obstacleWidth,
-        height: 30, // uniform height for visibility
+        height: obstacleHeight,
       });
     }
 
@@ -131,20 +132,28 @@
       }
 
       // Spawn new obstacles
-      if (Math.random() < 0.02) {
+      if (Math.random() < 0.01) { // Spawn rate adjusted for slower spawning
         spawnObstacle();
       }
 
       requestAnimationFrame(gameLoop);
     }
 
-    // Jump event
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && !player.jump) {
+    // Jump event for both keydown and mouse click
+    function jump() {
+      if (!player.jump) {
         player.jump = true;
         player.dy = -10; // Jump height
       }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        jump();
+      }
     });
+
+    document.addEventListener('click', jump); // Mouse click triggers jump
   </script>
 </body>
 </html>

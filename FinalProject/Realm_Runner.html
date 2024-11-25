@@ -57,9 +57,10 @@
     canvas.height = window.innerHeight;
 
     // Game variables
-    let player = { x: 50, y: canvas.height - 100, width: 50, height: 50, dy: 0, jump: false };
+    let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jump: false };
     let obstacles = [];
     let gameSpeed = 5;
+    let gravity = 0.5;
     let gameOver = false;
 
     // Start game
@@ -71,13 +72,13 @@
 
     // Spawn obstacles
     function spawnObstacle() {
-      const obstacleHeight = Math.random() * 50 + 30;
+      const obstacleHeight = Math.random() > 0.5 ? Math.random() * 50 + 30 : Math.random() * 50 + 150; // Ground or flying obstacles
       const obstacleWidth = 20;
       obstacles.push({
         x: canvas.width,
         y: canvas.height - obstacleHeight,
         width: obstacleWidth,
-        height: obstacleHeight,
+        height: 30, // uniform height for visibility
       });
     }
 
@@ -88,6 +89,10 @@
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw ground
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
 
       // Draw player
       ctx.fillStyle = 'blue';
@@ -116,13 +121,13 @@
       });
 
       // Gravity
-      if (player.y + player.height < canvas.height) {
-        player.dy += 0.5; // Gravity strength
+      if (player.y + player.height < canvas.height - 100) {
+        player.dy += gravity;
         player.y += player.dy;
       } else {
         player.jump = false;
         player.dy = 0;
-        player.y = canvas.height - player.height;
+        player.y = canvas.height - player.height - 100;
       }
 
       // Spawn new obstacles

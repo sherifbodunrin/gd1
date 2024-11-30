@@ -60,11 +60,13 @@
     let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
     let obstacles = [];
     let gameSpeed = 3; // Slower map movement
-    let gravity = 0.5;
-    let jumpStrength = -12; // Higher jump
+    let gravity = 0.4; // Adjust for smoother jump
+    let jumpStrength = -10; // Adjust for smoother jump
     let gameOver = false;
     let health = 3; // Player's health
     let distance = 0; // Distance traveled
+    let obstacleInterval = 0;
+    let obstacleSpacing = 150; // Minimum pixels between obstacles
 
     // Start game
     startButton.addEventListener('click', () => {
@@ -142,10 +144,12 @@
         player.jumps = 0; // Reset jump count when on ground
       }
 
-      // Spawn new obstacles
-      if (Math.random() < 0.01) { // Spawn rate adjusted for slower spawning
+      // Spawn new obstacles based on interval
+      if (obstacleInterval >= obstacleSpacing) {
         spawnObstacle();
+        obstacleInterval = 0; // Reset obstacle interval
       }
+      obstacleInterval += gameSpeed;
 
       // Display Health
       ctx.font = '20px Arial';

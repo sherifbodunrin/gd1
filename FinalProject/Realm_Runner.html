@@ -69,7 +69,10 @@
     let obstacleInterval = 0;
     let obstacleSpacing = 300; // Increased minimum pixels between obstacles
     let flyingObstacleInterval = 0;
-    let flyingObstacleSpacing = 500; // Increased minimum pixels between flying obstacles
+    let flyingObstacleSpacing = 1000; // Increased spacing for less frequent flying obstacles
+
+    // Calculate maximum jump height (rough estimate)
+    const maxJumpHeight = player.y + (jumpStrength / gravity) * jumpStrength;
 
     // Start game
     startButton.addEventListener('click', () => {
@@ -95,10 +98,10 @@
     function spawnFlyingObstacle() {
       const obstacleHeight = 20;
       const obstacleWidth = 20;
-      const randomY = Math.random() * (canvas.height - 200) + 50;  // Random height within the upper half
+      const adjustedY = maxJumpHeight - 50; // Position above maximum jump height
       flyingObstacles.push({
         x: canvas.width,
-        y: randomY,
+        y: adjustedY,
         width: obstacleWidth,
         height: obstacleHeight,
       });

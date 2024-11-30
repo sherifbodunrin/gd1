@@ -59,6 +59,7 @@
     // Game variables
     let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
     let obstacles = [];
+    let flyingObstacles = [];
     let gameSpeed = 3; // Slower map movement
     let gravity = 0.4; // Adjust for smoother jump
     let jumpStrength = -10; // Adjust for smoother jump
@@ -67,6 +68,8 @@
     let distance = 0; // Distance traveled
     let obstacleInterval = 0;
     let obstacleSpacing = 300; // Increased minimum pixels between obstacles
+    let flyingObstacleInterval = 0;
+    let flyingObstacleSpacing = 500; // Increased minimum pixels between flying obstacles
 
     // Start game
     startButton.addEventListener('click', () => {
@@ -75,14 +78,27 @@
       gameLoop();
     });
 
-    // Spawn obstacles
+    // Spawn ground obstacle
     function spawnObstacle() {
       const obstacleHeight = 30;
       const obstacleWidth = 20;
-      const groundLevel = canvas.height - 100 - obstacleHeight; // Spawn just above the black line
+      const groundLevel = canvas.height - 100 - obstacleHeight;
       obstacles.push({
         x: canvas.width,
         y: groundLevel,
+        width: obstacleWidth,
+        height: obstacleHeight,
+      });
+    }
+
+    // Spawn flying obstacle
+    function spawnFlyingObstacle() {
+      const obstacleHeight = 20;
+      const obstacleWidth = 20;
+      const randomY = Math.random() * (canvas.height - 200) + 50;  // Random height within the upper half
+      flyingObstacles.push({
+        x: canvas.width,
+        y: randomY,
         width: obstacleWidth,
         height: obstacleHeight,
       });
@@ -113,7 +129,7 @@
         obstacle.x -= gameSpeed;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-        // Collision detection
+        // Collision detection for ground obstacles
         if (
           player.x < obstacle.x + obstacle.width &&
           player.x + player.width > obstacle.x &&
@@ -133,6 +149,31 @@
         }
       });
 
+      // Draw flying obstacles
+      flyingObstacles.forEach((obstacle, index) => {
+        obstacle.x -= gameSpeed;
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+        // Collision detection for flying obstacles
+        if (
+          player.x < obstacle.x + obstacle.width &&
+          player.x + player.width > obstacle.x &&
+          player.y < obstacle.y + obstacle.height &&
+          player.y + player.height > obstacle.y
+        ) {
+          flyingObstacles.splice(index, 1); // Remove the obstacle upon collision
+          health--; // Decrease health
+          if (health <= 0) {
+            gameOver = true;
+          }
+        }
+
+        // Remove off-screen flying obstacles
+        if (obstacle.x + obstacle.width < 0) {
+          flyingObstacles.splice(index, 1);
+        }
+      });
+
       // Gravity
       player.dy += gravity;
       player.y += player.dy;
@@ -144,12 +185,19 @@
         player.jumps = 0; // Reset jump count when on ground
       }
 
-      // Spawn new obstacles based on interval
+      // Spawn new ground obstacles based on interval
       if (obstacleInterval >= obstacleSpacing) {
         spawnObstacle();
-        obstacleInterval = 0; // Reset obstacle interval
+        obstacleInterval = 0;
       }
       obstacleInterval += gameSpeed;
+
+      // Spawn new flying obstacles based on interval
+      if (flyingObstacleInterval >= flyingObstacleSpacing) {
+        spawnFlyingObstacle();
+        flyingObstacleInterval = 0;
+      }
+      flyingObstacleInterval += gameSpeed;
 
       // Display Health
       ctx.font = '20px Arial';

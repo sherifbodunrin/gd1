@@ -98,7 +98,7 @@
     function spawnFlyingObstacle() {
       const obstacleHeight = 20;
       const obstacleWidth = 20;
-      const adjustedY = maxJumpHeight - 50; // Position above maximum jump height
+      const adjustedY = canvas.height - 200; // Adjusted position for visibility
       flyingObstacles.push({
         x: canvas.width,
         y: adjustedY,

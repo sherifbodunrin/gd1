@@ -63,6 +63,8 @@
     let gravity = 0.5;
     let jumpStrength = -12; // Higher jump
     let gameOver = false;
+    let health = 3; // Player's health
+    let distance = 0; // Distance traveled
 
     // Start game
     startButton.addEventListener('click', () => {
@@ -92,6 +94,9 @@
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Update distance
+      distance += gameSpeed;
+
       // Draw ground
       ctx.fillStyle = 'black';
       ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
@@ -113,7 +118,11 @@
           player.y < obstacle.y + obstacle.height &&
           player.y + player.height > obstacle.y
         ) {
-          gameOver = true;
+          obstacles.splice(index, 1); // Remove the obstacle upon collision
+          health--; // Decrease health
+          if (health <= 0) {
+            gameOver = true;
+          }
         }
 
         // Remove off-screen obstacles
@@ -137,6 +146,14 @@
       if (Math.random() < 0.01) { // Spawn rate adjusted for slower spawning
         spawnObstacle();
       }
+
+      // Display Health
+      ctx.font = '20px Arial';
+      ctx.fillStyle = 'black';
+      ctx.fillText(`Health: ${health}`, 10, 30);
+
+      // Display Distance
+      ctx.fillText(`Distance: ${distance}`, 10, 60);
 
       requestAnimationFrame(gameLoop);
     }

@@ -57,10 +57,11 @@
     canvas.height = window.innerHeight;
 
     // Game variables
-    let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0 };
+    let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
     let obstacles = [];
-    let gameSpeed = 5;
+    let gameSpeed = 3; // Slower map movement
     let gravity = 0.5;
+    let jumpStrength = -12; // Higher jump
     let gameOver = false;
 
     // Start game
@@ -129,6 +130,7 @@
       if (player.y + player.height >= canvas.height - 100) {
         player.y = canvas.height - player.height - 100;
         player.dy = 0;
+        player.jumps = 0; // Reset jump count when on ground
       }
 
       // Spawn new obstacles
@@ -139,9 +141,12 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // Jump event for both keydown and mouse click
+    // Jump event
     function jump() {
-      player.dy = -10; // Jump height
+      if (player.jumps < player.maxJumps) {
+        player.dy = jumpStrength;
+        player.jumps++;
+      }
     }
 
     document.addEventListener('keydown', (e) => {

@@ -60,19 +60,20 @@
     let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
     let obstacles = [];
     let flyingObstacles = [];
+    let healPowerUps = [];
     let gameSpeed = 3; // Slower map movement
     let gravity = 0.4; // Adjust for smoother jump
     let jumpStrength = -10; // Adjust for smoother jump
     let gameOver = false;
     let health = 3; // Player's health
+    const maxHealth = 3; // Max health limit
     let distance = 0; // Distance traveled
     let obstacleInterval = 0;
     let obstacleSpacing = 600; // Increased spacing for less frequent ground obstacles
     let flyingObstacleInterval = 0;
     let flyingObstacleSpacing = 1000; // Increased spacing for less frequent flying obstacles
-
-    // Calculate maximum jump height (rough estimate)
-    const maxJumpHeight = player.y + (jumpStrength / gravity) * jumpStrength;
+    let healPowerUpInterval = 0;
+    let healPowerUpSpacing = 5000; // Rare spawn for heal power-up
 
     // Start game
     startButton.addEventListener('click', () => {
@@ -104,6 +105,19 @@
         y: adjustedY,
         width: obstacleWidth,
         height: obstacleHeight,
+      });
+    }
+
+    // Spawn heal power-up
+    function spawnHealPowerUp() {
+      const powerUpHeight = 20;
+      const powerUpWidth = 20;
+      const randomY = canvas.height - 200 - Math.random() * 100; // Randomly placed within a range
+      healPowerUps.push({
+        x: canvas.width,
+        y: randomY,
+        width: powerUpWidth,
+        height: powerUpHeight,
       });
     }
 
@@ -177,6 +191,31 @@
         }
       });
 
+      // Draw heal power-ups
+      ctx.fillStyle = 'green';
+      healPowerUps.forEach((powerUp, index) => {
+        powerUp.x -= gameSpeed;
+        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
+        // Collision detection for heal power-ups
+        if (
+          player.x < powerUp.x + powerUp.width &&
+          player.x + player.width > powerUp.x &&
+          player.y < powerUp.y + powerUp.height &&
+          player.y + player.height > powerUp.y
+        ) {
+          healPowerUps.splice(index, 1); // Remove the power-up upon collection
+          if (health < maxHealth) {
+            health++; // Increase health
+          }
+        }
+
+        // Remove off-screen power-ups
+        if (powerUp.x + powerUp.width < 0) {
+          healPowerUps.splice(index, 1);
+        }
+      });
+
       // Gravity
       player.dy += gravity;
       player.y += player.dy;
@@ -201,6 +240,13 @@
         flyingObstacleInterval = 0;
       }
       flyingObstacleInterval += gameSpeed;
+
+      // Spawn new heal power-ups based on interval
+      if (healPowerUpInterval >= healPowerUpSpacing) {
+        spawnHealPowerUp();
+        healPowerUpInterval = 0;
+      }
+      healPowerUpInterval += gameSpeed;
 
       // Display Health
       ctx.font = '20px Arial';

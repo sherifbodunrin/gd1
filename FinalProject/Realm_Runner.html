@@ -62,7 +62,7 @@
     let flyingObstacles = [];
     let healPowerUps = [];
     let gameSpeed = 3;
-    const maxGameSpeed = 8; // Cap the maximum game speed
+    const maxGameSpeed = 5; // Cap the maximum game speed at 5 for gradual increase
     let gravity = 0.4;
     let jumpStrength = -10;
     let gameOver = false;
@@ -73,7 +73,7 @@
     let obstacleSpacing = 1000;
     let healPowerUpInterval = 0;
     let healPowerUpSpacing = 7000;
-    const speedIncreaseInterval = 100; // Distance interval at which speed increases
+    const distanceIncrementInterval = 60; // Frames per second
 
     // Patterns for obstacle configurations
     const patterns = [
@@ -137,12 +137,14 @@
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update distance
-      distance += gameSpeed * 0.5; // Slower distance increase
+      // Update distance roughly once every second
+      if (Math.floor(distance) % distanceIncrementInterval === 0) {
+        distance++;
+      }
 
-      // Increment game speed every 100 units of distance
-      if (parseInt(distance) % speedIncreaseInterval === 0 && gameSpeed < maxGameSpeed) {
-        gameSpeed += 0.1;
+      // Gradually increase game speed with a cap
+      if (distance % 100 === 0 && gameSpeed < maxGameSpeed) {
+        gameSpeed += 0.01; // Smaller increments for more gradual speed increase
       }
 
       // Draw ground
@@ -265,7 +267,7 @@
       ctx.fillText(`Health: ${health}`, 10, 30);
 
       // Display Distance
-      ctx.fillText(`Distance: ${Math.floor(distance)}`, 10, 60);
+      ctx.fillText(`Distance: ${distance}`, 10, 60);
 
       requestAnimationFrame(gameLoop);
     }

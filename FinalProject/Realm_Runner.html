@@ -9,6 +9,7 @@
       margin: 0;
       font-family: Arial, sans-serif;
       overflow: hidden;
+      background: linear-gradient(to bottom, #87ceeb, #f0f8ff);
     }
 
     #lobby {
@@ -17,11 +18,10 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: linear-gradient(to bottom, #87ceeb, #f0f8ff);
       text-align: center;
     }
 
-    #startButton {
+    #startButton, .unlockButton {
       font-size: 20px;
       padding: 10px 20px;
       cursor: pointer;
@@ -29,6 +29,12 @@
       color: white;
       border: none;
       border-radius: 5px;
+      margin: 5px;
+      transition: background-color 0.3s;
+    }
+
+    #startButton:hover, .unlockButton:hover {
+      background-color: #45a049;
     }
 
     #gameCanvas {
@@ -37,11 +43,30 @@
       width: 100%;
       height: 100vh;
     }
+
+    #coinsDisplay, #realmsDisplay {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    .unlockButton {
+      background-color: #f44336;
+    }
+
+    .unlockButton:disabled {
+      background-color: #d32f2f;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
   <div id="lobby">
     <h1>Realm Runner</h1>
+    <div id="coinsDisplay">Coins: 0</div>
+    <div id="realmsDisplay">
+      <div>Current Realm: 1</div>
+      <div id="unlockButtons"></div>
+    </div>
     <button id="startButton">Start</button>
   </div>
   
@@ -50,6 +75,9 @@
   <script>
     const lobby = document.getElementById('lobby');
     const startButton = document.getElementById('startButton');
+    const coinsDisplay = document.getElementById('coinsDisplay');
+    const realmsDisplay = document.getElementById('realmsDisplay');
+    const unlockButtons = document.getElementById('unlockButtons');
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -57,54 +85,91 @@
     canvas.height = window.innerHeight;
 
     // Game variables
-    let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
-    let obstacles = [];
-    let flyingObstacles = [];
-    let healPowerUps = [];
-    let gameSpeed = 3; // Slower map movement
-    let gravity = 0.4; // Adjust for smoother jump
-    let jumpStrength = -10; // Adjust for smoother jump
-    let gameOver = false;
-    let health = 3; // Player's health
-    const maxHealth = 3; // Max health limit
-    let distance = 0; // Distance traveled
-    let obstacleInterval = 0;
-    let obstacleSpacing = 500; // Reduced spacing for more frequent ground obstacles
-    let flyingObstacleInterval = 0;
-    let flyingObstacleSpacing = 250; // Flying obstacles are spawned midway
-    let healPowerUpInterval = 0;
-    let healPowerUpSpacing = 5000; // Rare spawn for heal power-up
+    let player, obstacles, flyingObstacles, healPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval;
+    const maxGameSpeed = 5;
+    const maxHealth = 2;
+    const obstacleSpacing = 1000;
+    const healPowerUpSpacing = 7000;
+    let coins = 0;
+    let currentRealm = 1;
+    const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
+
+    // Patterns for obstacle configurations
+    const patterns = [
+      { ground: true, flying: false },
+      { ground: true, flying: true },
+      { ground: true, flying: false, double: true },
+      { ground: false, flying: true }
+    ];
+
+    function resetGame() {
+      player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
+      obstacles = [];
+      flyingObstacles = [];
+      healPowerUps = [];
+      gameSpeed = 3.5;
+      gravity = 0.4;
+      jumpStrength = -10;
+      gameOver = false;
+      health = 2;
+      distance = 0;
+      obstacleInterval = 0;
+      healPowerUpInterval = 0;
+    }
+
+    function updateLobbyDisplay() {
+      coinsDisplay.textContent = `Coins: ${coins}`;
+      realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
+      unlockButtons.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i > currentRealm) {
+          const unlockButton = document.createElement('button');
+          unlockButton.textContent = `Unlock Realm ${i} (Cost: ${realmCosts[i - 1]} Coins)`;
+          unlockButton.className = 'unlockButton';
+          unlockButton.disabled = coins < realmCosts[i - 1];
+          unlockButton.onclick = () => {
+            if (coins >= realmCosts[i - 1]) {
+              coins -= realmCosts[i - 1];
+              currentRealm = i;
+              updateLobbyDisplay();
+            }
+          };
+          unlockButtons.appendChild(unlockButton);
+        }
+      }
+    }
 
     // Start game
     startButton.addEventListener('click', () => {
       lobby.style.display = 'none';
       canvas.style.display = 'block';
+      resetGame();
       gameLoop();
     });
 
     // Spawn ground obstacle
-    function spawnObstacle() {
+    function spawnGroundObstacle(xOffset = 0) {
       const obstacleHeight = 30;
       const obstacleWidth = 20;
       const groundLevel = canvas.height - 100 - obstacleHeight;
       obstacles.push({
-        x: canvas.width,
+        x: canvas.width + xOffset,
         y: groundLevel,
         width: obstacleWidth,
-        height: obstacleHeight,
+        height: obstacleHeight
       });
     }
 
     // Spawn flying obstacle
-    function spawnFlyingObstacle() {
+    function spawnFlyingObstacle(xOffset = 0) {
       const obstacleHeight = 20;
       const obstacleWidth = 20;
-      const adjustedY = canvas.height - 150; // Position for flying obstacle above the ground obstacle
+      const adjustedY = canvas.height - 150;
       flyingObstacles.push({
-        x: canvas.width,
+        x: canvas.width + xOffset,
         y: adjustedY,
         width: obstacleWidth,
-        height: obstacleHeight,
+        height: obstacleHeight
       });
     }
 
@@ -112,25 +177,33 @@
     function spawnHealPowerUp() {
       const powerUpHeight = 20;
       const powerUpWidth = 20;
-      const randomY = canvas.height - 200 - Math.random() * 100; // Randomly placed within a range
+      const randomY = canvas.height - 200 - Math.random() * 100;
       healPowerUps.push({
         x: canvas.width,
         y: randomY,
         width: powerUpWidth,
-        height: powerUpHeight,
+        height: powerUpHeight
       });
     }
 
     // Game loop
     function gameLoop() {
       if (gameOver) {
-        alert("Game Over! Refresh to play again.");
+        coins += Math.floor(distance); // Convert score to coins
+        updateLobbyDisplay();
+        lobby.style.display = 'flex';
+        canvas.style.display = 'none';
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update distance
-      distance += gameSpeed;
+      // Update distance based on game speed
+      distance += gameSpeed * 0.1;
+
+      // Gradually increase game speed with a cap
+      if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {
+        gameSpeed += 0.01;
+      }
 
       // Draw ground
       ctx.fillStyle = 'black';
@@ -153,8 +226,8 @@
           player.y < obstacle.y + obstacle.height &&
           player.y + player.height > obstacle.y
         ) {
-          obstacles.splice(index, 1); // Remove the obstacle upon collision
-          health--; // Decrease health
+          obstacles.splice(index, 1);
+          health--;
           if (health <= 0) {
             gameOver = true;
           }
@@ -178,8 +251,8 @@
           player.y < obstacle.y + obstacle.height &&
           player.y + player.height > obstacle.y
         ) {
-          flyingObstacles.splice(index, 1); // Remove the obstacle upon collision
-          health--; // Decrease health
+          flyingObstacles.splice(index, 1);
+          health--;
           if (health <= 0) {
             gameOver = true;
           }
@@ -204,9 +277,9 @@
           player.y < powerUp.y + powerUp.height &&
           player.y + player.height > powerUp.y
         ) {
-          healPowerUps.splice(index, 1); // Remove the power-up upon collection
+          healPowerUps.splice(index, 1);
           if (health < maxHealth) {
-            health++; // Increase health
+            health++;
           }
         }
 
@@ -224,18 +297,18 @@
       if (player.y + player.height >= canvas.height - 100) {
         player.y = canvas.height - player.height - 100;
         player.dy = 0;
-        player.jumps = 0; // Reset jump count when on ground
+        player.jumps = 0;
       }
 
-      // Spawn new ground obstacles based on interval
+      // Spawn new obstacles based on interval
       if (obstacleInterval >= obstacleSpacing) {
-        spawnObstacle();
-        obstacleInterval = 0;
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        
+        if (pattern.ground) spawnGroundObstacle();
+        if (pattern.flying) spawnFlyingObstacle(obstacleSpacing / 2);
+        if (pattern.double) spawnGroundObstacle(100);
 
-        // Schedule a flying obstacle to appear midway
-        setTimeout(() => {
-          spawnFlyingObstacle();
-        }, flyingObstacleSpacing);
+        obstacleInterval = 0;
       }
       obstacleInterval += gameSpeed;
 
@@ -251,8 +324,8 @@
       ctx.fillStyle = 'black';
       ctx.fillText(`Health: ${health}`, 10, 30);
 
-      // Display Distance
-      ctx.fillText(`Distance: ${distance}`, 10, 60);
+      // Display Distance as Score
+      ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 60);
 
       requestAnimationFrame(gameLoop);
     }
@@ -271,7 +344,10 @@
       }
     });
 
-    document.addEventListener('click', jump); // Mouse click triggers jump
+    document.addEventListener('click', jump);
+
+    // Initialize the lobby display on load
+    updateLobbyDisplay();
   </script>
 </body>
 </html>

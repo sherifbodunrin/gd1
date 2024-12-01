@@ -62,6 +62,7 @@
     let flyingObstacles = [];
     let healPowerUps = [];
     let gameSpeed = 3;
+    const maxGameSpeed = 8; // Cap the maximum game speed
     let gravity = 0.4;
     let jumpStrength = -10;
     let gameOver = false;
@@ -69,15 +70,16 @@
     const maxHealth = 3;
     let distance = 0;
     let obstacleInterval = 0;
-    let obstacleSpacing = 1000; // Increased spacing for more relaxed pacing
+    let obstacleSpacing = 1000;
     let healPowerUpInterval = 0;
     let healPowerUpSpacing = 7000;
+    const speedIncreaseInterval = 100; // Distance interval at which speed increases
 
     // Patterns for obstacle configurations
     const patterns = [
       { ground: true, flying: false },
       { ground: true, flying: true },
-      { ground: true, flying: false, double: true }, // Double ground obstacles
+      { ground: true, flying: false, double: true },
       { ground: false, flying: true }
     ];
 
@@ -136,7 +138,12 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update distance
-      distance += gameSpeed;
+      distance += gameSpeed * 0.5; // Slower distance increase
+
+      // Increment game speed every 100 units of distance
+      if (parseInt(distance) % speedIncreaseInterval === 0 && gameSpeed < maxGameSpeed) {
+        gameSpeed += 0.1;
+      }
 
       // Draw ground
       ctx.fillStyle = 'black';
@@ -238,8 +245,8 @@
         const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         
         if (pattern.ground) spawnGroundObstacle();
-        if (pattern.flying) spawnFlyingObstacle(obstacleSpacing / 2); // Midway between ground obstacles
-        if (pattern.double) spawnGroundObstacle(100); // Additional ground obstacle
+        if (pattern.flying) spawnFlyingObstacle(obstacleSpacing / 2);
+        if (pattern.double) spawnGroundObstacle(100);
 
         obstacleInterval = 0;
       }
@@ -258,7 +265,7 @@
       ctx.fillText(`Health: ${health}`, 10, 30);
 
       // Display Distance
-      ctx.fillText(`Distance: ${distance}`, 10, 60);
+      ctx.fillText(`Distance: ${Math.floor(distance)}`, 10, 60);
 
       requestAnimationFrame(gameLoop);
     }

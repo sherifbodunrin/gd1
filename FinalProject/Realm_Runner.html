@@ -122,12 +122,12 @@
       realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
       unlockButtons.innerHTML = '';
 
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 2; i <= 5; i++) { // Start from Realm 2 as Realm 1 is the starting realm
         const unlockButton = document.createElement('button');
         unlockButton.textContent = `Unlock Realm ${i} (Cost: ${realmCosts[i - 1]} Coins)`;
         unlockButton.className = 'unlockButton';
 
-        // Only the next realm is purchasable
+        // Only the next realm in sequence is purchasable
         if (i === currentRealm + 1) {
           unlockButton.disabled = coins < realmCosts[i - 1];
           unlockButton.onclick = () => {

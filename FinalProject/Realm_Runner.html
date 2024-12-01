@@ -73,7 +73,6 @@
     let obstacleSpacing = 1000;
     let healPowerUpInterval = 0;
     let healPowerUpSpacing = 7000;
-    let lastTime = 0;
 
     // Patterns for obstacle configurations
     const patterns = [
@@ -130,19 +129,15 @@
     }
 
     // Game loop
-    function gameLoop(timestamp) {
-      if (lastTime === 0) lastTime = timestamp;
-      const deltaTime = timestamp - lastTime;
-      lastTime = timestamp;
-
+    function gameLoop() {
       if (gameOver) {
         alert("Game Over! Refresh to play again.");
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update distance based on game speed and time elapsed
-      distance += (gameSpeed * deltaTime) / 1000; // Ensure gradual increase
+      // Update distance based on game speed
+      distance += gameSpeed * 0.1; // Ensures more gradual scoring
 
       // Gradually increase game speed with a cap
       if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {

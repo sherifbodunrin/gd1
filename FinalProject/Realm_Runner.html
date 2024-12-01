@@ -69,12 +69,11 @@
     const maxHealth = 3; // Max health limit
     let distance = 0; // Distance traveled
     let obstacleInterval = 0;
-    let obstacleSpacing = 800; // Increased spacing for less frequent ground obstacles
+    let obstacleSpacing = 500; // Reduced spacing for more frequent ground obstacles
     let flyingObstacleInterval = 0;
-    let flyingObstacleSpacing = 2000; // Increased spacing for less frequent flying obstacles
+    let flyingObstacleSpacing = 250; // Flying obstacles are spawned midway
     let healPowerUpInterval = 0;
     let healPowerUpSpacing = 5000; // Rare spawn for heal power-up
-    let lastSpawnType = null; // Track the last spawned obstacle type
 
     // Start game
     startButton.addEventListener('click', () => {
@@ -94,7 +93,6 @@
         width: obstacleWidth,
         height: obstacleHeight,
       });
-      lastSpawnType = 'ground'; // Record the last spawn type
     }
 
     // Spawn flying obstacle
@@ -108,7 +106,6 @@
         width: obstacleWidth,
         height: obstacleHeight,
       });
-      lastSpawnType = 'flying'; // Record the last spawn type
     }
 
     // Spawn heal power-up
@@ -231,18 +228,16 @@
       }
 
       // Spawn new ground obstacles based on interval
-      if (obstacleInterval >= obstacleSpacing && lastSpawnType !== 'ground') {
+      if (obstacleInterval >= obstacleSpacing) {
         spawnObstacle();
         obstacleInterval = 0;
+
+        // Schedule a flying obstacle to appear midway
+        setTimeout(() => {
+          spawnFlyingObstacle();
+        }, flyingObstacleSpacing);
       }
       obstacleInterval += gameSpeed;
-
-      // Spawn new flying obstacles based on interval
-      if (flyingObstacleInterval >= flyingObstacleSpacing && lastSpawnType !== 'flying') {
-        spawnFlyingObstacle();
-        flyingObstacleInterval = 0;
-      }
-      flyingObstacleInterval += gameSpeed;
 
       // Spawn new heal power-ups based on interval
       if (healPowerUpInterval >= healPowerUpSpacing) {

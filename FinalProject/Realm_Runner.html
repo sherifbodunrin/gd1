@@ -38,7 +38,7 @@
       height: 100vh;
     }
 
-    #coinsDisplay {
+    #coinsDisplay, #realmsDisplay {
       font-size: 20px;
       margin-top: 10px;
     }
@@ -48,6 +48,7 @@
   <div id="lobby">
     <h1>Realm Runner</h1>
     <div id="coinsDisplay">Coins: 0</div>
+    <div id="realmsDisplay">Current Realm: 1</div>
     <button id="startButton">Start</button>
   </div>
   
@@ -57,6 +58,7 @@
     const lobby = document.getElementById('lobby');
     const startButton = document.getElementById('startButton');
     const coinsDisplay = document.getElementById('coinsDisplay');
+    const realmsDisplay = document.getElementById('realmsDisplay');
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -70,6 +72,8 @@
     const obstacleSpacing = 1000;
     const healPowerUpSpacing = 7000;
     let coins = 0;
+    let currentRealm = 1;
+    const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
 
     // Patterns for obstacle configurations
     const patterns = [
@@ -94,12 +98,34 @@
       healPowerUpInterval = 0;
     }
 
+    function updateLobbyDisplay() {
+      coinsDisplay.textContent = `Coins: ${coins}`;
+      let realmsText = `Current Realm: ${currentRealm}\n`;
+      for (let i = 1; i <= 5; i++) {
+        if (i <= currentRealm) {
+          realmsText += `Realm ${i}: Unlocked\n`;
+        } else {
+          realmsText += `Realm ${i}: Locked (Cost: ${realmCosts[i - 1]} Coins)\n`;
+        }
+      }
+      realmsDisplay.textContent = realmsText;
+    }
+
     // Start game
     startButton.addEventListener('click', () => {
       lobby.style.display = 'none';
       canvas.style.display = 'block';
       resetGame();
       gameLoop();
+    });
+
+    // Unlock next realm
+    realmsDisplay.addEventListener('click', () => {
+      if (currentRealm < 5 && coins >= realmCosts[currentRealm]) {
+        coins -= realmCosts[currentRealm];
+        currentRealm++;
+        updateLobbyDisplay();
+      }
     });
 
     // Spawn ground obstacle
@@ -145,7 +171,7 @@
     function gameLoop() {
       if (gameOver) {
         coins += Math.floor(distance); // Convert score to coins
-        coinsDisplay.textContent = `Coins: ${coins}`;
+        updateLobbyDisplay();
         lobby.style.display = 'flex';
         canvas.style.display = 'none';
         return;
@@ -300,6 +326,9 @@
     });
 
     document.addEventListener('click', jump);
+
+    // Initialize the lobby display on load
+    updateLobbyDisplay();
   </script>
 </body>
 </html>

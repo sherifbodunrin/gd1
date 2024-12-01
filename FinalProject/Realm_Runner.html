@@ -66,15 +66,14 @@
     let gravity = 0.4;
     let jumpStrength = -10;
     let gameOver = false;
-    let health = 3;
-    const maxHealth = 3;
+    let health = 2; // Set initial health to 2
+    const maxHealth = 2; // Set max health to 2
     let distance = 0;
     let obstacleInterval = 0;
     let obstacleSpacing = 1000;
     let healPowerUpInterval = 0;
     let healPowerUpSpacing = 7000;
     let lastTime = 0;
-    let elapsedTime = 0;
 
     // Patterns for obstacle configurations
     const patterns = [
@@ -135,7 +134,6 @@
       if (lastTime === 0) lastTime = timestamp;
       const deltaTime = timestamp - lastTime;
       lastTime = timestamp;
-      elapsedTime += deltaTime;
 
       if (gameOver) {
         alert("Game Over! Refresh to play again.");
@@ -143,14 +141,11 @@
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update distance based on elapsed time (1 second = 1000 milliseconds)
-      if (elapsedTime >= 1000) {
-        distance++;
-        elapsedTime = 0; // Reset elapsed time
-      }
+      // Update distance based on game speed and time elapsed
+      distance += (gameSpeed * deltaTime) / 100; // Gradual increase
 
       // Gradually increase game speed with a cap
-      if (distance % 100 === 0 && gameSpeed < maxGameSpeed) {
+      if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {
         gameSpeed += 0.01; // Smaller increments for more gradual speed increase
       }
 
@@ -274,7 +269,7 @@
       ctx.fillText(`Health: ${health}`, 10, 30);
 
       // Display Distance
-      ctx.fillText(`Distance: ${distance}`, 10, 60);
+      ctx.fillText(`Distance: ${Math.floor(distance)}`, 10, 60);
 
       requestAnimationFrame(gameLoop);
     }

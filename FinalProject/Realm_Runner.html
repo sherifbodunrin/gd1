@@ -37,12 +37,18 @@
       width: 100%;
       height: 100vh;
     }
+
+    #coinsDisplay {
+      font-size: 20px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div id="lobby">
     <h1>Realm Runner</h1>
     <button id="startButton">Start</button>
+    <div id="coinsDisplay">Coins: 0</div>
   </div>
   
   <canvas id="gameCanvas"></canvas>
@@ -50,6 +56,7 @@
   <script>
     const lobby = document.getElementById('lobby');
     const startButton = document.getElementById('startButton');
+    const coinsDisplay = document.getElementById('coinsDisplay');
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -57,22 +64,12 @@
     canvas.height = window.innerHeight;
 
     // Game variables
-    let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
-    let obstacles = [];
-    let flyingObstacles = [];
-    let healPowerUps = [];
-    let gameSpeed = 3.5; // Increased initial game speed for faster map movement
-    const maxGameSpeed = 5; // Max game speed
-    let gravity = 0.4;
-    let jumpStrength = -10;
-    let gameOver = false;
-    let health = 2;
+    let player, obstacles, flyingObstacles, healPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval;
+    const maxGameSpeed = 5;
     const maxHealth = 2;
-    let distance = 0;
-    let obstacleInterval = 0;
-    let obstacleSpacing = 1000;
-    let healPowerUpInterval = 0;
-    let healPowerUpSpacing = 7000;
+    const obstacleSpacing = 1000;
+    const healPowerUpSpacing = 7000;
+    let coins = 0;
 
     // Patterns for obstacle configurations
     const patterns = [
@@ -82,10 +79,26 @@
       { ground: false, flying: true }
     ];
 
+    function resetGame() {
+      player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
+      obstacles = [];
+      flyingObstacles = [];
+      healPowerUps = [];
+      gameSpeed = 3.5;
+      gravity = 0.4;
+      jumpStrength = -10;
+      gameOver = false;
+      health = 2;
+      distance = 0;
+      obstacleInterval = 0;
+      healPowerUpInterval = 0;
+    }
+
     // Start game
     startButton.addEventListener('click', () => {
       lobby.style.display = 'none';
       canvas.style.display = 'block';
+      resetGame();
       gameLoop();
     });
 
@@ -131,7 +144,10 @@
     // Game loop
     function gameLoop() {
       if (gameOver) {
-        alert("Game Over! Refresh to play again.");
+        coins += Math.floor(distance); // Convert score to coins
+        coinsDisplay.textContent = `Coins: ${coins}`;
+        lobby.style.display = 'flex';
+        canvas.style.display = 'none';
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);

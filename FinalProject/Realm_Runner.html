@@ -68,7 +68,7 @@
     let gameOver = false;
     let health = 2; // Set initial health to 2
     const maxHealth = 2; // Set max health to 2
-    let distance = 0;
+    let distance = 0; // This is the score
     let obstacleInterval = 0;
     let obstacleSpacing = 1000;
     let healPowerUpInterval = 0;
@@ -268,8 +268,8 @@
       ctx.fillStyle = 'black';
       ctx.fillText(`Health: ${health}`, 10, 30);
 
-      // Display Distance
-      ctx.fillText(`Distance: ${Math.floor(distance)}`, 10, 60);
+      // Display Distance as Score
+      ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 60);
 
       requestAnimationFrame(gameLoop);
     }

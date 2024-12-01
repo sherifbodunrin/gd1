@@ -1,292 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Realm Runner</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
+let lastTime = 0;
+let elapsedTime = 0;
 
-    #lobby {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: linear-gradient(to bottom, #87ceeb, #f0f8ff);
-      text-align: center;
-    }
+// Modify the game loop to track time and update distance accordingly
+function gameLoop(timestamp) {
+  if (lastTime === 0) lastTime = timestamp;
+  const deltaTime = timestamp - lastTime;
+  lastTime = timestamp;
+  elapsedTime += deltaTime;
 
-    #startButton {
-      font-size: 20px;
-      padding: 10px 20px;
-      cursor: pointer;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
+  if (gameOver) {
+    alert("Game Over! Refresh to play again.");
+    return;
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    #gameCanvas {
-      display: none;
-      background: #d9f7be;
-      width: 100%;
-      height: 100vh;
-    }
-  </style>
-</head>
-<body>
-  <div id="lobby">
-    <h1>Realm Runner</h1>
-    <button id="startButton">Start</button>
-  </div>
-  
-  <canvas id="gameCanvas"></canvas>
+  // Update distance based on elapsed time (1 second = 1000 milliseconds)
+  if (elapsedTime >= 1000) {
+    distance++;
+    elapsedTime = 0; // Reset elapsed time
+  }
 
-  <script>
-    const lobby = document.getElementById('lobby');
-    const startButton = document.getElementById('startButton');
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+  // Gradually increase game speed with a cap
+  if (distance % 100 === 0 && gameSpeed < maxGameSpeed) {
+    gameSpeed += 0.01; // Smaller increments for more gradual speed increase
+  }
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  // Draw ground
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
 
-    // Game variables
-    let player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
-    let obstacles = [];
-    let flyingObstacles = [];
-    let healPowerUps = [];
-    let gameSpeed = 3;
-    const maxGameSpeed = 5; // Cap the maximum game speed at 5 for gradual increase
-    let gravity = 0.4;
-    let jumpStrength = -10;
-    let gameOver = false;
-    let health = 3;
-    const maxHealth = 3;
-    let distance = 0;
-    let obstacleInterval = 0;
-    let obstacleSpacing = 1000;
-    let healPowerUpInterval = 0;
-    let healPowerUpSpacing = 7000;
-    const distanceIncrementInterval = 60; // Frames per second
+  // Draw player
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(player.x, player.y, player.width, player.height);
 
-    // Patterns for obstacle configurations
-    const patterns = [
-      { ground: true, flying: false },
-      { ground: true, flying: true },
-      { ground: true, flying: false, double: true },
-      { ground: false, flying: true }
-    ];
+  // Draw obstacles
+  ctx.fillStyle = 'red';
+  obstacles.forEach((obstacle, index) => {
+    obstacle.x -= gameSpeed;
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-    // Start game
-    startButton.addEventListener('click', () => {
-      lobby.style.display = 'none';
-      canvas.style.display = 'block';
-      gameLoop();
-    });
-
-    // Spawn ground obstacle
-    function spawnGroundObstacle(xOffset = 0) {
-      const obstacleHeight = 30;
-      const obstacleWidth = 20;
-      const groundLevel = canvas.height - 100 - obstacleHeight;
-      obstacles.push({
-        x: canvas.width + xOffset,
-        y: groundLevel,
-        width: obstacleWidth,
-        height: obstacleHeight,
-      });
-    }
-
-    // Spawn flying obstacle
-    function spawnFlyingObstacle(xOffset = 0) {
-      const obstacleHeight = 20;
-      const obstacleWidth = 20;
-      const adjustedY = canvas.height - 150;
-      flyingObstacles.push({
-        x: canvas.width + xOffset,
-        y: adjustedY,
-        width: obstacleWidth,
-        height: obstacleHeight,
-      });
-    }
-
-    // Spawn heal power-up
-    function spawnHealPowerUp() {
-      const powerUpHeight = 20;
-      const powerUpWidth = 20;
-      const randomY = canvas.height - 200 - Math.random() * 100;
-      healPowerUps.push({
-        x: canvas.width,
-        y: randomY,
-        width: powerUpWidth,
-        height: powerUpHeight,
-      });
-    }
-
-    // Game loop
-    function gameLoop() {
-      if (gameOver) {
-        alert("Game Over! Refresh to play again.");
-        return;
-      }
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Update distance roughly once every second
-      if (Math.floor(distance) % distanceIncrementInterval === 0) {
-        distance++;
-      }
-
-      // Gradually increase game speed with a cap
-      if (distance % 100 === 0 && gameSpeed < maxGameSpeed) {
-        gameSpeed += 0.01; // Smaller increments for more gradual speed increase
-      }
-
-      // Draw ground
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
-
-      // Draw player
-      ctx.fillStyle = 'blue';
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-
-      // Draw obstacles
-      ctx.fillStyle = 'red';
-      obstacles.forEach((obstacle, index) => {
-        obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-
-        // Collision detection for ground obstacles
-        if (
-          player.x < obstacle.x + obstacle.width &&
-          player.x + player.width > obstacle.x &&
-          player.y < obstacle.y + obstacle.height &&
-          player.y + player.height > obstacle.y
-        ) {
-          obstacles.splice(index, 1);
-          health--;
-          if (health <= 0) {
-            gameOver = true;
-          }
-        }
-
-        // Remove off-screen obstacles
-        if (obstacle.x + obstacle.width < 0) {
-          obstacles.splice(index, 1);
-        }
-      });
-
-      // Draw flying obstacles
-      flyingObstacles.forEach((obstacle, index) => {
-        obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-
-        // Collision detection for flying obstacles
-        if (
-          player.x < obstacle.x + obstacle.width &&
-          player.x + player.width > obstacle.x &&
-          player.y < obstacle.y + obstacle.height &&
-          player.y + player.height > obstacle.y
-        ) {
-          flyingObstacles.splice(index, 1);
-          health--;
-          if (health <= 0) {
-            gameOver = true;
-          }
-        }
-
-        // Remove off-screen flying obstacles
-        if (obstacle.x + obstacle.width < 0) {
-          flyingObstacles.splice(index, 1);
-        }
-      });
-
-      // Draw heal power-ups
-      ctx.fillStyle = 'green';
-      healPowerUps.forEach((powerUp, index) => {
-        powerUp.x -= gameSpeed;
-        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
-
-        // Collision detection for heal power-ups
-        if (
-          player.x < powerUp.x + powerUp.width &&
-          player.x + player.width > powerUp.x &&
-          player.y < powerUp.y + powerUp.height &&
-          player.y + player.height > powerUp.y
-        ) {
-          healPowerUps.splice(index, 1);
-          if (health < maxHealth) {
-            health++;
-          }
-        }
-
-        // Remove off-screen power-ups
-        if (powerUp.x + powerUp.width < 0) {
-          healPowerUps.splice(index, 1);
-        }
-      });
-
-      // Gravity
-      player.dy += gravity;
-      player.y += player.dy;
-
-      // Prevent player from falling below ground
-      if (player.y + player.height >= canvas.height - 100) {
-        player.y = canvas.height - player.height - 100;
-        player.dy = 0;
-        player.jumps = 0;
-      }
-
-      // Spawn new obstacles based on interval
-      if (obstacleInterval >= obstacleSpacing) {
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-        
-        if (pattern.ground) spawnGroundObstacle();
-        if (pattern.flying) spawnFlyingObstacle(obstacleSpacing / 2);
-        if (pattern.double) spawnGroundObstacle(100);
-
-        obstacleInterval = 0;
-      }
-      obstacleInterval += gameSpeed;
-
-      // Spawn new heal power-ups based on interval
-      if (healPowerUpInterval >= healPowerUpSpacing) {
-        spawnHealPowerUp();
-        healPowerUpInterval = 0;
-      }
-      healPowerUpInterval += gameSpeed;
-
-      // Display Health
-      ctx.font = '20px Arial';
-      ctx.fillStyle = 'black';
-      ctx.fillText(`Health: ${health}`, 10, 30);
-
-      // Display Distance
-      ctx.fillText(`Distance: ${distance}`, 10, 60);
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    // Jump event
-    function jump() {
-      if (player.jumps < player.maxJumps) {
-        player.dy = jumpStrength;
-        player.jumps++;
+    // Collision detection for ground obstacles
+    if (
+      player.x < obstacle.x + obstacle.width &&
+      player.x + player.width > obstacle.x &&
+      player.y < obstacle.y + obstacle.height &&
+      player.y + player.height > obstacle.y
+    ) {
+      obstacles.splice(index, 1);
+      health--;
+      if (health <= 0) {
+        gameOver = true;
       }
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        jump();
-      }
-    });
+    // Remove off-screen obstacles
+    if (obstacle.x + obstacle.width < 0) {
+      obstacles.splice(index, 1);
+    }
+  });
 
-    document.addEventListener('click', jump);
-  </script>
-</body>
-</html>
+  // Draw flying obstacles
+  flyingObstacles.forEach((obstacle, index) => {
+    obstacle.x -= gameSpeed;
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+    // Collision detection for flying obstacles
+    if (
+      player.x < obstacle.x + obstacle.width &&
+      player.x + player.width > obstacle.x &&
+      player.y < obstacle.y + obstacle.height &&
+      player.y + player.height > obstacle.y
+    ) {
+      flyingObstacles.splice(index, 1);
+      health--;
+      if (health <= 0) {
+        gameOver = true;
+      }
+    }
+
+    // Remove off-screen flying obstacles
+    if (obstacle.x + obstacle.width < 0) {
+      flyingObstacles.splice(index, 1);
+    }
+  });
+
+  // Draw heal power-ups
+  ctx.fillStyle = 'green';
+  healPowerUps.forEach((powerUp, index) => {
+    powerUp.x -= gameSpeed;
+    ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
+    // Collision detection for heal power-ups
+    if (
+      player.x < powerUp.x + powerUp.width &&
+      player.x + player.width > powerUp.x &&
+      player.y < powerUp.y + powerUp.height &&
+      player.y + player.height > powerUp.y
+    ) {
+      healPowerUps.splice(index, 1);
+      if (health < maxHealth) {
+        health++;
+      }
+    }
+
+    // Remove off-screen power-ups
+    if (powerUp.x + powerUp.width < 0) {
+      healPowerUps.splice(index, 1);
+    }
+  });
+
+  // Gravity
+  player.dy += gravity;
+  player.y += player.dy;
+
+  // Prevent player from falling below ground
+  if (player.y + player.height >= canvas.height - 100) {
+    player.y = canvas.height - player.height - 100;
+    player.dy = 0;
+    player.jumps = 0;
+  }
+
+  // Spawn new obstacles based on interval
+  if (obstacleInterval >= obstacleSpacing) {
+    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+    if (pattern.ground) spawnGroundObstacle();
+    if (pattern.flying) spawnFlyingObstacle(obstacleSpacing / 2);
+    if (pattern.double) spawnGroundObstacle(100);
+
+    obstacleInterval = 0;
+  }
+  obstacleInterval += gameSpeed;
+
+  // Spawn new heal power-ups based on interval
+  if (healPowerUpInterval >= healPowerUpSpacing) {
+    spawnHealPowerUp();
+    healPowerUpInterval = 0;
+  }
+  healPowerUpInterval += gameSpeed;
+
+  // Display Health
+  ctx.font = '20px Arial';
+  ctx.fillStyle = 'black';
+  ctx.fillText(`Health: ${health}`, 10, 30);
+
+  // Display Distance
+  ctx.fillText(`Distance: ${distance}`, 10, 60);
+
+  requestAnimationFrame(gameLoop);
+}

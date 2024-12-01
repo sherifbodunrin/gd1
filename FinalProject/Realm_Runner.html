@@ -99,7 +99,7 @@
         x: canvas.width + xOffset,
         y: groundLevel,
         width: obstacleWidth,
-        height: obstacleHeight,
+        height: obstacleHeight
       });
     }
 
@@ -112,7 +112,7 @@
         x: canvas.width + xOffset,
         y: adjustedY,
         width: obstacleWidth,
-        height: obstacleHeight,
+        height: obstacleHeight
       });
     }
 
@@ -125,7 +125,7 @@
         x: canvas.width,
         y: randomY,
         width: powerUpWidth,
-        height: powerUpHeight,
+        height: powerUpHeight
       });
     }
 
@@ -142,7 +142,7 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update distance based on game speed and time elapsed
-      distance += (gameSpeed * deltaTime) / 100; // Gradual increase
+      distance += (gameSpeed * deltaTime) / 1000; // Ensure gradual increase
 
       // Gradually increase game speed with a cap
       if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {

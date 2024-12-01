@@ -61,14 +61,14 @@
     let obstacles = [];
     let flyingObstacles = [];
     let healPowerUps = [];
-    let gameSpeed = 3;
-    const maxGameSpeed = 5; // Cap the maximum game speed at 5 for gradual increase
+    let gameSpeed = 3.5; // Increased initial game speed for faster map movement
+    const maxGameSpeed = 5; // Max game speed
     let gravity = 0.4;
     let jumpStrength = -10;
     let gameOver = false;
-    let health = 2; // Set initial health to 2
-    const maxHealth = 2; // Set max health to 2
-    let distance = 0; // This is the score
+    let health = 2;
+    const maxHealth = 2;
+    let distance = 0;
     let obstacleInterval = 0;
     let obstacleSpacing = 1000;
     let healPowerUpInterval = 0;
@@ -137,11 +137,11 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update distance based on game speed
-      distance += gameSpeed * 0.1; // Ensures more gradual scoring
+      distance += gameSpeed * 0.1;
 
       // Gradually increase game speed with a cap
       if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {
-        gameSpeed += 0.01; // Smaller increments for more gradual speed increase
+        gameSpeed += 0.01;
       }
 
       // Draw ground

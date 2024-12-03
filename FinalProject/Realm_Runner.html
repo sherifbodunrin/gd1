@@ -100,7 +100,7 @@
     miniMap.height = 100;
 
     // Game variables
-    let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
+    let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
     const maxGameSpeed = 10; // Increased maximum speed limit
     const boostGameSpeed = 15; // Speed during boost
@@ -109,6 +109,9 @@
     const healPowerUpSpacing = 7000;
     const boostPowerUpSpacing = 20000; // Rare spawn for boost power-up
     const boostDuration = 300; // Duration of boost effect (frames)
+    const maxAbilityMeter = 100;
+    const abilityRefillRate = 0.5; // Rate at which ability meter refills
+    let abilityMeter = maxAbilityMeter;
     let coins = 0;
     let currentRealm = 1;
     const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
@@ -127,6 +130,7 @@
       flyingObstacles = [];
       healPowerUps = [];
       boostPowerUps = [];
+      projectiles = [];
       gameSpeed = initialGameSpeed;
       gravity = 0.4;
       jumpStrength = -10;
@@ -138,6 +142,7 @@
       boostPowerUpInterval = 0;
       boostActive = false;
       boostTimer = 0;
+      abilityMeter = maxAbilityMeter;
     }
 
     function updateLobbyDisplay() {
@@ -229,6 +234,14 @@
       });
     }
 
+    // Shoot projectile
+    function shootProjectile() {
+      if (abilityMeter >= maxAbilityMeter) {
+        abilityMeter = 0; // Deplete ability meter
+        projectiles.push({ x: player.x + player.width, y: player.y + player.height / 2, width: 20, height: 10 });
+      }
+    }
+
     // Game loop
     function gameLoop() {
       if (gameOver) {
@@ -265,6 +278,30 @@
       }
       ctx.fillStyle = 'blue';
       ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Draw and move projectiles
+      ctx.fillStyle = 'cyan';
+      projectiles.forEach((projectile, index) => {
+        projectile.x += gameSpeed * 2; // Move projectile faster than game speed
+        ctx.fillRect(projectile.x, projectile.y, projectile.width, projectile.height);
+
+        // Check for collisions with obstacles
+        obstacles.forEach((obstacle, obsIndex) => {
+          if (
+            projectile.x < obstacle.x + obstacle.width &&
+            projectile.x + projectile.width > obstacle.x &&
+            projectile.y < obstacle.y + obstacle.height &&
+            projectile.y + projectile.height > obstacle.y
+          ) {
+            obstacles.splice(obsIndex, 1); // Remove the obstacle
+          }
+        });
+
+        // Remove off-screen projectiles
+        if (projectile.x > canvas.width) {
+          projectiles.splice(index, 1);
+        }
+      });
 
       // Draw obstacles
       ctx.fillStyle = 'red';
@@ -413,6 +450,14 @@
       }
       boostPowerUpInterval += gameSpeed;
 
+      // Refill ability meter over time
+      if (abilityMeter < maxAbilityMeter) {
+        abilityMeter += abilityRefillRate;
+        if (abilityMeter > maxAbilityMeter) {
+          abilityMeter = maxAbilityMeter;
+        }
+      }
+
       // Display Health as a bar
       ctx.fillStyle = 'red';
       const healthBarWidth = 100; // Total width of the health bar
@@ -420,6 +465,13 @@
       ctx.fillRect(10, 10, healthBarWidth * (health / maxHealth), healthBarHeight);
       ctx.strokeStyle = 'black';
       ctx.strokeRect(10, 10, healthBarWidth, healthBarHeight);
+
+      // Display Ability as a bar below health
+      ctx.fillStyle = 'blue';
+      const abilityBarHeight = 10;
+      ctx.fillRect(10, 40, 100 * (abilityMeter / maxAbilityMeter), abilityBarHeight);
+      ctx.strokeStyle = 'black';
+      ctx.strokeRect(10, 40, 100, abilityBarHeight);
 
       // Display Current Realm and Score
       ctx.font = '24px Arial';
@@ -437,9 +489,12 @@
       }
     }
 
+    // Shoot projectile when 'E' is pressed
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         jump();
+      } else if (e.code === 'KeyE') {
+        shootProjectile();
       }
     });
 

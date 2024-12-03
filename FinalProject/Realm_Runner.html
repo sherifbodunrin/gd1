@@ -183,6 +183,14 @@
           unlockButton.textContent = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50'; // Current realm is green
           unlockButton.disabled = false;
+        } else if (allRealmsUnlocked) {
+          unlockButton.textContent = `Realm ${i}`;
+          unlockButton.style.backgroundColor = '#4caf50'; // Set all realms to green
+          unlockButton.disabled = false;
+          unlockButton.onclick = () => {
+            currentRealm = i;
+            updateLobbyDisplay();
+          };
         } else {
           unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
           unlockButton.style.backgroundColor = '#000'; // Default to black

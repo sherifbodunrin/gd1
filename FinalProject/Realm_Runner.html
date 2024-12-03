@@ -180,10 +180,8 @@
         unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
         unlockButton.className = 'unlockButton';
 
-        if (allRealmsUnlocked) {
+        if (allRealmsUnlocked || i <= currentRealm) {
           unlockButton.disabled = false;
-        } else if (i === currentRealm) {
-          unlockButton.disabled = false; // Current realm is active
         } else if (i === currentRealm + 1) {
           unlockButton.disabled = coins < realmCosts[i - 1];
           unlockButton.onclick = () => {
@@ -200,11 +198,11 @@
         unlockButtons.appendChild(unlockButton);
       }
 
-      allRealmsButton.disabled = !(currentRealm === 5 && coins >= allRealmsCost);
+      allRealmsButton.disabled = !(currentRealm >= 5 && coins >= allRealmsCost);
     }
 
     allRealmsButton.addEventListener('click', () => {
-      if (coins >= allRealmsCost && currentRealm === 5) {
+      if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
         allRealmsUnlocked = true;
         updateLobbyDisplay();

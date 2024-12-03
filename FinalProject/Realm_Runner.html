@@ -180,8 +180,10 @@
         unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
         unlockButton.className = 'unlockButton';
 
-        if (allRealmsUnlocked || i <= currentRealm) {
+        if (allRealmsUnlocked) {
           unlockButton.disabled = false;
+        } else if (i === currentRealm) {
+          unlockButton.disabled = false; // Current realm is active
         } else if (i === currentRealm + 1) {
           unlockButton.disabled = coins < realmCosts[i - 1];
           unlockButton.onclick = () => {

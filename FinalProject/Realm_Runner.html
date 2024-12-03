@@ -102,7 +102,7 @@
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval;
     const initialGameSpeed = 3.5;
-    const maxGameSpeed = 7; // Maximum speed limit
+    const maxGameSpeed = 10; // Increased maximum speed limit
     const maxHealth = 2;
     const obstacleSpacing = 1000;
     const healPowerUpSpacing = 7000;
@@ -225,9 +225,9 @@
       // Update distance based on game speed
       distance += gameSpeed * 0.1;
 
-      // Gradually increase game speed with a cap
+      // Gradually increase game speed with a more aggressive increment
       if (gameSpeed < maxGameSpeed) {
-        gameSpeed = initialGameSpeed + (distance / 500); // Increase speed based on distance
+        gameSpeed = initialGameSpeed + (distance / 250); // Faster speed growth
         if (gameSpeed > maxGameSpeed) {
           gameSpeed = maxGameSpeed; // Cap the speed
         }

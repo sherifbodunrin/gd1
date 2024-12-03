@@ -1,410 +1,148 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Realm Runner</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-      background: linear-gradient(to bottom, #87ceeb, #f0f8ff);
-    }
-
-    #lobby {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      text-align: center;
-    }
-
-    #startButton, .unlockButton {
-      font-size: 20px;
-      padding: 10px 20px;
-      cursor: pointer;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      margin: 5px;
-      transition: background-color 0.3s;
-    }
-
-    #startButton:hover {
-      background-color: #45a049;
-    }
-
-    .unlockButton {
-      background-color: #f44336;
-    }
-
-    .unlockButton:disabled {
-      background-color: #000000;
-      color: transparent;
-      cursor: default;
-    }
-
-    #gameCanvas {
-      display: none;
-      background: #d9f7be;
-      width: 100%;
-      height: 100vh;
-    }
-
-    #miniMap {
-      display: none;
-      background: rgba(255, 255, 255, 0.5);
-      width: 100%;
-      height: 100px;
-      position: absolute;
-      bottom: 0;
-    }
-
-    #coinsDisplay, #realmsDisplay {
-      font-size: 20px;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <div id="lobby">
-    <h1>Realm Runner</h1>
-    <div id="coinsDisplay">Coins: 0</div>
-    <div id="realmsDisplay">
-      <div>Current Realm: 1</div>
-      <div id="unlockButtons"></div>
-    </div>
-    <button id="startButton">Start</button>
-  </div>
-  
-  <canvas id="gameCanvas"></canvas>
-  <canvas id="miniMap"></canvas>
-
-  <script>
-    const lobby = document.getElementById('lobby');
-    const startButton = document.getElementById('startButton');
-    const coinsDisplay = document.getElementById('coinsDisplay');
-    const realmsDisplay = document.getElementById('realmsDisplay');
-    const unlockButtons = document.getElementById('unlockButtons');
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const miniMap = document.getElementById('miniMap');
-    const miniCtx = miniMap.getContext('2d');
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    miniMap.width = window.innerWidth;
-    miniMap.height = 100;
-
-    // Game variables
-    let player, obstacles, flyingObstacles, healPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval;
-    const maxGameSpeed = 5;
-    const maxHealth = 2;
-    const obstacleSpacing = 1000;
-    const healPowerUpSpacing = 7000;
-    let coins = 0;
-    let currentRealm = 1;
-    const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
-
-    // Patterns for obstacle configurations
-    const patterns = [
-      { ground: true, flying: false },
-      { ground: true, flying: true },
-      { ground: true, flying: false, double: true },
-      { ground: false, flying: true }
-    ];
-
-    function resetGame() {
-      player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
-      obstacles = [];
-      flyingObstacles = [];
-      healPowerUps = [];
-      gameSpeed = 3.5;
-      gravity = 0.4;
-      jumpStrength = -10;
-      gameOver = false;
-      health = 2;
-      distance = 0;
-      obstacleInterval = 0;
-      healPowerUpInterval = 0;
-    }
-
-    function updateLobbyDisplay() {
-      coinsDisplay.textContent = `Coins: ${coins}`;
-      realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
-      unlockButtons.innerHTML = '';
-
-      for (let i = 2; i <= 5; i++) { // Start from Realm 2 as Realm 1 is the starting realm
-        const unlockButton = document.createElement('button');
-        unlockButton.textContent = `Unlock Realm ${i} (Cost: ${realmCosts[i - 1]} Coins)`;
-        unlockButton.className = 'unlockButton';
-
-        // Only the next realm in sequence is purchasable
-        if (i === currentRealm + 1) {
-          unlockButton.disabled = coins < realmCosts[i - 1];
-          unlockButton.onclick = () => {
-            if (coins >= realmCosts[i - 1]) {
-              coins -= realmCosts[i - 1];
-              currentRealm = i;
-              updateLobbyDisplay();
-            }
-          };
-        } else {
-          unlockButton.disabled = true; // Blacked out other realms
-        }
-
-        unlockButtons.appendChild(unlockButton);
-      }
-    }
-
-    // Start game
-    startButton.addEventListener('click', () => {
-      lobby.style.display = 'none';
-      canvas.style.display = 'block';
-      miniMap.style.display = 'block';
-      resetGame();
-      gameLoop();
-    });
-
-    // Spawn ground obstacle
-    function spawnGroundObstacle(xOffset = 0) {
-      const obstacleHeight = 30;
-      const obstacleWidth = 20;
-      const groundLevel = canvas.height - 100 - obstacleHeight;
-      obstacles.push({
-        x: canvas.width + xOffset,
-        y: groundLevel,
-        width: obstacleWidth,
-        height: obstacleHeight
-      });
-    }
-
-    // Spawn flying obstacle
-    function spawnFlyingObstacle(xOffset = 0) {
-      const obstacleHeight = 20;
-      const obstacleWidth = 20;
-      const adjustedY = canvas.height - 150;
-      flyingObstacles.push({
-        x: canvas.width + xOffset,
-        y: adjustedY,
-        width: obstacleWidth,
-        height: obstacleHeight
-      });
-    }
-
-    // Spawn heal power-up
-    function spawnHealPowerUp() {
-      const powerUpHeight = 20;
-      const powerUpWidth = 20;
-      const randomY = canvas.height - 200 - Math.random() * 100;
-      healPowerUps.push({
-        x: canvas.width,
-        y: randomY,
-        width: powerUpWidth,
-        height: powerUpHeight
-      });
-    }
-
-    // Game loop
-    function gameLoop() {
-      if (gameOver) {
-        coins += Math.floor(distance); // Convert score to coins
-        updateLobbyDisplay();
-        lobby.style.display = 'flex';
-        canvas.style.display = 'none';
-        miniMap.style.display = 'none';
-        return;
-      }
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
-
-      // Update distance based on game speed
-      distance += gameSpeed * 0.1;
-
-      // Gradually increase game speed with a cap
-      if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {
-        gameSpeed += 0.01;
-      }
-
-      // Draw ground
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
-
-      // Draw player
-      ctx.fillStyle = 'blue';
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-
-      // Draw obstacles
-      ctx.fillStyle = 'red';
-      obstacles.forEach((obstacle, index) => {
-        obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-
-        // Collision detection for ground obstacles
-        if (
-          player.x < obstacle.x + obstacle.width &&
-          player.x + player.width > obstacle.x &&
-          player.y < obstacle.y + obstacle.height &&
-          player.y + player.height > obstacle.y
-        ) {
-          obstacles.splice(index, 1);
-          health--;
-          if (health <= 0) {
-            gameOver = true;
-          }
-        }
-
-        // Remove off-screen obstacles
-        if (obstacle.x + obstacle.width < 0) {
-          obstacles.splice(index, 1);
-        }
-      });
-
-      // Draw flying obstacles
-      flyingObstacles.forEach((obstacle, index) => {
-        obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-
-        // Collision detection for flying obstacles
-        if (
-          player.x < obstacle.x + obstacle.width &&
-          player.x + player.width > obstacle.x &&
-          player.y < obstacle.y + obstacle.height &&
-          player.y + player.height > obstacle.y
-        ) {
-          flyingObstacles.splice(index, 1);
-          health--;
-          if (health <= 0) {
-            gameOver = true;
-          }
-        }
-
-        // Remove off-screen flying obstacles
-        if (obstacle.x + obstacle.width < 0) {
-          flyingObstacles.splice(index, 1);
-        }
-      });
-
-      // Draw heal power-ups
-      ctx.fillStyle = 'green';
-      healPowerUps.forEach((powerUp, index) => {
-        powerUp.x -= gameSpeed;
-        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
-
-        // Collision detection for heal power-ups
-        if (
-          player.x < powerUp.x + powerUp.width &&
-          player.x + player.width > powerUp.x &&
-          player.y < powerUp.y + powerUp.height &&
-          player.y + player.height > powerUp.y
-        ) {
-          healPowerUps.splice(index, 1);
-          if (health < maxHealth) {
-            health++;
-          }
-        }
-
-        // Remove off-screen power-ups
-        if (powerUp.x + powerUp.width < 0) {
-          healPowerUps.splice(index, 1);
-        }
-      });
-
-      // Gravity
-      player.dy += gravity;
-      player.y += player.dy;
-
-      // Prevent player from falling below ground
-      if (player.y + player.height >= canvas.height - 100) {
-        player.y = canvas.height - player.height - 100;
-        player.dy = 0;
-        player.jumps = 0;
-      }
-
-      // Spawn new obstacles based on interval
-      if (obstacleInterval >= obstacleSpacing) {
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-        
-        if (pattern.ground) spawnGroundObstacle();
-        if (pattern.flying) spawnFlyingObstacle(obstacleSpacing / 2);
-        if (pattern.double) spawnGroundObstacle(100);
-
-        obstacleInterval = 0;
-      }
-      obstacleInterval += gameSpeed;
-
-      // Spawn new heal power-ups based on interval
-      if (healPowerUpInterval >= healPowerUpSpacing) {
-        spawnHealPowerUp();
-        healPowerUpInterval = 0;
-      }
-      healPowerUpInterval += gameSpeed;
-
-      // Display Health
-      ctx.font = '20px Arial';
-      ctx.fillStyle = 'black';
-      ctx.fillText(`Health: ${health}`, 10, 30);
-
-      // Display Distance as Score
-      ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 60);
-
-      // Draw mini-map
-      miniCtx.fillStyle = 'black';
-      miniCtx.fillRect(0, miniMap.height - 10, miniMap.width, 10);
-
-      // Draw player on mini-map
-      miniCtx.fillStyle = 'blue';
-      const miniPlayerX = (player.x / canvas.width) * miniMap.width;
-      const miniPlayerY = ((player.y + player.height) / canvas.height) * miniMap.height;
-      miniCtx.fillRect(miniPlayerX, miniPlayerY - 10, 10, 10);
-
-      // Draw obstacles on mini-map
-      miniCtx.fillStyle = 'red';
-      obstacles.forEach((obstacle) => {
-        const miniObstacleX = (obstacle.x / canvas.width) * miniMap.width;
-        const miniObstacleY = ((obstacle.y + obstacle.height) / canvas.height) * miniMap.height;
-        miniCtx.fillRect(miniObstacleX, miniObstacleY - 5, 5, 5);
-      });
-
-      // Draw flying obstacles on mini-map
-      flyingObstacles.forEach((obstacle) => {
-        const miniObstacleX = (obstacle.x / canvas.width) * miniMap.width;
-        const miniObstacleY = ((obstacle.y + obstacle.height) / canvas.height) * miniMap.height;
-        miniCtx.fillRect(miniObstacleX, miniObstacleY - 5, 5, 5);
-      });
-
-      // Draw heal power-ups on mini-map
-      miniCtx.fillStyle = 'green';
-      healPowerUps.forEach((powerUp) => {
-        const miniPowerUpX = (powerUp.x / canvas.width) * miniMap.width;
-        const miniPowerUpY = ((powerUp.y + powerUp.height) / canvas.height) * miniMap.height;
-        miniCtx.fillRect(miniPowerUpX, miniPowerUpY - 5, 5, 5);
-      });
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    // Jump event
-    function jump() {
-      if (player.jumps < player.maxJumps) {
-        player.dy = jumpStrength;
-        player.jumps++;
-      }
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        jump();
-      }
-    });
-
-    document.addEventListener('click', jump);
-
-    // Initialize the lobby display on load
+// In your game loop, after drawing other elements like health and score
+function gameLoop() {
+  if (gameOver) {
+    coins += Math.floor(distance); // Convert score to coins
     updateLobbyDisplay();
-  </script>
-</body>
-</html>
+    lobby.style.display = 'flex';
+    canvas.style.display = 'none';
+    miniMap.style.display = 'none';
+    return;
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
+  
+  // Update distance based on game speed
+  distance += gameSpeed * 0.1;
+
+  // Gradually increase game speed with a cap
+  if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {
+    gameSpeed += 0.01;
+  }
+
+  // Draw ground
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
+
+  // Draw player
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  // Draw obstacles
+  ctx.fillStyle = 'red';
+  obstacles.forEach((obstacle, index) => {
+    obstacle.x -= gameSpeed;
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+    // Collision detection for ground obstacles
+    if (
+      player.x < obstacle.x + obstacle.width &&
+      player.x + player.width > obstacle.x &&
+      player.y < obstacle.y + obstacle.height &&
+      player.y + player.height > obstacle.y
+    ) {
+      obstacles.splice(index, 1);
+      health--;
+      if (health <= 0) {
+        gameOver = true;
+      }
+    }
+
+    // Remove off-screen obstacles
+    if (obstacle.x + obstacle.width < 0) {
+      obstacles.splice(index, 1);
+    }
+  });
+
+  // Draw flying obstacles
+  flyingObstacles.forEach((obstacle, index) => {
+    obstacle.x -= gameSpeed;
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+    // Collision detection for flying obstacles
+    if (
+      player.x < obstacle.x + obstacle.width &&
+      player.x + player.width > obstacle.x &&
+      player.y < obstacle.y + obstacle.height &&
+      player.y + player.height > obstacle.y
+    ) {
+      flyingObstacles.splice(index, 1);
+      health--;
+      if (health <= 0) {
+        gameOver = true;
+      }
+    }
+
+    // Remove off-screen flying obstacles
+    if (obstacle.x + obstacle.width < 0) {
+      flyingObstacles.splice(index, 1);
+    }
+  });
+
+  // Draw heal power-ups
+  ctx.fillStyle = 'green';
+  healPowerUps.forEach((powerUp, index) => {
+    powerUp.x -= gameSpeed;
+    ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
+    // Collision detection for heal power-ups
+    if (
+      player.x < powerUp.x + powerUp.width &&
+      player.x + player.width > powerUp.x &&
+      player.y < powerUp.y + powerUp.height &&
+      player.y + player.height > powerUp.y
+    ) {
+      healPowerUps.splice(index, 1);
+      if (health < maxHealth) {
+        health++;
+      }
+    }
+
+    // Remove off-screen power-ups
+    if (powerUp.x + powerUp.width < 0) {
+      healPowerUps.splice(index, 1);
+    }
+  });
+
+  // Gravity
+  player.dy += gravity;
+  player.y += player.dy;
+
+  // Prevent player from falling below ground
+  if (player.y + player.height >= canvas.height - 100) {
+    player.y = canvas.height - player.height - 100;
+    player.dy = 0;
+    player.jumps = 0;
+  }
+
+  // Spawn new obstacles based on interval
+  if (obstacleInterval >= obstacleSpacing) {
+    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+    
+    if (pattern.ground) spawnGroundObstacle();
+    if (pattern.flying) spawnFlyingObstacle(obstacleSpacing / 2);
+    if (pattern.double) spawnGroundObstacle(100);
+
+    obstacleInterval = 0;
+  }
+  obstacleInterval += gameSpeed;
+
+  // Spawn new heal power-ups based on interval
+  if (healPowerUpInterval >= healPowerUpSpacing) {
+    spawnHealPowerUp();
+    healPowerUpInterval = 0;
+  }
+  healPowerUpInterval += gameSpeed;
+
+  // Display Health
+  ctx.font = '20px Arial';
+  ctx.fillStyle = 'black';
+  ctx.fillText(`Health: ${health}`, 10, 30);
+
+  // Display Distance as Score
+  ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 60);
+
+  // Display Current Realm
+  ctx.fillText(`Realm: ${currentRealm}`, 10, 90);
+
+  requestAnimationFrame(gameLoop);
+}

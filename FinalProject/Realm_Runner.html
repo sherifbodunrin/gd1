@@ -21,13 +21,10 @@
       text-align: center;
     }
 
-    #playerNameInput {
+    #universeText {
       font-size: 20px;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: 2px solid #4caf50;
-      border-radius: 10px;
-      outline: none;
+      margin-bottom: 10px;
+      color: #333;
     }
 
     #playerCharacter {
@@ -106,7 +103,7 @@
 </head>
 <body>
   <div id="lobby">
-    <input id="playerNameInput" type="text" placeholder="Enter your name" />
+    <div id="universeText">Universe 1</div>
     <div id="playerCharacter"></div>
     <h1>Realm Runner</h1>
     <div id="coinsDisplay">Coins: 0</div>
@@ -125,7 +122,6 @@
 
   <script>
     const lobby = document.getElementById('lobby');
-    const playerNameInput = document.getElementById('playerNameInput');
     const startButton = document.getElementById('startButton');
     const allRealmsButton = document.getElementById('allRealmsButton');
     const coinsDisplay = document.getElementById('coinsDisplay');

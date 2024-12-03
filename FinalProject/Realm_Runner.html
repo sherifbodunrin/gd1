@@ -23,21 +23,23 @@
 
     #buttonContainer {
       display: flex;
-      flex-direction: column; /* Stack buttons vertically */
+      flex-direction: column;
       align-items: center;
-      margin-top: 10px;
+      margin-top: 20px;
     }
 
     #startButton, .unlockButton {
-      font-size: 20px;
-      padding: 10px 20px;
+      font-size: 24px;
+      padding: 15px 30px;
       cursor: pointer;
       background-color: #4caf50;
       color: white;
       border: none;
-      border-radius: 5px;
-      margin: 5px;
+      border-radius: 15px;
+      margin: 10px;
       transition: background-color 0.3s;
+      width: 200px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     #startButton:hover {
@@ -49,8 +51,8 @@
     }
 
     .unlockButton:disabled {
-      background-color: #000000;
-      color: transparent;
+      background-color: #555;
+      color: rgba(255, 255, 255, 0.5);
       cursor: default;
     }
 
@@ -86,6 +88,9 @@
     </div>
     <div id="buttonContainer">
       <button id="startButton">Start</button>
+      <!-- Example for more buttons -->
+      <button class="unlockButton">Unlock Realm 2</button>
+      <button class="unlockButton" disabled>Unlock Realm 3</button>
     </div>
   </div>
   

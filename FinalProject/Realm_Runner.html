@@ -100,12 +100,15 @@
     miniMap.height = 100;
 
     // Game variables
-    let player, obstacles, flyingObstacles, healPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval;
+    let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
     const maxGameSpeed = 10; // Increased maximum speed limit
+    const boostGameSpeed = 15; // Speed during boost
     const maxHealth = 2;
     const obstacleSpacing = 1000;
     const healPowerUpSpacing = 7000;
+    const boostPowerUpSpacing = 20000; // Rare spawn for boost power-up
+    const boostDuration = 300; // Duration of boost effect (frames)
     let coins = 0;
     let currentRealm = 1;
     const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
@@ -123,6 +126,7 @@
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];
+      boostPowerUps = [];
       gameSpeed = initialGameSpeed;
       gravity = 0.4;
       jumpStrength = -10;
@@ -131,6 +135,9 @@
       distance = 0;
       obstacleInterval = 0;
       healPowerUpInterval = 0;
+      boostPowerUpInterval = 0;
+      boostActive = false;
+      boostTimer = 0;
     }
 
     function updateLobbyDisplay() {
@@ -209,6 +216,19 @@
       });
     }
 
+    // Spawn boost power-up
+    function spawnBoostPowerUp() {
+      const powerUpHeight = 20;
+      const powerUpWidth = 20;
+      const randomY = canvas.height - 200 - Math.random() * 100;
+      boostPowerUps.push({
+        x: canvas.width,
+        y: randomY,
+        width: powerUpWidth,
+        height: powerUpHeight
+      });
+    }
+
     // Game loop
     function gameLoop() {
       if (gameOver) {
@@ -221,12 +241,12 @@
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
-      
+
       // Update distance based on game speed
       distance += gameSpeed * 0.1;
 
-      // Gradually increase game speed with a more aggressive increment
-      if (gameSpeed < maxGameSpeed) {
+      // Gradually increase game speed with a more aggressive increment if boost is not active
+      if (!boostActive && gameSpeed < maxGameSpeed) {
         gameSpeed = initialGameSpeed + (distance / 250); // Faster speed growth
         if (gameSpeed > maxGameSpeed) {
           gameSpeed = maxGameSpeed; // Cap the speed
@@ -237,7 +257,12 @@
       ctx.fillStyle = 'black';
       ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
 
-      // Draw player
+      // Draw player with aura if boost is active
+      if (boostActive) {
+        ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = 5;
+        ctx.strokeRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
+      }
       ctx.fillStyle = 'blue';
       ctx.fillRect(player.x, player.y, player.width, player.height);
 
@@ -247,8 +272,8 @@
         obstacle.x -= gameSpeed;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-        // Collision detection for ground obstacles
-        if (
+        // Collision detection for ground obstacles, only if boost is not active
+        if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
           player.x + player.width > obstacle.x &&
           player.y < obstacle.y + obstacle.height &&
@@ -272,8 +297,8 @@
         obstacle.x -= gameSpeed;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-        // Collision detection for flying obstacles
-        if (
+        // Collision detection for flying obstacles, only if boost is not active
+        if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
           player.x + player.width > obstacle.x &&
           player.y < obstacle.y + obstacle.height &&
@@ -317,6 +342,40 @@
         }
       });
 
+      // Draw boost power-ups
+      ctx.fillStyle = 'orange';
+      boostPowerUps.forEach((powerUp, index) => {
+        powerUp.x -= gameSpeed;
+        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
+        // Collision detection for boost power-ups
+        if (
+          player.x < powerUp.x + powerUp.width &&
+          player.x + player.width > powerUp.x &&
+          player.y < powerUp.y + powerUp.height &&
+          player.y + player.height > powerUp.y
+        ) {
+          boostPowerUps.splice(index, 1);
+          boostActive = true;
+          boostTimer = boostDuration;
+          gameSpeed = boostGameSpeed;
+        }
+
+        // Remove off-screen power-ups
+        if (powerUp.x + powerUp.width < 0) {
+          boostPowerUps.splice(index, 1);
+        }
+      });
+
+      // Handle boost duration
+      if (boostActive) {
+        boostTimer--;
+        if (boostTimer <= 0) {
+          boostActive = false;
+          gameSpeed = initialGameSpeed + (distance / 250); // Reset to normal speed progression
+        }
+      }
+
       // Gravity
       player.dy += gravity;
       player.y += player.dy;
@@ -346,6 +405,13 @@
         healPowerUpInterval = 0;
       }
       healPowerUpInterval += gameSpeed;
+
+      // Spawn new boost power-ups based on interval
+      if (boostPowerUpInterval >= boostPowerUpSpacing) {
+        spawnBoostPowerUp();
+        boostPowerUpInterval = 0;
+      }
+      boostPowerUpInterval += gameSpeed;
 
       // Display Health as a bar
       ctx.fillStyle = 'red';

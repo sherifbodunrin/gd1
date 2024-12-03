@@ -28,7 +28,7 @@
       margin-top: 20px;
     }
 
-    #startButton, .unlockButton {
+    #startButton, .unlockButton, #allRealmsButton {
       font-size: 24px;
       padding: 15px 30px;
       cursor: pointer;
@@ -53,6 +53,16 @@
     .unlockButton:disabled {
       background-color: #000; /* Set background to black */
       color: rgba(0, 0, 0, 0); /* Set text color to fully transparent */
+      cursor: default;
+    }
+
+    #allRealmsButton {
+      background-color: #800080; /* Purple */
+    }
+
+    #allRealmsButton:disabled {
+      background-color: #555;
+      color: rgba(255, 255, 255, 0.5);
       cursor: default;
     }
 
@@ -87,6 +97,7 @@
       <div id="unlockButtons"></div>
     </div>
     <div id="buttonContainer">
+      <button id="allRealmsButton" disabled>ALL REALMS (500 Coins)</button>
       <button id="startButton">Start</button>
     </div>
   </div>
@@ -97,6 +108,7 @@
   <script>
     const lobby = document.getElementById('lobby');
     const startButton = document.getElementById('startButton');
+    const allRealmsButton = document.getElementById('allRealmsButton');
     const coinsDisplay = document.getElementById('coinsDisplay');
     const realmsDisplay = document.getElementById('realmsDisplay');
     const unlockButtons = document.getElementById('unlockButtons');
@@ -125,7 +137,9 @@
     let abilityMeter = maxAbilityMeter;
     let coins = 0;
     let currentRealm = 1;
+    let allRealmsUnlocked = false;
     const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
+    const allRealmsCost = 500; // Cost to unlock all realms
 
     // Patterns for obstacle configurations
     const patterns = [
@@ -166,8 +180,9 @@
         unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
         unlockButton.className = 'unlockButton';
 
-        // Only the next realm in sequence is purchasable
-        if (i === currentRealm + 1) {
+        if (allRealmsUnlocked || i <= currentRealm) {
+          unlockButton.disabled = false;
+        } else if (i === currentRealm + 1) {
           unlockButton.disabled = coins < realmCosts[i - 1];
           unlockButton.onclick = () => {
             if (coins >= realmCosts[i - 1]) {
@@ -182,7 +197,17 @@
 
         unlockButtons.appendChild(unlockButton);
       }
+
+      allRealmsButton.disabled = !(currentRealm === 5 && coins >= allRealmsCost);
     }
+
+    allRealmsButton.addEventListener('click', () => {
+      if (coins >= allRealmsCost && currentRealm === 5) {
+        coins -= allRealmsCost;
+        allRealmsUnlocked = true;
+        updateLobbyDisplay();
+      }
+    });
 
     // Start game
     startButton.addEventListener('click', () => {

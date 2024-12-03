@@ -61,8 +61,8 @@
     }
 
     #allRealmsButton:disabled {
-      background-color: #555;
-      color: rgba(255, 255, 255, 0.5);
+      background-color: #000; /* Pitch black */
+      color: rgba(0, 0, 0, 0); /* Fully transparent text */
       cursor: default;
     }
 
@@ -209,7 +209,20 @@
         unlockButtons.appendChild(unlockButton);
       }
 
-      allRealmsButton.disabled = !(currentRealm >= 5 && coins >= allRealmsCost);
+      // Update ALL REALMS button
+      if (allRealmsUnlocked) {
+        allRealmsButton.style.display = 'none'; // Hide button after purchase
+      } else {
+        allRealmsButton.style.display = 'block'; // Ensure button is visible
+
+        if (currentRealm >= 5 && coins >= allRealmsCost) {
+          allRealmsButton.disabled = false;
+          allRealmsButton.style.backgroundColor = '#800080'; // Purple when available
+        } else {
+          allRealmsButton.disabled = true;
+          allRealmsButton.style.backgroundColor = '#000'; // Pitch black when not available
+        }
+      }
     }
 
     allRealmsButton.addEventListener('click', () => {

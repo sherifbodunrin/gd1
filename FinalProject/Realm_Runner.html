@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="en">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Realm Runner</title>
   <style>
@@ -355,12 +355,10 @@
       ctx.strokeStyle = 'black';
       ctx.strokeRect(10, 10, healthBarWidth, healthBarHeight);
 
-      // Display Distance as Score
+      // Display Current Realm and Score
+      ctx.font = '24px Arial';
       ctx.fillStyle = 'black';
-      ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 50);
-
-      // Display Current Realm
-      ctx.fillText(`Realm: ${currentRealm}`, 10, 80);
+      ctx.fillText(`Realm: ${currentRealm}  |  Score: ${Math.floor(distance)}`, 120, 30);
 
       requestAnimationFrame(gameLoop);
     }

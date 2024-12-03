@@ -21,6 +21,13 @@
       text-align: center;
     }
 
+    #buttonContainer {
+      display: flex;
+      flex-direction: column; /* Stack buttons vertically */
+      align-items: center;
+      margin-top: 10px;
+    }
+
     #startButton, .unlockButton {
       font-size: 20px;
       padding: 10px 20px;
@@ -77,7 +84,9 @@
       <div>Current Realm: 1</div>
       <div id="unlockButtons"></div>
     </div>
-    <button id="startButton">Start</button>
+    <div id="buttonContainer">
+      <button id="startButton">Start</button>
+    </div>
   </div>
   
   <canvas id="gameCanvas"></canvas>
@@ -89,6 +98,7 @@
     const coinsDisplay = document.getElementById('coinsDisplay');
     const realmsDisplay = document.getElementById('realmsDisplay');
     const unlockButtons = document.getElementById('unlockButtons');
+    const buttonContainer = document.getElementById('buttonContainer');
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const miniMap = document.getElementById('miniMap');
@@ -238,7 +248,7 @@
     function shootProjectile() {
       if (abilityMeter >= maxAbilityMeter) {
         abilityMeter = 0; // Deplete ability meter
-        projectiles.push({ x: player.x + player.width, y: player.y + player.height / 2, width: 30, height: 15 }); // Larger projectile
+        projectiles.push({ x: player.x + player.width, y: player.y + player.height / 2, width: 30, height: 50 }); // Larger vertical projectile
       }
     }
 
@@ -294,6 +304,18 @@
             projectile.y + projectile.height > obstacle.y
           ) {
             obstacles.splice(obsIndex, 1); // Remove the obstacle
+          }
+        });
+
+        // Check for collisions with flying obstacles
+        flyingObstacles.forEach((obstacle, obsIndex) => {
+          if (
+            projectile.x < obstacle.x + obstacle.width &&
+            projectile.x + projectile.width > obstacle.x &&
+            projectile.y < obstacle.y + obstacle.height &&
+            projectile.y + projectile.height > obstacle.y
+          ) {
+            flyingObstacles.splice(obsIndex, 1); // Remove the flying obstacle
           }
         });
 

@@ -101,6 +101,7 @@
 
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval;
+    const initialGameSpeed = 3.5;
     const maxGameSpeed = 7; // Maximum speed limit
     const maxHealth = 2;
     const obstacleSpacing = 1000;
@@ -122,7 +123,7 @@
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];
-      gameSpeed = 3.5;
+      gameSpeed = initialGameSpeed;
       gravity = 0.4;
       jumpStrength = -10;
       gameOver = false;
@@ -225,8 +226,11 @@
       distance += gameSpeed * 0.1;
 
       // Gradually increase game speed with a cap
-      if (Math.floor(distance) % 100 === 0 && gameSpeed < maxGameSpeed) {
-        gameSpeed += 0.01;
+      if (gameSpeed < maxGameSpeed) {
+        gameSpeed = initialGameSpeed + (distance / 500); // Increase speed based on distance
+        if (gameSpeed > maxGameSpeed) {
+          gameSpeed = maxGameSpeed; // Cap the speed
+        }
       }
 
       // Draw ground

@@ -36,7 +36,7 @@
       color: white;
       border: none;
       border-radius: 15px;
-      margin: 10px 0; /* Vertical margin for space between buttons */
+      margin: 10px;
       transition: background-color 0.3s;
       width: 200px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -84,10 +84,10 @@
     <div id="coinsDisplay">Coins: 0</div>
     <div id="realmsDisplay">
       <div>Current Realm: 1</div>
+      <div id="unlockButtons"></div>
     </div>
     <div id="buttonContainer">
       <button id="startButton">Start</button>
-      <div id="unlockButtons"></div>
     </div>
   </div>
   
@@ -159,12 +159,11 @@
     function updateLobbyDisplay() {
       coinsDisplay.textContent = `Coins: ${coins}`;
       realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
-      unlockButtons.innerHTML = ''; // Clear existing unlock buttons
+      unlockButtons.innerHTML = '';
 
-      // Create and add unlock buttons
-      for (let i = 2; i <= 5; i++) { // Realms 2 to 5
+      for (let i = 2; i <= 5; i++) { // Start from Realm 2 as Realm 1 is the starting realm
         const unlockButton = document.createElement('button');
-        unlockButton.textContent = `Unlock Realm ${i} (Cost: ${realmCosts[i - 1]} Coins)`;
+        unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
         unlockButton.className = 'unlockButton';
 
         // Only the next realm in sequence is purchasable
@@ -178,7 +177,7 @@
             }
           };
         } else {
-          unlockButton.disabled = true; // Disable other realms
+          unlockButton.disabled = true; // Blacked out other realms
         }
 
         unlockButtons.appendChild(unlockButton);

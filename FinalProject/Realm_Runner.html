@@ -54,6 +54,15 @@
       height: 100vh;
     }
 
+    #miniMap {
+      display: none;
+      background: rgba(255, 255, 255, 0.5);
+      width: 100%;
+      height: 100px;
+      position: absolute;
+      bottom: 0;
+    }
+
     #coinsDisplay, #realmsDisplay {
       font-size: 20px;
       margin-top: 10px;
@@ -72,6 +81,7 @@
   </div>
   
   <canvas id="gameCanvas"></canvas>
+  <canvas id="miniMap"></canvas>
 
   <script>
     const lobby = document.getElementById('lobby');
@@ -81,9 +91,13 @@
     const unlockButtons = document.getElementById('unlockButtons');
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const miniMap = document.getElementById('miniMap');
+    const miniCtx = miniMap.getContext('2d');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    miniMap.width = window.innerWidth;
+    miniMap.height = 100;
 
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval;
@@ -150,6 +164,7 @@
     startButton.addEventListener('click', () => {
       lobby.style.display = 'none';
       canvas.style.display = 'block';
+      miniMap.style.display = 'block';
       resetGame();
       gameLoop();
     });
@@ -200,9 +215,11 @@
         updateLobbyDisplay();
         lobby.style.display = 'flex';
         canvas.style.display = 'none';
+        miniMap.style.display = 'none';
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
 
       // Update distance based on game speed
       distance += gameSpeed * 0.1;
@@ -333,6 +350,39 @@
 
       // Display Distance as Score
       ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 60);
+
+      // Draw mini-map
+      miniCtx.fillStyle = 'black';
+      miniCtx.fillRect(0, miniMap.height - 10, miniMap.width, 10);
+
+      // Draw player on mini-map
+      miniCtx.fillStyle = 'blue';
+      const miniPlayerX = (player.x / canvas.width) * miniMap.width;
+      const miniPlayerY = ((player.y + player.height) / canvas.height) * miniMap.height;
+      miniCtx.fillRect(miniPlayerX, miniPlayerY - 10, 10, 10);
+
+      // Draw obstacles on mini-map
+      miniCtx.fillStyle = 'red';
+      obstacles.forEach((obstacle) => {
+        const miniObstacleX = (obstacle.x / canvas.width) * miniMap.width;
+        const miniObstacleY = ((obstacle.y + obstacle.height) / canvas.height) * miniMap.height;
+        miniCtx.fillRect(miniObstacleX, miniObstacleY - 5, 5, 5);
+      });
+
+      // Draw flying obstacles on mini-map
+      flyingObstacles.forEach((obstacle) => {
+        const miniObstacleX = (obstacle.x / canvas.width) * miniMap.width;
+        const miniObstacleY = ((obstacle.y + obstacle.height) / canvas.height) * miniMap.height;
+        miniCtx.fillRect(miniObstacleX, miniObstacleY - 5, 5, 5);
+      });
+
+      // Draw heal power-ups on mini-map
+      miniCtx.fillStyle = 'green';
+      healPowerUps.forEach((powerUp) => {
+        const miniPowerUpX = (powerUp.x / canvas.width) * miniMap.width;
+        const miniPowerUpY = ((powerUp.y + powerUp.height) / canvas.height) * miniMap.height;
+        miniCtx.fillRect(miniPowerUpX, miniPowerUpY - 5, 5, 5);
+      });
 
       requestAnimationFrame(gameLoop);
     }

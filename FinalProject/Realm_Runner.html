@@ -185,13 +185,14 @@
           unlockButton.disabled = false;
         } else {
           unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
-          unlockButton.style.backgroundColor = '#f44336';
-          unlockButton.disabled = !allRealmsUnlocked;
+          unlockButton.style.backgroundColor = '#000'; // Default to black
+          unlockButton.disabled = true;
         }
 
         // Enable only the next realm in sequence with enough coins
-        if (!allRealmsUnlocked && i === currentRealm + 1) {
-          unlockButton.disabled = coins < realmCosts[i - 1];
+        if (!allRealmsUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
+          unlockButton.disabled = false;
+          unlockButton.style.backgroundColor = '#f44336'; // Available for purchase
           unlockButton.onclick = () => {
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];

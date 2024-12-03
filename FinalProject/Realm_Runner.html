@@ -177,17 +177,16 @@
 
       for (let i = 1; i <= 5; i++) {
         const unlockButton = document.createElement('button');
-        unlockButton.textContent = (i === currentRealm) ? `Realm ${i}` : `Realm ${i} (${realmCosts[i - 1]} Coins)`;
         unlockButton.className = 'unlockButton';
 
-        if (allRealmsUnlocked || i === currentRealm) {
+        if (i === currentRealm) {
+          unlockButton.textContent = `Realm ${i}`;
+          unlockButton.style.backgroundColor = '#4caf50'; // Current realm is green
           unlockButton.disabled = false;
-          if (i === currentRealm) {
-            unlockButton.style.backgroundColor = '#4caf50'; // Current realm is green
-          }
         } else {
-          unlockButton.disabled = true; // Other realms are blacked out
-          unlockButton.style.backgroundColor = '#f44336'; // Reset color if previously changed
+          unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
+          unlockButton.style.backgroundColor = '#f44336';
+          unlockButton.disabled = !allRealmsUnlocked;
         }
 
         // Enable only the next realm in sequence with enough coins
@@ -200,6 +199,10 @@
               updateLobbyDisplay();
             }
           };
+        }
+
+        if (!unlockButton.disabled) {
+          unlockButton.style.color = 'white'; // Maintain visible text
         }
 
         unlockButtons.appendChild(unlockButton);

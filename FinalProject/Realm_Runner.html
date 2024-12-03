@@ -195,7 +195,7 @@
     // Performance tracking
     let collectedHealPowerUps = 0;
     let collectedBoostPowerUps = 0;
-    let bestDistance = 0;
+    let obstaclesDestroyed = 0;
     let coinsCollected = 0;
 
     // Patterns for obstacle configurations
@@ -227,6 +227,7 @@
       abilityMeter = maxAbilityMeter;
       collectedHealPowerUps = 0;
       collectedBoostPowerUps = 0;
+      obstaclesDestroyed = 0;
     }
 
     function updateLobbyDisplay() {
@@ -299,11 +300,11 @@
       // Calculate letter grade based on performance
       const totalPowerUps = collectedHealPowerUps + collectedBoostPowerUps;
       let grade;
-      if (bestDistance > 1000 && totalPowerUps > 10) {
+      if (obstaclesDestroyed > 20 && totalPowerUps > 10) {
         grade = "A";
-      } else if (bestDistance > 800) {
+      } else if (obstaclesDestroyed > 15) {
         grade = "B";
-      } else if (bestDistance > 500) {
+      } else if (obstaclesDestroyed > 10) {
         grade = "C";
       } else {
         grade = "D";
@@ -311,7 +312,7 @@
 
       performanceDisplay.innerHTML = `
         <p>Power-Ups Collected: ${totalPowerUps}</p>
-        <p>Best Distance: ${Math.floor(bestDistance)}</p>
+        <p>Obstacles Destroyed: ${obstaclesDestroyed}</p>
         <p>Coins Collected: ${coinsCollected}</p>
         <p>Grade: ${grade}</p>
       `;
@@ -410,7 +411,6 @@
     // Game loop
     function gameLoop() {
       if (gameOver) {
-        bestDistance = Math.max(bestDistance, distance);
         displayResults();
         return;
       }
@@ -456,6 +456,7 @@
             projectile.y + projectile.height > obstacle.y
           ) {
             obstacles.splice(obsIndex, 1); // Remove the obstacle
+            obstaclesDestroyed++; // Increment obstacles destroyed count
           }
         });
 
@@ -468,6 +469,7 @@
             projectile.y + projectile.height > obstacle.y
           ) {
             flyingObstacles.splice(obsIndex, 1); // Remove the flying obstacle
+            obstaclesDestroyed++; // Increment obstacles destroyed count
           }
         });
 

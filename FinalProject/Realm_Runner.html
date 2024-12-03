@@ -102,7 +102,7 @@
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
-    const maxGameSpeed = 6; // Increased maximum speed limit
+    const maxGameSpeed = 6; // Reduced maximum speed limit
     const boostGameSpeed = 15; // Speed during boost
     const maxHealth = 2;
     const obstacleSpacing = 1000;
@@ -110,7 +110,7 @@
     const boostPowerUpSpacing = 20000; // Rare spawn for boost power-up
     const boostDuration = 300; // Duration of boost effect (frames)
     const maxAbilityMeter = 100;
-    const abilityRefillRate = 0.5; // Rate at which ability meter refills
+    const abilityRefillRate = 0.1; // Slower rate for ability meter refill
     let abilityMeter = maxAbilityMeter;
     let coins = 0;
     let currentRealm = 1;
@@ -238,7 +238,7 @@
     function shootProjectile() {
       if (abilityMeter >= maxAbilityMeter) {
         abilityMeter = 0; // Deplete ability meter
-        projectiles.push({ x: player.x + player.width, y: player.y + player.height / 2, width: 20, height: 10 });
+        projectiles.push({ x: player.x + player.width, y: player.y + player.height / 2, width: 30, height: 15 }); // Larger projectile
       }
     }
 

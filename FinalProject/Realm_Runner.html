@@ -347,16 +347,20 @@
       }
       healPowerUpInterval += gameSpeed;
 
-      // Display Health
-      ctx.font = '20px Arial';
-      ctx.fillStyle = 'black';
-      ctx.fillText(`Health: ${health}`, 10, 30);
+      // Display Health as a bar
+      ctx.fillStyle = 'red';
+      const healthBarWidth = 100; // Total width of the health bar
+      const healthBarHeight = 20; // Height of the health bar
+      ctx.fillRect(10, 10, healthBarWidth * (health / maxHealth), healthBarHeight);
+      ctx.strokeStyle = 'black';
+      ctx.strokeRect(10, 10, healthBarWidth, healthBarHeight);
 
       // Display Distance as Score
-      ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 60);
+      ctx.fillStyle = 'black';
+      ctx.fillText(`Score: ${Math.floor(distance)}`, 10, 50);
 
       // Display Current Realm
-      ctx.fillText(`Realm: ${currentRealm}`, 10, 90);
+      ctx.fillText(`Realm: ${currentRealm}`, 10, 80);
 
       requestAnimationFrame(gameLoop);
     }

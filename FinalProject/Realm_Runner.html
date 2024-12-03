@@ -177,15 +177,17 @@
 
       for (let i = 1; i <= 5; i++) {
         const unlockButton = document.createElement('button');
-        unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
+        unlockButton.textContent = (i === currentRealm) ? `Realm ${i}` : `Realm ${i} (${realmCosts[i - 1]} Coins)`;
         unlockButton.className = 'unlockButton';
 
-        if (allRealmsUnlocked) {
+        if (allRealmsUnlocked || i === currentRealm) {
           unlockButton.disabled = false;
-        } else if (i === currentRealm) {
-          unlockButton.disabled = false; // Current realm should be active
+          if (i === currentRealm) {
+            unlockButton.style.backgroundColor = '#4caf50'; // Current realm is green
+          }
         } else {
           unlockButton.disabled = true; // Other realms are blacked out
+          unlockButton.style.backgroundColor = '#f44336'; // Reset color if previously changed
         }
 
         // Enable only the next realm in sequence with enough coins
@@ -203,11 +205,11 @@
         unlockButtons.appendChild(unlockButton);
       }
 
-      allRealmsButton.disabled = !(currentRealm === 5 && coins >= allRealmsCost);
+      allRealmsButton.disabled = !(currentRealm >= 5 && coins >= allRealmsCost);
     }
 
     allRealmsButton.addEventListener('click', () => {
-      if (coins >= allRealmsCost && currentRealm === 5) {
+      if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
         allRealmsUnlocked = true;
         updateLobbyDisplay();

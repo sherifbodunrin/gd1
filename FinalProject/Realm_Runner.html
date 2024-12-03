@@ -99,6 +99,34 @@
       font-size: 20px;
       margin-top: 10px;
     }
+
+    #resultsScreen {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    #resultsScreen h2 {
+      margin-bottom: 20px;
+    }
+
+    #resultsScreen button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      color: white;
+      background-color: #4caf50;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -120,6 +148,12 @@
   <canvas id="gameCanvas"></canvas>
   <canvas id="miniMap"></canvas>
 
+  <div id="resultsScreen">
+    <h2>Best Run Performance</h2>
+    <div id="performance"></div>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
   <script>
     const lobby = document.getElementById('lobby');
     const startButton = document.getElementById('startButton');
@@ -131,6 +165,8 @@
     const ctx = canvas.getContext('2d');
     const miniMap = document.getElementById('miniMap');
     const miniCtx = miniMap.getContext('2d');
+    const resultsScreen = document.getElementById('resultsScreen');
+    const performanceDisplay = document.getElementById('performance');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -155,6 +191,12 @@
     let allRealmsUnlocked = false;
     const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
     const allRealmsCost = 500; // Cost to unlock all realms
+
+    // Performance tracking
+    let collectedHealPowerUps = 0;
+    let collectedBoostPowerUps = 0;
+    let bestDistance = 0;
+    let coinsCollected = 0;
 
     // Patterns for obstacle configurations
     const patterns = [
@@ -183,6 +225,8 @@
       boostActive = false;
       boostTimer = 0;
       abilityMeter = maxAbilityMeter;
+      collectedHealPowerUps = 0;
+      collectedBoostPowerUps = 0;
     }
 
     function updateLobbyDisplay() {
@@ -246,6 +290,39 @@
           allRealmsButton.style.backgroundColor = '#000'; // Pitch black when not available
         }
       }
+    }
+
+    function displayResults() {
+      coinsCollected = Math.floor(distance); // Convert score to coins
+      coins += coinsCollected;
+
+      // Calculate letter grade based on performance
+      const totalPowerUps = collectedHealPowerUps + collectedBoostPowerUps;
+      let grade;
+      if (bestDistance > 1000 && totalPowerUps > 10) {
+        grade = "A";
+      } else if (bestDistance > 800) {
+        grade = "B";
+      } else if (bestDistance > 500) {
+        grade = "C";
+      } else {
+        grade = "D";
+      }
+
+      performanceDisplay.innerHTML = `
+        <p>Power-Ups Collected: ${totalPowerUps}</p>
+        <p>Best Distance: ${Math.floor(bestDistance)}</p>
+        <p>Coins Collected: ${coinsCollected}</p>
+        <p>Grade: ${grade}</p>
+      `;
+      
+      resultsScreen.style.display = 'block';
+    }
+
+    function restartGame() {
+      resultsScreen.style.display = 'none';
+      lobby.style.display = 'flex';
+      updateLobbyDisplay();
     }
 
     allRealmsButton.addEventListener('click', () => {
@@ -333,11 +410,8 @@
     // Game loop
     function gameLoop() {
       if (gameOver) {
-        coins += Math.floor(distance); // Convert score to coins
-        updateLobbyDisplay();
-        lobby.style.display = 'flex';
-        canvas.style.display = 'none';
-        miniMap.style.display = 'none';
+        bestDistance = Math.max(bestDistance, distance);
+        displayResults();
         return;
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -468,6 +542,7 @@
           player.y + player.height > powerUp.y
         ) {
           healPowerUps.splice(index, 1);
+          collectedHealPowerUps++;
           if (health < maxHealth) {
             health++;
           }
@@ -493,6 +568,7 @@
           player.y + player.height > powerUp.y
         ) {
           boostPowerUps.splice(index, 1);
+          collectedBoostPowerUps++;
           boostActive = true;
           boostTimer = boostDuration;
           gameSpeed = boostGameSpeed;

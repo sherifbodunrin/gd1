@@ -248,7 +248,12 @@
     function shootProjectile() {
       if (abilityMeter >= maxAbilityMeter) {
         abilityMeter = 0; // Deplete ability meter
-        projectiles.push({ x: player.x + player.width, y: player.y + player.height / 2, width: 30, height: 50 }); // Larger vertical projectile
+        projectiles.push({
+          x: player.x + player.width, 
+          y: player.y, // Align with player vertically
+          width: player.width, 
+          height: player.height // Match player's height
+        });
       }
     }
 

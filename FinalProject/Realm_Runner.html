@@ -1,3 +1,7 @@
+html
+
+Copy code
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,7 +54,7 @@
       margin-top: 20px;
     }
 
-    #startButton, .unlockButton, #allRealmsButton {
+    #startButton, .unlockButton, #allRealmsButton, #universeButton {
       font-size: 24px;
       padding: 15px 30px;
       cursor: pointer;
@@ -195,6 +199,8 @@
       <button id="allRealmsButton" disabled>ALL REALMS (500 Coins)</button>
       <button id="startButton">Start</button>
     </div>
+
+    <div id="universeButtons"></div>
   </div>
   
   <canvas id="gameCanvas"></canvas>
@@ -221,6 +227,7 @@
     const resultsScreen = document.getElementById('resultsScreen');
     const performanceDisplay = document.getElementById('performance');
     const playerCharacter = document.getElementById('playerCharacter');
+    const universeButtons = document.getElementById('universeButtons');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -244,6 +251,9 @@
     let currentRealm = 1;
     let currentUniverse = 1;
     let allRealmsUnlocked = false;
+    const universeColors = ['rgba(0, 0, 255, 0.7)', 'rgba(255, 0, 0, 0.7)'];
+    const universeNames = ['Universe 1', 'Universe 2'];
+    const universeUnlocked = [true, false]; // Track which universes are unlocked
     const realmCosts = [0, 50, 100, 150, 200];
     const allRealmsCost = 500;
 
@@ -345,7 +355,7 @@
       }
 
       if (allRealmsUnlocked) {
-        if (currentUniverse === 1) {
+        if (currentUniverse === 1 && !universeUnlocked[1]) {
           allRealmsButton.textContent = 'Go to Universe 2';
           allRealmsButton.disabled = false;
           allRealmsButton.style.display = 'block';
@@ -361,6 +371,7 @@
 
         if (currentRealm >= 5 && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
+          allRealmsButton.textContent = `ALL REALMS (${allRealmsCost} Coins)`;
           allRealmsButton.style.backgroundColor = '#800080';
         } else {
           allRealmsButton.disabled = true;
@@ -368,8 +379,9 @@
         }
       }
 
-      document.getElementById('universeText').textContent = `Universe ${currentUniverse}`;
+      document.getElementById('universeText').textContent = universeNames[currentUniverse - 1];
       updatePlayerCharacterColor();
+      updateUniverseButtons();
     }
 
     function updateModifiersDisplay() {
@@ -398,11 +410,27 @@
     }
 
     function updatePlayerCharacterColor() {
-      if (currentUniverse === 1) {
-        playerCharacter.style.backgroundColor = 'rgba(0, 0, 255, 0.7)'; // Blue for Universe 1
-      } else if (currentUniverse === 2) {
-        playerCharacter.style.backgroundColor = 'rgba(255, 0, 0, 0.7)'; // Red for Universe 2
-      }
+      playerCharacter.style.backgroundColor = universeColors[currentUniverse - 1];
+    }
+
+    function updateUniverseButtons() {
+      universeButtons.innerHTML = '';
+      universeUnlocked.forEach((unlocked, index) => {
+        if (unlocked) {
+          const button = document.createElement('button');
+          button.textContent = universeNames[index];
+          button.className = 'universeButton';
+          button.style.backgroundColor = '#4caf50';
+          button.onclick = () => {
+            currentUniverse = index + 1;
+            currentRealm = 1;
+            allRealmsUnlocked = false;
+            coins = 0;
+            updateLobbyDisplay();
+          };
+          universeButtons.appendChild(button);
+        }
+      });
     }
 
     function displayResults() {
@@ -438,8 +466,9 @@
     }
 
     allRealmsButton.addEventListener('click', () => {
-      if (allRealmsUnlocked && currentUniverse === 1) {
+      if (allRealmsUnlocked && currentUniverse === 1 && !universeUnlocked[1]) {
         currentUniverse = 2;
+        universeUnlocked[1] = true;
         currentRealm = 1;
         allRealmsUnlocked = false;
         coins = 0;
@@ -544,7 +573,7 @@
         ctx.lineWidth = 5;
         ctx.strokeRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
       }
-      ctx.fillStyle = 'blue';
+      ctx.fillStyle = universeColors[currentUniverse - 1];
       ctx.fillRect(player.x, player.y, player.width, player.height);
 
       ctx.fillStyle = 'cyan';

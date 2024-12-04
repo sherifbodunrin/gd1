@@ -117,7 +117,7 @@
       bottom: 0;
     }
 
-    #coinsDisplay, #realmsDisplay {
+    #coinsDisplay, #realmsDisplay, #modifiersDisplay {
       font-size: 20px;
       margin-top: 10px;
     }
@@ -149,6 +149,27 @@
       border-radius: 10px;
       cursor: pointer;
     }
+    
+    .modifierButton {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .modifierButton:disabled {
+      background-color: #777;
+      cursor: default;
+    }
+
+    .modifierButton:not(:disabled):hover {
+      background-color: #1976d2;
+    }
   </style>
 </head>
 <body>
@@ -161,6 +182,12 @@
       <div>Current Realm: 1</div>
       <div id="unlockButtons"></div>
     </div>
+    
+    <div id="modifiersDisplay">
+      <div>Current Modifier: <span id="currentModifier">None</span></div>
+      <div id="modifierButtons"></div>
+    </div>
+
     <div id="buttonContainer">
       <button id="allRealmsButton" disabled>ALL REALMS (500 Coins)</button>
       <button id="startButton">Start</button>
@@ -198,21 +225,21 @@
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
-    const maxGameSpeed = 6; // Reduced maximum speed limit
-    const boostGameSpeed = 15; // Speed during boost
+    const maxGameSpeed = 6;
+    const boostGameSpeed = 15;
     const maxHealth = 2;
     const obstacleSpacing = 1000;
     const healPowerUpSpacing = 7000;
-    const boostPowerUpSpacing = 20000; // Rare spawn for boost power-up
-    const boostDuration = 300; // Duration of boost effect (frames)
+    const boostPowerUpSpacing = 20000;
+    const boostDuration = 300;
     const maxAbilityMeter = 100;
-    const abilityRefillRate = 0.1; // Slower rate for ability meter refill
+    const abilityRefillRate = 0.1;
     let abilityMeter = maxAbilityMeter;
     let coins = 0;
     let currentRealm = 1;
     let allRealmsUnlocked = false;
-    const realmCosts = [0, 50, 100, 150, 200]; // Cost to unlock each realm
-    const allRealmsCost = 500; // Cost to unlock all realms
+    const realmCosts = [0, 50, 100, 150, 200];
+    const allRealmsCost = 500;
 
     // Performance tracking
     let collectedHealPowerUps = 0;
@@ -220,7 +247,29 @@
     let obstaclesDestroyed = 0;
     let coinsCollected = 0;
 
-    // Patterns for obstacle configurations
+    // Modifiers
+    const modifiers = [
+      { name: 'None', cost: 0, effect: () => {} },
+      { name: 'Double Coins', cost: 100, effect: () => { coinsCollected *= 2; } },
+      { name: 'Extra Health', cost: 150, effect: () => { health = maxHealth + 1; } },
+      { name: 'Speed Boost', cost: 200, effect: () => { gameSpeed += 1; } },
+      { name: 'Invincibility Shield', cost: 300, effect: () => { temporaryInvincibility = true; } },
+      { name: 'Magnet Power', cost: 250, effect: () => { magnetPowerActive = true; } },
+      { name: 'Jump Boost', cost: 150, effect: () => { player.maxJumps = 3; jumpStrength -= 2; } },
+      { name: 'Time Slowdown', cost: 200, effect: () => { timeSlowdownActive = true; } },
+      { name: 'Double Health', cost: 250, effect: () => { health = maxHealth * 2; } },
+      { name: 'Obstacle Destroyer', cost: 300, effect: () => { obstacleDestroyerActive = true; } },
+      { name: 'Extended Boost Duration', cost: 220, effect: () => { boostDuration *= 1.5; } },
+      { name: 'Bonus Score Multiplier', cost: 200, effect: () => { scoreMultiplier = 1.5; } }
+    ];
+
+    let currentModifier = modifiers[0];
+    let temporaryInvincibility = false;
+    let magnetPowerActive = false;
+    let timeSlowdownActive = false;
+    let obstacleDestroyerActive = false;
+    let scoreMultiplier = 1;
+
     const patterns = [
       { ground: true, flying: false },
       { ground: true, flying: true },
@@ -239,7 +288,7 @@
       gravity = 0.4;
       jumpStrength = -10;
       gameOver = false;
-      health = 2;
+      health = maxHealth;
       distance = 0;
       obstacleInterval = 0;
       healPowerUpInterval = 0;
@@ -250,6 +299,9 @@
       collectedHealPowerUps = 0;
       collectedBoostPowerUps = 0;
       obstaclesDestroyed = 0;
+      scoreMultiplier = 1;
+
+      currentModifier.effect();
     }
 
     function updateLobbyDisplay() {
@@ -263,11 +315,11 @@
 
         if (i === currentRealm) {
           unlockButton.textContent = `Realm ${i}`;
-          unlockButton.style.backgroundColor = '#4caf50'; // Current realm is green
+          unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
         } else if (allRealmsUnlocked) {
           unlockButton.textContent = `Realm ${i}`;
-          unlockButton.style.backgroundColor = '#4caf50'; // Set all realms to green
+          unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
           unlockButton.onclick = () => {
             currentRealm = i;
@@ -275,14 +327,13 @@
           };
         } else {
           unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
-          unlockButton.style.backgroundColor = '#000'; // Default to black
+          unlockButton.style.backgroundColor = '#000';
           unlockButton.disabled = true;
         }
 
-        // Enable only the next realm in sequence with enough coins
         if (!allRealmsUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
           unlockButton.disabled = false;
-          unlockButton.style.backgroundColor = '#f44336'; // Available for purchase
+          unlockButton.style.backgroundColor = '#f44336';
           unlockButton.onclick = () => {
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
@@ -293,33 +344,58 @@
         }
 
         if (!unlockButton.disabled) {
-          unlockButton.style.color = 'white'; // Maintain visible text
+          unlockButton.style.color = 'white';
         }
 
         unlockButtons.appendChild(unlockButton);
       }
 
-      // Update ALL REALMS button
       if (allRealmsUnlocked) {
-        allRealmsButton.style.display = 'none'; // Hide button after purchase
+        allRealmsButton.style.display = 'none';
       } else {
-        allRealmsButton.style.display = 'block'; // Ensure button is visible
+        allRealmsButton.style.display = 'block';
 
         if (currentRealm >= 5 && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
-          allRealmsButton.style.backgroundColor = '#800080'; // Purple when available
+          allRealmsButton.style.backgroundColor = '#800080';
         } else {
           allRealmsButton.disabled = true;
-          allRealmsButton.style.backgroundColor = '#000'; // Pitch black when not available
+          allRealmsButton.style.backgroundColor = '#000';
         }
       }
+
+      updateModifiersDisplay();
+    }
+
+    function updateModifiersDisplay() {
+      const modifierButtons = document.getElementById('modifierButtons');
+      const currentModifierText = document.getElementById('currentModifier');
+      modifierButtons.innerHTML = '';
+
+      modifiers.forEach(modifier => {
+        const button = document.createElement('button');
+        button.textContent = `${modifier.name} (${modifier.cost} Coins)`;
+        button.disabled = coins < modifier.cost || currentModifier === modifier;
+        button.className = 'modifierButton';
+        
+        button.onclick = () => {
+          if (coins >= modifier.cost) {
+            coins -= modifier.cost;
+            currentModifier = modifier;
+            currentModifierText.textContent = modifier.name;
+            updateLobbyDisplay();
+            updateModifiersDisplay();
+          }
+        };
+
+        modifierButtons.appendChild(button);
+      });
     }
 
     function displayResults() {
-      coinsCollected = Math.floor(distance); // Convert score to coins
+      coinsCollected = Math.floor(distance * scoreMultiplier);
       coins += coinsCollected;
 
-      // Calculate letter grade based on performance
       const totalPowerUps = collectedHealPowerUps + collectedBoostPowerUps;
       let grade;
       if (obstaclesDestroyed > 20 && totalPowerUps > 10) {
@@ -356,7 +432,6 @@
       }
     });
 
-    // Start game
     startButton.addEventListener('click', () => {
       lobby.style.display = 'none';
       canvas.style.display = 'block';
@@ -365,7 +440,6 @@
       gameLoop();
     });
 
-    // Spawn ground obstacle
     function spawnGroundObstacle(xOffset = 0) {
       const obstacleHeight = 30;
       const obstacleWidth = 20;
@@ -378,7 +452,6 @@
       });
     }
 
-    // Spawn flying obstacle
     function spawnFlyingObstacle(xOffset = 0) {
       const obstacleHeight = 20;
       const obstacleWidth = 20;
@@ -391,7 +464,6 @@
       });
     }
 
-    // Spawn heal power-up
     function spawnHealPowerUp() {
       const powerUpHeight = 20;
       const powerUpWidth = 20;
@@ -404,7 +476,6 @@
       });
     }
 
-    // Spawn boost power-up
     function spawnBoostPowerUp() {
       const powerUpHeight = 20;
       const powerUpWidth = 20;
@@ -417,20 +488,18 @@
       });
     }
 
-    // Shoot projectile
     function shootProjectile() {
       if (abilityMeter >= maxAbilityMeter) {
-        abilityMeter = 0; // Deplete ability meter
+        abilityMeter = 0;
         projectiles.push({
           x: player.x + player.width, 
-          y: player.y, // Align with player vertically
+          y: player.y,
           width: player.width, 
-          height: player.height // Match player's height
+          height: player.height
         });
       }
     }
 
-    // Game loop
     function gameLoop() {
       if (gameOver) {
         displayResults();
@@ -439,22 +508,18 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
 
-      // Update distance based on game speed
       distance += gameSpeed * 0.1;
 
-      // Gradually increase game speed with a more aggressive increment if boost is not active
       if (!boostActive && gameSpeed < maxGameSpeed) {
-        gameSpeed = initialGameSpeed + (distance / 250); // Faster speed growth
+        gameSpeed = initialGameSpeed + (distance / 250);
         if (gameSpeed > maxGameSpeed) {
-          gameSpeed = maxGameSpeed; // Cap the speed
+          gameSpeed = maxGameSpeed;
         }
       }
 
-      // Draw ground
       ctx.fillStyle = 'black';
       ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
 
-      // Draw player with aura if boost is active
       if (boostActive) {
         ctx.strokeStyle = 'yellow';
         ctx.lineWidth = 5;
@@ -463,13 +528,11 @@
       ctx.fillStyle = 'blue';
       ctx.fillRect(player.x, player.y, player.width, player.height);
 
-      // Draw and move projectiles
       ctx.fillStyle = 'cyan';
       projectiles.forEach((projectile, index) => {
-        projectile.x += gameSpeed * 2; // Move projectile faster than game speed
+        projectile.x += gameSpeed * 2;
         ctx.fillRect(projectile.x, projectile.y, projectile.width, projectile.height);
 
-        // Check for collisions with obstacles
         obstacles.forEach((obstacle, obsIndex) => {
           if (
             projectile.x < obstacle.x + obstacle.width &&
@@ -477,12 +540,11 @@
             projectile.y < obstacle.y + obstacle.height &&
             projectile.y + projectile.height > obstacle.y
           ) {
-            obstacles.splice(obsIndex, 1); // Remove the obstacle
-            obstaclesDestroyed++; // Increment obstacles destroyed count
+            obstacles.splice(obsIndex, 1);
+            obstaclesDestroyed++;
           }
         });
 
-        // Check for collisions with flying obstacles
         flyingObstacles.forEach((obstacle, obsIndex) => {
           if (
             projectile.x < obstacle.x + obstacle.width &&
@@ -490,24 +552,21 @@
             projectile.y < obstacle.y + obstacle.height &&
             projectile.y + projectile.height > obstacle.y
           ) {
-            flyingObstacles.splice(obsIndex, 1); // Remove the flying obstacle
-            obstaclesDestroyed++; // Increment obstacles destroyed count
+            flyingObstacles.splice(obsIndex, 1);
+            obstaclesDestroyed++;
           }
         });
 
-        // Remove off-screen projectiles
         if (projectile.x > canvas.width) {
           projectiles.splice(index, 1);
         }
       });
 
-      // Draw obstacles
       ctx.fillStyle = 'red';
       obstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-        // Collision detection for ground obstacles, only if boost is not active
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
           player.x + player.width > obstacle.x &&
@@ -521,18 +580,15 @@
           }
         }
 
-        // Remove off-screen obstacles
         if (obstacle.x + obstacle.width < 0) {
           obstacles.splice(index, 1);
         }
       });
 
-      // Draw flying obstacles
       flyingObstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-        // Collision detection for flying obstacles, only if boost is not active
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
           player.x + player.width > obstacle.x &&
@@ -546,19 +602,16 @@
           }
         }
 
-        // Remove off-screen flying obstacles
         if (obstacle.x + obstacle.width < 0) {
           flyingObstacles.splice(index, 1);
         }
       });
 
-      // Draw heal power-ups
       ctx.fillStyle = 'green';
       healPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
         ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
 
-        // Collision detection for heal power-ups
         if (
           player.x < powerUp.x + powerUp.width &&
           player.x + player.width > powerUp.x &&
@@ -572,19 +625,16 @@
           }
         }
 
-        // Remove off-screen power-ups
         if (powerUp.x + powerUp.width < 0) {
           healPowerUps.splice(index, 1);
         }
       });
 
-      // Draw boost power-ups
       ctx.fillStyle = 'orange';
       boostPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
         ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
 
-        // Collision detection for boost power-ups
         if (
           player.x < powerUp.x + powerUp.width &&
           player.x + player.width > powerUp.x &&
@@ -598,33 +648,28 @@
           gameSpeed = boostGameSpeed;
         }
 
-        // Remove off-screen power-ups
         if (powerUp.x + powerUp.width < 0) {
           boostPowerUps.splice(index, 1);
         }
       });
 
-      // Handle boost duration
       if (boostActive) {
         boostTimer--;
         if (boostTimer <= 0) {
           boostActive = false;
-          gameSpeed = initialGameSpeed + (distance / 250); // Reset to normal speed progression
+          gameSpeed = initialGameSpeed + (distance / 250);
         }
       }
 
-      // Gravity
       player.dy += gravity;
       player.y += player.dy;
 
-      // Prevent player from falling below ground
       if (player.y + player.height >= canvas.height - 100) {
         player.y = canvas.height - player.height - 100;
         player.dy = 0;
         player.jumps = 0;
       }
 
-      // Spawn new obstacles based on interval
       if (obstacleInterval >= obstacleSpacing) {
         const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         
@@ -636,21 +681,18 @@
       }
       obstacleInterval += gameSpeed;
 
-      // Spawn new heal power-ups based on interval
       if (healPowerUpInterval >= healPowerUpSpacing) {
         spawnHealPowerUp();
         healPowerUpInterval = 0;
       }
       healPowerUpInterval += gameSpeed;
 
-      // Spawn new boost power-ups based on interval
       if (boostPowerUpInterval >= boostPowerUpSpacing) {
         spawnBoostPowerUp();
         boostPowerUpInterval = 0;
       }
       boostPowerUpInterval += gameSpeed;
 
-      // Refill ability meter over time
       if (abilityMeter < maxAbilityMeter) {
         abilityMeter += abilityRefillRate;
         if (abilityMeter > maxAbilityMeter) {
@@ -658,22 +700,19 @@
         }
       }
 
-      // Display Health as a bar
       ctx.fillStyle = 'red';
-      const healthBarWidth = 100; // Total width of the health bar
-      const healthBarHeight = 20; // Height of the health bar
+      const healthBarWidth = 100;
+      const healthBarHeight = 20;
       ctx.fillRect(10, 10, healthBarWidth * (health / maxHealth), healthBarHeight);
       ctx.strokeStyle = 'black';
       ctx.strokeRect(10, 10, healthBarWidth, healthBarHeight);
 
-      // Display Ability as a bar below health
       ctx.fillStyle = 'blue';
       const abilityBarHeight = 10;
       ctx.fillRect(10, 40, 100 * (abilityMeter / maxAbilityMeter), abilityBarHeight);
       ctx.strokeStyle = 'black';
       ctx.strokeRect(10, 40, 100, abilityBarHeight);
 
-      // Display Current Realm and Score
       ctx.font = '24px Arial';
       ctx.fillStyle = 'black';
       ctx.fillText(`Realm: ${currentRealm}  |  Score: ${Math.floor(distance)}`, 120, 30);
@@ -681,7 +720,6 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // Jump event
     function jump() {
       if (player.jumps < player.maxJumps) {
         player.dy = jumpStrength;
@@ -689,7 +727,6 @@
       }
     }
 
-    // Shoot projectile when 'E' is pressed
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         jump();
@@ -700,7 +737,6 @@
 
     document.addEventListener('click', jump);
 
-    // Initialize the lobby display on load
     updateLobbyDisplay();
   </script>
 </body>

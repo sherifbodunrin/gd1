@@ -346,6 +346,7 @@
       if (allRealmsUnlocked) {
         allRealmsButton.style.display = 'none';
         modifiersDisplay.style.display = 'block'; // Show modifiers when all realms are unlocked
+        updateModifiersDisplay(); // Update modifiers display
       } else {
         allRealmsButton.style.display = 'block';
         modifiersDisplay.style.display = 'none'; // Hide modifiers until all realms are unlocked

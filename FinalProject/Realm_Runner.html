@@ -122,6 +122,10 @@
       margin-top: 10px;
     }
 
+    #modifiersDisplay {
+      display: none; /* Hide modifiers initially */
+    }
+
     #resultsScreen {
       display: none;
       position: absolute;
@@ -210,6 +214,7 @@
     const coinsDisplay = document.getElementById('coinsDisplay');
     const realmsDisplay = document.getElementById('realmsDisplay');
     const unlockButtons = document.getElementById('unlockButtons');
+    const modifiersDisplay = document.getElementById('modifiersDisplay');
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const miniMap = document.getElementById('miniMap');
@@ -252,22 +257,10 @@
       { name: 'None', cost: 0, effect: () => {} },
       { name: 'Double Coins', cost: 100, effect: () => { coinsCollected *= 2; } },
       { name: 'Extra Health', cost: 150, effect: () => { health = maxHealth + 1; } },
-      { name: 'Speed Boost', cost: 200, effect: () => { gameSpeed += 1; } },
-      { name: 'Invincibility Shield', cost: 300, effect: () => { temporaryInvincibility = true; } },
-      { name: 'Magnet Power', cost: 250, effect: () => { magnetPowerActive = true; } },
-      { name: 'Jump Boost', cost: 150, effect: () => { player.maxJumps = 3; jumpStrength -= 2; } },
-      { name: 'Time Slowdown', cost: 200, effect: () => { timeSlowdownActive = true; } },
-      { name: 'Double Health', cost: 250, effect: () => { health = maxHealth * 2; } },
-      { name: 'Obstacle Destroyer', cost: 300, effect: () => { obstacleDestroyerActive = true; } },
-      { name: 'Extended Boost Duration', cost: 220, effect: () => { boostDuration *= 1.5; } },
-      { name: 'Bonus Score Multiplier', cost: 200, effect: () => { scoreMultiplier = 1.5; } }
+      { name: 'Jump Boost', cost: 150, effect: () => { player.maxJumps = 3; jumpStrength -= 2; } }
     ];
 
     let currentModifier = modifiers[0];
-    let temporaryInvincibility = false;
-    let magnetPowerActive = false;
-    let timeSlowdownActive = false;
-    let obstacleDestroyerActive = false;
     let scoreMultiplier = 1;
 
     const patterns = [
@@ -352,8 +345,10 @@
 
       if (allRealmsUnlocked) {
         allRealmsButton.style.display = 'none';
+        modifiersDisplay.style.display = 'block'; // Show modifiers when all realms are unlocked
       } else {
         allRealmsButton.style.display = 'block';
+        modifiersDisplay.style.display = 'none'; // Hide modifiers until all realms are unlocked
 
         if (currentRealm >= 5 && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
@@ -363,8 +358,6 @@
           allRealmsButton.style.backgroundColor = '#000';
         }
       }
-
-      updateModifiersDisplay();
     }
 
     function updateModifiersDisplay() {

@@ -246,8 +246,7 @@
     let coins = 0;
     let currentRealm = 1;
     let currentUniverse = 1;
-    let allRealmsUnlocked = false;
-    const realmProgress = [1, 1]; // Track realm progress for each universe
+    const realmProgress = [{ realm: 1, allUnlocked: false }, { realm: 1, allUnlocked: false }]; // Track realm progress for each universe
     const universeColors = ['rgba(0, 0, 255, 0.7)', 'rgba(255, 0, 0, 0.7)'];
     const universeNames = ['Universe 1', 'Universe 2'];
     const universeUnlocked = [true, false]; // Track which universes are unlocked
@@ -318,7 +317,7 @@
           unlockButton.textContent = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
-        } else if (allRealmsUnlocked) {
+        } else if (realmProgress[currentUniverse - 1].allUnlocked) {
           unlockButton.textContent = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
@@ -332,14 +331,14 @@
           unlockButton.disabled = true;
         }
 
-        if (!allRealmsUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
+        if (!realmProgress[currentUniverse - 1].allUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
           unlockButton.disabled = false;
           unlockButton.style.backgroundColor = '#f44336';
           unlockButton.onclick = () => {
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
-              realmProgress[currentUniverse - 1] = i; // Update realm progress for the current universe
+              realmProgress[currentUniverse - 1].realm = i; // Update realm progress for the current universe
               updateLobbyDisplay();
             }
           };
@@ -352,7 +351,7 @@
         unlockButtons.appendChild(unlockButton);
       }
 
-      if (allRealmsUnlocked) {
+      if (realmProgress[currentUniverse - 1].allUnlocked) {
         if (currentUniverse === 1 && !universeUnlocked[1]) {
           allRealmsButton.textContent = 'Go to Universe 2';
           allRealmsButton.disabled = false;
@@ -420,10 +419,9 @@
           button.className = 'universeButton';
           button.style.backgroundColor = '#4caf50';
           button.onclick = () => {
-            realmProgress[currentUniverse - 1] = currentRealm; // Save current realm progress before switching
+            realmProgress[currentUniverse - 1].realm = currentRealm; // Save current realm progress before switching
             currentUniverse = index + 1;
-            currentRealm = realmProgress[index]; // Restore realm progress for the selected universe
-            allRealmsUnlocked = false;
+            currentRealm = realmProgress[index].realm; // Restore realm progress for the selected universe
             updateLobbyDisplay();
           };
           universeButtons.appendChild(button);
@@ -464,16 +462,14 @@
     }
 
     allRealmsButton.addEventListener('click', () => {
-      if (allRealmsUnlocked && currentUniverse === 1 && !universeUnlocked[1]) {
+      if (realmProgress[currentUniverse - 1].allUnlocked && currentUniverse === 1 && !universeUnlocked[1]) {
         currentUniverse = 2;
         universeUnlocked[1] = true;
-        currentRealm = realmProgress[1];
-        allRealmsUnlocked = false;
-        coins = 0;
+        currentRealm = realmProgress[1].realm;
         updateLobbyDisplay();
       } else if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
-        allRealmsUnlocked = true;
+        realmProgress[currentUniverse - 1].allUnlocked = true; // Unlock all realms in the current universe
         updateLobbyDisplay();
       }
     });

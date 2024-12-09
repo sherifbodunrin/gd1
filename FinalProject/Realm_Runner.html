@@ -622,35 +622,32 @@
 
     function gameLoop() {
       if (gameOver) {
-    displayResults();
-    return;
-  }
+        displayResults();
+        return;
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
+      distance += gameSpeed * 0.1;
 
-  distance += gameSpeed * 0.05;  // Adjusted for slower gameplay
+      if (!boostActive && gameSpeed < maxGameSpeed) {
+        gameSpeed = initialGameSpeed + (distance / 500);
+        if (gameSpeed > maxGameSpeed) {
+          gameSpeed = maxGameSpeed;
+        }
+      }
 
-  if (!boostActive && gameSpeed < maxGameSpeed) {
-    gameSpeed = initialGameSpeed + (distance / 500);  // Adjusted for slower speed increase
-    if (gameSpeed > maxGameSpeed) {
-      gameSpeed = maxGameSpeed;
-    }
-  }
+      // Draw the ground and the area below it
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
 
-  // Draw the ground with a transparent fill and a black stroke
-  ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // Ensure fill is fully transparent
-  ctx.strokeStyle = 'black'; // Black outline
-  ctx.lineWidth = 2; // Width of the outline
-  ctx.strokeRect(0, canvas.height - 100, canvas.width, 100); // Draw the outline of the ground
+      if (boostActive) {
+        ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = 5;
+        ctx.strokeRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
+      }
 
-  if (boostActive) {
-    ctx.strokeStyle = 'yellow';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
-  }
-
-  drawPlayerSprite();
+      drawPlayerSprite();
 
       ctx.fillStyle = 'cyan';
       projectiles.forEach((projectile, index) => {

@@ -506,12 +506,10 @@
     }
 
     allRealmsButton.addEventListener('click', () => {
-      if (realmProgress[currentUniverse - 1].allUnlocked && currentUniverse === 1 && !universeUnlocked[1]) {
-        universeUnlocked[1] = true;
-        updateLobbyDisplay();
-      } else if (coins >= allRealmsCost && currentRealm >= 5) {
+      if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
         realmProgress[currentUniverse - 1].allUnlocked = true;
+        allRealmsButton.remove(); // Remove the button after purchase
         updateLobbyDisplay();
       }
     });

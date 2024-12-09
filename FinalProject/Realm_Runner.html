@@ -98,7 +98,7 @@
 
     #gameCanvas {
       display: none;
-      background: transparent; /* Ensure the canvas background is transparent */
+      background: #d9f7be;
       width: 100%;
       height: 100vh;
     }
@@ -233,7 +233,7 @@
     miniMap.height = 100;
 
     const dinosaurSpriteSheet = new Image();
-    dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png'; // Update this path
+    dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png';
 
     const spriteWidth = 108;
     const spriteHeight = 140;
@@ -270,7 +270,7 @@
       'https://www.shutterstock.com/image-vector/alien-planet-landscape-space-background-600nw-2171882971.jpg',
       'https://cdn.vectorstock.com/i/500p/21/70/game-seamless-horizontal-forest-background-vector-7342170.jpg',
       'https://static.vecteezy.com/system/resources/thumbnails/020/599/177/small/white-clouds-bright-blue-sky-background-for-wallpaper-clean-sky-on-mid-day-relaxation-concept-landscape-abstract-background-vector.jpg',
-      'https://cdn1.epicgames.com/ue/product/Screenshot/Volcano2-1920x1080-deb42d03b08844a1ddae1cbeff71a93f.png?resize=1&w=1920'
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx-rjF0p_tkmmAVdwMS_Kv608JxzzOxvaoPw&s'
     ];
 
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
@@ -288,7 +288,10 @@
     let coins = 0;
     let currentRealm = 1;
     let currentUniverse = 1;
-    const realmProgress = [{ realm: 1, allUnlocked: false }, { realm: 1, allUnlocked: false }];
+    const realmProgress = [
+      { realm: 1, allUnlocked: false, unlockedModifiers: [] },
+      { realm: 1, allUnlocked: false, unlockedModifiers: [] }
+    ];
     const universeColors = ['rgba(0, 0, 255, 0.7)', 'rgba(255, 0, 0, 0.7)'];
     const universeNames = ['Universe 1', 'Universe 2'];
     const universeUnlocked = [true, false];
@@ -340,20 +343,15 @@
       collectedBoostPowerUps = 0;
       obstaclesDestroyed = 0;
       scoreMultiplier = 1;
-      
-      currentModifier.effect();
 
-      const bgImage = new Image();
-      bgImage.src = realmBackgrounds[currentRealm - 1];
-      bgImage.onload = () => {
-        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-      };
+      currentModifier.effect();
     }
 
     function updateLobbyDisplay() {
       coinsDisplay.textContent = `Coins: ${coins}`;
       realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
       unlockButtons.innerHTML = '';
+
       document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
 
       for (let i = 1; i <= 5; i++) {
@@ -431,13 +429,14 @@
       modifierButtons.innerHTML = '';
 
       modifiers.forEach(modifier => {
+        const isUnlocked = realmProgress[currentUniverse - 1].unlockedModifiers.includes(modifier.name);
         const button = document.createElement('button');
         button.innerHTML = `${modifier.name} <span class="costText">(${modifier.cost} Coins)</span>`;
-        button.disabled = coins < modifier.cost || currentModifier === modifier;
+        button.disabled = !isUnlocked || coins < modifier.cost || currentModifier === modifier;
         button.className = 'modifierButton';
         
         button.onclick = () => {
-          if (coins >= modifier.cost) {
+          if (isUnlocked && coins >= modifier.cost) {
             coins -= modifier.cost;
             currentModifier = modifier;
             currentModifierText.textContent = modifier.name;
@@ -448,6 +447,13 @@
 
         modifierButtons.appendChild(button);
       });
+    }
+
+    function unlockModifier(modifier) {
+      if (!realmProgress[currentUniverse - 1].unlockedModifiers.includes(modifier.name)) {
+        realmProgress[currentUniverse - 1].unlockedModifiers.push(modifier.name);
+        updateModifiersDisplay();
+      }
     }
 
     function updatePlayerCharacterColor() {
@@ -619,11 +625,6 @@
         displayResults();
         return;
       }
-
-      const bgImage = new Image();
-      bgImage.src = realmBackgrounds[currentRealm - 1];
-      ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
 
@@ -636,9 +637,9 @@
         }
       }
 
+      // Draw the ground and the area below it
       ctx.fillStyle = 'black';
-      ctx.fillRect(0, canvas.height - 100, canvas.width, 100);  // Ground as a black rectangle
-      ctx.fillRect(0, canvas.height, canvas.width, 10);  // This line isn't necessary as the above fills till the end
+      ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
 
       if (boostActive) {
         ctx.strokeStyle = 'yellow';

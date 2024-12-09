@@ -234,11 +234,11 @@
     dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png'; // Update this path
 
     // Define sprite properties
-    const spriteWidth = 172;  // Width of each frame
+    const spriteWidth = 108;  // Width of each frame
     const spriteHeight = 280; // Height of each frame
-    const playerDrawWidth = 50; // Canvas drawing width
-    const playerDrawHeight = 50; // Canvas drawing height
-    const totalFrames = 5;   // Total frames for the animation
+    const playerDrawWidth = 108; // Canvas drawing width
+    const playerDrawHeight = 280; // Canvas drawing height
+    const totalFrames = 8;   // Total frames for the animation
     let currentFrame = 0;
     let frameCounter = 0;
 
@@ -290,7 +290,7 @@
     ];
 
     function resetGame() {
-      player = { x: 50, y: canvas.height - 150, width: playerDrawWidth, height: playerDrawHeight, dy: 0, jumps: 0, maxJumps: 2 };
+      player = { x: 50, y: canvas.height - playerDrawHeight - 100, width: playerDrawWidth, height: playerDrawHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];

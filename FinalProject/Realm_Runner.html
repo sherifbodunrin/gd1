@@ -237,7 +237,7 @@
 
     dinosaurSpriteSheet.onload = () => {
       // Start animation for player character in the lobby
-      setInterval(animatePlayerCharacter, 50); // Faster animation
+      setInterval(animatePlayerCharacter, 50); // Faster animation specifically for the intro
     };
 
     function animatePlayerCharacter() {
@@ -253,7 +253,7 @@
       );
 
       frameCounter++;
-      if (frameCounter % 5 === 0) { // Faster frame change
+      if (frameCounter % 5 === 0) { // Faster frame change for intro
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }
@@ -590,7 +590,7 @@
       );
 
       frameCounter++;
-      if (frameCounter % 5 === 0) { // Faster frame change
+      if (frameCounter % 10 === 0) { // Regular frame change for the main game
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }

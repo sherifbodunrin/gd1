@@ -51,38 +51,37 @@
       font-size: 24px;
       padding: 15px 30px;
       cursor: pointer;
-      background: linear-gradient(145deg, #4a69bd, #6a89cc);
+      background-color: #4caf50;
       color: white;
       border: none;
       border-radius: 15px;
       margin: 10px;
-      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      transition: background-color 0.3s, transform 0.3s;
       width: 220px;
-      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
     #startButton:hover, .universeButton:hover {
-      background: linear-gradient(145deg, #6a89cc, #4a69bd);
+      background-color: #45a049;
       transform: scale(1.05);
-      box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.2);
     }
 
     .unlockButton {
-      background: linear-gradient(145deg, #e55039, #eb2f06);
+      background-color: #f44336;
     }
 
     .unlockButton:disabled {
-      background: #333;
+      background-color: #000;
       color: rgba(0, 0, 0, 0);
       cursor: default;
     }
 
     #allRealmsButton {
-      background: linear-gradient(145deg, #833471, #b33771);
+      background-color: #800080;
     }
 
     #allRealmsButton:disabled {
-      background: #333;
+      background-color: #000;
       color: rgba(0, 0, 0, 0);
       cursor: default;
     }
@@ -139,41 +138,31 @@
       padding: 10px 20px;
       font-size: 18px;
       color: white;
-      background: linear-gradient(145deg, #4caf50, #66bb6a);
+      background-color: #4caf50;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
-      transition: background 0.3s, transform 0.3s;
-    }
-
-    #resultsScreen button:hover {
-      background: linear-gradient(145deg, #66bb6a, #4caf50);
-      transform: scale(1.05);
-      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
     }
     
     .modifierButton {
       font-size: 18px;
       padding: 10px 20px;
       margin: 5px;
-      background: linear-gradient(145deg, #2196f3, #42a5f5);
+      background-color: #2196f3;
       color: white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      transition: background 0.3s;
-      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+      transition: background-color 0.3s;
     }
 
     .modifierButton:disabled {
-      background: #777;
+      background-color: #777;
       cursor: default;
     }
 
     .modifierButton:not(:disabled):hover {
-      background: linear-gradient(145deg, #42a5f5, #2196f3);
-      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+      background-color: #1976d2;
     }
   </style>
 </head>
@@ -844,4 +833,4 @@
     updateLobbyDisplay();
   </script>
 </body>
-</html>
+</html> 

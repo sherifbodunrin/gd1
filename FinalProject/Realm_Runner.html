@@ -87,6 +87,12 @@
       cursor: default;
     }
 
+    .costText {
+      font-size: 14px;
+      display: inline-block;
+      transform: translateY(2px); /* Optional adjustment to vertically align the text */
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -186,7 +192,7 @@
     </div>
 
     <div id="buttonContainer">
-      <button id="allRealmsButton" disabled>ALL REALMS (500 Coins)</button>
+      <button id="allRealmsButton" disabled><span class="costText">ALL REALMS (500 Coins)</span></button>
       <button id="startButton">Start</button>
     </div>
 
@@ -347,11 +353,11 @@
         unlockButton.className = 'unlockButton';
 
         if (i === currentRealm) {
-          unlockButton.textContent = `Realm ${i}`;
+          unlockButton.innerHTML = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
         } else if (realmProgress[currentUniverse - 1].allUnlocked) {
-          unlockButton.textContent = `Realm ${i}`;
+          unlockButton.innerHTML = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
           unlockButton.onclick = () => {
@@ -359,7 +365,7 @@
             updateLobbyDisplay();
           };
         } else {
-          unlockButton.textContent = `Realm ${i} (${realmCosts[i - 1]} Coins)`;
+          unlockButton.innerHTML = `Realm ${i} <span class="costText">(${realmCosts[i - 1]} Coins)</span>`;
           unlockButton.style.backgroundColor = '#000';
           unlockButton.disabled = true;
         }
@@ -396,7 +402,7 @@
 
         if (currentRealm >= 5 && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
-          allRealmsButton.textContent = `ALL REALMS (${allRealmsCost} Coins)`;
+          allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
           allRealmsButton.style.backgroundColor = '#800080';
         } else {
           allRealmsButton.disabled = true;
@@ -416,7 +422,7 @@
 
       modifiers.forEach(modifier => {
         const button = document.createElement('button');
-        button.textContent = `${modifier.name} (${modifier.cost} Coins)`;
+        button.innerHTML = `${modifier.name} <span class="costText">(${modifier.cost} Coins)</span>`;
         button.disabled = coins < modifier.cost || currentModifier === modifier;
         button.className = 'modifierButton';
         

@@ -235,9 +235,9 @@
 
     // Define sprite properties
     const spriteWidth = 108;  // Width of each frame
-    const spriteHeight = 280; // Height of each frame
+    const spriteHeight = 140; // Adjusted height to only use the top half
     const playerDrawWidth = 108; // Canvas drawing width
-    const playerDrawHeight = 140; // Canvas drawing height (half of original)
+    const playerDrawHeight = 140; // Canvas drawing height
     const totalFrames = 8;   // Total frames for the animation
     let currentFrame = 0;
     let frameCounter = 0;
@@ -557,10 +557,13 @@
     function drawPlayerSprite() {
       ctx.clearRect(player.x, player.y, player.width, player.height);
 
+      // Ensure only the top row of the sprite sheet is used
+      const srcX = currentFrame * spriteWidth;
+      const srcY = 0; // Adjust this if only a specific row is used
       ctx.drawImage(
         dinosaurSpriteSheet,
-        currentFrame * spriteWidth,
-        0,
+        srcX,
+        srcY,
         spriteWidth,
         spriteHeight,
         player.x,

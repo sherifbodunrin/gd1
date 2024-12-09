@@ -254,13 +254,15 @@
     const allRealmsCost = 500;
 
     // State object to manage unlocked realms per universe
-    const gameState = JSON.parse(localStorage.getItem('realmRunnerState')) || {
+    const initialGameState = {
       realmsUnlocked: {
         1: [true, false, false, false, false],
         2: [true, false, false, false, false],
         3: [false, false, false, false, false]
-      },
+      }
     };
+
+    const gameState = JSON.parse(localStorage.getItem('realmRunnerState')) || initialGameState;
 
     // Function to save game state to localStorage
     function saveGameState() {
@@ -345,14 +347,14 @@
           unlockButton.disabled = true;
         }
 
-        if (!allRealmsUnlocked && !gameState.realmsUnlocked[currentUniverse][i - 1] && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
+        if (!allRealmsUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
           unlockButton.disabled = false;
           unlockButton.style.backgroundColor = '#f44336';
           unlockButton.onclick = () => {
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
-              gameState.realmsUnlocked[currentUniverse] = [false, false, false, false, false];
+              gameState.realmsUnlocked[currentUniverse] = gameState.realmsUnlocked[currentUniverse].map((_, index) => index === i - 1);
               gameState.realmsUnlocked[currentUniverse][i - 1] = true;
               saveGameState();
               updateLobbyDisplay();
@@ -382,7 +384,7 @@
         allRealmsButton.style.display = 'block';
         modifiersDisplay.style.display = 'none'; // Hide modifiers until all realms are unlocked
 
-        if (currentRealm >= 5 && coins >= allRealmsCost) {
+        if (gameState.realmsUnlocked[currentUniverse].every(unlocked => unlocked) && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
           allRealmsButton.textContent = `ALL REALMS (${allRealmsCost} Coins)`;
           allRealmsButton.style.backgroundColor = '#800080';

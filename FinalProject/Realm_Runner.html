@@ -11,7 +11,7 @@
       margin: 0;
       font-family: 'Orbitron', Arial, sans-serif;
       overflow: hidden;
-      background: url('https://example.com/background.jpg') no-repeat center center fixed;
+      background: no-repeat center center fixed;
       background-size: cover;
     }
 
@@ -73,19 +73,16 @@
     }
 
     .unlockButton:disabled {
-  background-color: #000000; /* A medium gray to indicate 'disabled' */
-  color: #bbb; /* Light gray for text */
-  cursor: default;
-
+      background-color: #000000;
+      color: #bbb;
+      cursor: default;
     }
 
     #allRealmsButton:disabled {
-  background-color: #000000;
-  color: #bbb;
-  cursor: default;
-
-}
-
+      background-color: #000000;
+      color: #bbb;
+      cursor: default;
+    }
 
     .costText {
       font-size: 14px;
@@ -269,6 +266,12 @@
       }
     }
 
+    // Background images for each realm
+    const realmBackgrounds = [
+      'https://cdn.gamedevmarket.net/wp-content/uploads/20191203193738/52e4b1fa4fda491cbb5d0171377827480ab4d184.jpg', // Realm 1
+      // Add URLs for other realm backgrounds here
+    ];
+
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
@@ -362,6 +365,7 @@
           unlockButton.disabled = false;
           unlockButton.onclick = () => {
             currentRealm = i;
+            document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
             updateLobbyDisplay();
           };
         } else {
@@ -377,6 +381,7 @@
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
+              document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
               realmProgress[currentUniverse - 1].realm = i;
               updateLobbyDisplay();
             }
@@ -465,6 +470,7 @@
             realmProgress[currentUniverse - 1].realm = currentRealm;
             currentUniverse = index + 1;
             currentRealm = realmProgress[index].realm;
+            document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
             updateLobbyDisplay();
           }
         };

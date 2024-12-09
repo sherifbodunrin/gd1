@@ -383,15 +383,7 @@
 
       if (realmProgress[currentUniverse - 1].allUnlocked) {
         if (currentUniverse === 1 && !universeUnlocked[1]) {
-          const unlockUniverseButton = document.createElement('button');
-          unlockUniverseButton.textContent = 'Unlock Universe 2';
-          unlockUniverseButton.className = 'universeButton';
-          unlockUniverseButton.style.backgroundColor = '#ffeb3b';
-          unlockUniverseButton.onclick = () => {
-            universeUnlocked[1] = true;
-            updateLobbyDisplay();
-          };
-          universeButtons.appendChild(unlockUniverseButton);
+          universeUnlocked[1] = true; // Unlock universe 2
         }
         modifiersDisplay.style.display = 'block';
         updateModifiersDisplay();
@@ -509,6 +501,7 @@
       if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
         realmProgress[currentUniverse - 1].allUnlocked = true;
+        universeUnlocked[1] = true; // Unlock Universe 2
         allRealmsButton.remove(); // Remove the button after purchase
         updateLobbyDisplay();
       }

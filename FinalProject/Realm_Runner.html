@@ -631,7 +631,7 @@
       distance += gameSpeed * 0.1;
 
       if (!boostActive && gameSpeed < maxGameSpeed) {
-        gameSpeed = initialGameSpeed + (distance / 250);
+        gameSpeed = initialGameSpeed + (distance / 500);
         if (gameSpeed > maxGameSpeed) {
           gameSpeed = maxGameSpeed;
         }

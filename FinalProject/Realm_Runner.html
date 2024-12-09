@@ -306,7 +306,7 @@
     ];
 
     function resetGame() {
-      player = { x: 50, y: canvas.height - playerDrawHeight - 100, width: playerDrawWidth, height: playerDrawHeight, dy: 0, jumps: 0, maxJumps: 2 };
+      player = { x: 50, y: canvas.height - spriteHeight - 100, width: spriteWidth, height: spriteHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];
@@ -439,9 +439,9 @@
       playerCharacterCtx.drawImage(
         dinosaurSpriteSheet,
         0, 0, // Source x, y
-        108, 140, // Source width, height
+        spriteWidth, spriteHeight, // Source width, height
         0, 0, // Destination x, y
-        108, 140 // Destination width, height
+        playerCharacterCanvas.width, playerCharacterCanvas.height // Destination width, height
       );
     }
 

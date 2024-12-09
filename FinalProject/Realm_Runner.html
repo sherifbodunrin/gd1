@@ -383,12 +383,15 @@
 
       if (realmProgress[currentUniverse - 1].allUnlocked) {
         if (currentUniverse === 1 && !universeUnlocked[1]) {
-          allRealmsButton.textContent = 'Go to Universe 2';
-          allRealmsButton.disabled = false;
-          allRealmsButton.style.display = 'block';
-          allRealmsButton.style.backgroundColor = '#ffeb3b';
-        } else {
-          allRealmsButton.style.display = 'none';
+          const unlockUniverseButton = document.createElement('button');
+          unlockUniverseButton.textContent = 'Unlock Universe 2';
+          unlockUniverseButton.className = 'universeButton';
+          unlockUniverseButton.style.backgroundColor = '#ffeb3b';
+          unlockUniverseButton.onclick = () => {
+            universeUnlocked[1] = true;
+            updateLobbyDisplay();
+          };
+          universeButtons.appendChild(unlockUniverseButton);
         }
         modifiersDisplay.style.display = 'block';
         updateModifiersDisplay();
@@ -453,12 +456,15 @@
         const button = document.createElement('button');
         button.textContent = universeNames[index];
         button.className = 'universeButton';
-        button.style.backgroundColor = '#4caf50';
+        button.style.backgroundColor = unlocked ? '#4caf50' : '#777';
+        button.disabled = !unlocked;
         button.onclick = () => {
-          realmProgress[currentUniverse - 1].realm = currentRealm;
-          currentUniverse = index + 1;
-          currentRealm = realmProgress[index].realm;
-          updateLobbyDisplay();
+          if (unlocked) {
+            realmProgress[currentUniverse - 1].realm = currentRealm;
+            currentUniverse = index + 1;
+            currentRealm = realmProgress[index].realm;
+            updateLobbyDisplay();
+          }
         };
         universeButtons.appendChild(button);
       });
@@ -493,14 +499,15 @@
     function restartGame() {
       resultsScreen.style.display = 'none';
       lobby.style.display = 'flex';
+      canvas.style.display = 'none'; // Hide the game canvas
+      miniMap.style.display = 'none'; // Hide the mini-map
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the game canvas
       updateLobbyDisplay();
     }
 
     allRealmsButton.addEventListener('click', () => {
       if (realmProgress[currentUniverse - 1].allUnlocked && currentUniverse === 1 && !universeUnlocked[1]) {
-        currentUniverse = 2;
         universeUnlocked[1] = true;
-        currentRealm = realmProgress[1].realm;
         updateLobbyDisplay();
       } else if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;

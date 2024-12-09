@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Realm Runner</title>
   <style>
-    /* Import custom font from Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
 
     body {
@@ -23,15 +22,15 @@
       justify-content: center;
       height: 100vh;
       text-align: center;
-      color: white; /* White text for contrast against background */
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Subtle text shadow */
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     }
 
     #universeText {
       font-size: 24px;
       margin-bottom: 20px;
-      color: #ffeb3b; /* Gold color for emphasis */
-      animation: fadeIn 2s ease-in-out; /* Fade-in animation */
+      color: #ffeb3b;
+      animation: fadeIn 2s ease-in-out;
     }
 
     #playerCharacter {
@@ -40,7 +39,7 @@
       border-radius: 5px;
       border: 3px solid #fff;
       margin-bottom: 30px;
-      animation: bounce 2s infinite; /* Bouncing animation */
+      animation: bounce 2s infinite;
     }
 
     #buttonContainer {
@@ -74,18 +73,18 @@
     }
 
     .unlockButton:disabled {
-      background-color: #000; /* Set background to black */
-      color: rgba(0, 0, 0, 0); /* Set text color to fully transparent */
+      background-color: #000;
+      color: rgba(0, 0, 0, 0);
       cursor: default;
     }
 
     #allRealmsButton {
-      background-color: #800080; /* Purple */
+      background-color: #800080;
     }
 
     #allRealmsButton:disabled {
-      background-color: #000; /* Pitch black */
-      color: rgba(0, 0, 0, 0); /* Fully transparent text */
+      background-color: #000;
+      color: rgba(0, 0, 0, 0);
       cursor: default;
     }
 
@@ -122,7 +121,7 @@
     }
 
     #modifiersDisplay {
-      display: none; /* Hide modifiers initially */
+      display: none;
     }
 
     #resultsScreen {
@@ -235,9 +234,9 @@
     dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png'; // Update this path
 
     // Define sprite properties
-    const spriteWidth = 50;  // Width of each frame (adjust as needed)
-    const spriteHeight = 50; // Height of each frame (adjust as needed)
-    const totalFrames = 5;   // Total frames for the animation (adjust as needed)
+    const spriteWidth = 48;  // Adjusted width of each frame
+    const spriteHeight = 48; // Adjusted height of each frame
+    const totalFrames = 5;   // Total frames for the animation
     let currentFrame = 0;
     let frameCounter = 0;
 
@@ -257,10 +256,10 @@
     let coins = 0;
     let currentRealm = 1;
     let currentUniverse = 1;
-    const realmProgress = [{ realm: 1, allUnlocked: false }, { realm: 1, allUnlocked: false }]; // Track realm progress for each universe
+    const realmProgress = [{ realm: 1, allUnlocked: false }, { realm: 1, allUnlocked: false }];
     const universeColors = ['rgba(0, 0, 255, 0.7)', 'rgba(255, 0, 0, 0.7)'];
     const universeNames = ['Universe 1', 'Universe 2'];
-    const universeUnlocked = [true, false]; // Track which universes are unlocked
+    const universeUnlocked = [true, false];
     const realmCosts = [0, 50, 100, 150, 200];
     const allRealmsCost = 500;
 
@@ -289,7 +288,7 @@
     ];
 
     function resetGame() {
-      player = { x: 50, y: canvas.height - 150, width: 50, height: 50, dy: 0, jumps: 0, maxJumps: 2 };
+      player = { x: 50, y: canvas.height - 150, width: spriteWidth, height: spriteHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];
@@ -349,7 +348,7 @@
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
-              realmProgress[currentUniverse - 1].realm = i; // Update realm progress for the current universe
+              realmProgress[currentUniverse - 1].realm = i;
               updateLobbyDisplay();
             }
           };
@@ -371,11 +370,11 @@
         } else {
           allRealmsButton.style.display = 'none';
         }
-        modifiersDisplay.style.display = 'block'; // Show modifiers when all realms are unlocked
-        updateModifiersDisplay(); // Update modifiers display
+        modifiersDisplay.style.display = 'block';
+        updateModifiersDisplay();
       } else {
         allRealmsButton.style.display = 'block';
-        modifiersDisplay.style.display = 'none'; // Hide modifiers until all realms are unlocked
+        modifiersDisplay.style.display = 'none';
 
         if (currentRealm >= 5 && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
@@ -430,9 +429,9 @@
           button.className = 'universeButton';
           button.style.backgroundColor = '#4caf50';
           button.onclick = () => {
-            realmProgress[currentUniverse - 1].realm = currentRealm; // Save current realm progress before switching
+            realmProgress[currentUniverse - 1].realm = currentRealm;
             currentUniverse = index + 1;
-            currentRealm = realmProgress[index].realm; // Restore realm progress for the selected universe
+            currentRealm = realmProgress[index].realm;
             updateLobbyDisplay();
           };
           universeButtons.appendChild(button);
@@ -480,7 +479,7 @@
         updateLobbyDisplay();
       } else if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
-        realmProgress[currentUniverse - 1].allUnlocked = true; // Unlock all realms in the current universe
+        realmProgress[currentUniverse - 1].allUnlocked = true;
         updateLobbyDisplay();
       }
     });
@@ -556,22 +555,20 @@
     function drawPlayerSprite() {
       ctx.clearRect(player.x, player.y, player.width, player.height);
 
-      // Draw the current frame of the sprite sheet
       ctx.drawImage(
         dinosaurSpriteSheet,
-        currentFrame * spriteWidth, // Source x
-        0,                          // Source y
-        spriteWidth,                // Source width
-        spriteHeight,               // Source height
-        player.x,                   // Destination x
-        player.y,                   // Destination y
-        player.width,               // Destination width
-        player.height               // Destination height
+        currentFrame * spriteWidth,
+        0,
+        spriteWidth,
+        spriteHeight,
+        player.x,
+        player.y,
+        player.width,
+        player.height
       );
 
-      // Update frame
       frameCounter++;
-      if (frameCounter % 10 === 0) { // Adjust for speed
+      if (frameCounter % 10 === 0) {
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }

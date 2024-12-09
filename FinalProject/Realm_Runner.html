@@ -341,7 +341,7 @@
           unlockButton.textContent = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
-        } else if (gameState.realmsUnlocked[currentUniverse][i - 1] || allRealmsUnlocked) {
+        } else if (allRealmsUnlocked || gameState.realmsUnlocked[currentUniverse][i - 1]) {
           unlockButton.textContent = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
@@ -362,6 +362,7 @@
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
+              gameState.realmsUnlocked[currentUniverse] = [false, false, false, false, false];
               gameState.realmsUnlocked[currentUniverse][i - 1] = true;
               saveGameState();
               updateLobbyDisplay();
@@ -391,7 +392,7 @@
         allRealmsButton.style.display = 'block';
         modifiersDisplay.style.display = 'none'; // Hide modifiers until all realms are unlocked
 
-        if (currentRealm >= 5 && coins >= allRealmsCost) {
+        if (gameState.realmsUnlocked[currentUniverse].every((unlocked) => unlocked) && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
           allRealmsButton.textContent = `ALL REALMS (${allRealmsCost} Coins)`;
           allRealmsButton.style.backgroundColor = '#800080';
@@ -494,9 +495,12 @@
         allRealmsUnlocked = false;
         coins = 0;
         updateLobbyDisplay();
-      } else if (coins >= allRealmsCost && currentRealm >= 5) {
+      } else if (coins >= allRealmsCost) {
         coins -= allRealmsCost;
         allRealmsUnlocked = true;
+        for (let i = 0; i < 5; i++) {
+          gameState.realmsUnlocked[currentUniverse][i] = true;
+        }
         saveGameState();
         updateLobbyDisplay();
       }

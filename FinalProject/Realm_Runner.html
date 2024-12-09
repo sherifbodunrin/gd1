@@ -637,7 +637,8 @@
       }
 
       ctx.fillStyle = 'black';
-      ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
+      ctx.fillRect(0, canvas.height - 100, canvas.width, 100);  // Ground as a black rectangle
+      ctx.fillRect(0, canvas.height, canvas.width, 10);  // This line isn't necessary as the above fills till the end
 
       if (boostActive) {
         ctx.strokeStyle = 'yellow';

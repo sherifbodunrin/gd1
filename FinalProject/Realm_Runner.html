@@ -73,14 +73,18 @@
     }
 
     .unlockButton:disabled {
-      background-color: #2f1e14;
-      color: rgba(0, 0, 0, 0);
-      cursor: default;
+  background-color: #555; /* A medium gray to indicate 'disabled' */
+  color: #bbb; /* Light gray for text */
+  cursor: default;
+  opacity: 0.5; /* Optional: reduces the overall opacity to indicate inactivity */
     }
 
-    #allRealmsButton {
-      background-color: #6b4226;
-    }
+    #allRealmsButton:disabled {
+  background-color: #555;
+  color: #bbb;
+  cursor: default;
+  opacity: 0.5;
+}
 
     #allRealmsButton:disabled {
       background-color: #2f1e14;

@@ -1,7 +1,3 @@
-html
-
-Copy code
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -251,6 +247,7 @@ Copy code
     let currentRealm = 1;
     let currentUniverse = 1;
     let allRealmsUnlocked = false;
+    const realmProgress = [1, 1]; // Track realm progress for each universe
     const universeColors = ['rgba(0, 0, 255, 0.7)', 'rgba(255, 0, 0, 0.7)'];
     const universeNames = ['Universe 1', 'Universe 2'];
     const universeUnlocked = [true, false]; // Track which universes are unlocked
@@ -342,6 +339,7 @@ Copy code
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
+              realmProgress[currentUniverse - 1] = i; // Update realm progress for the current universe
               updateLobbyDisplay();
             }
           };
@@ -422,10 +420,10 @@ Copy code
           button.className = 'universeButton';
           button.style.backgroundColor = '#4caf50';
           button.onclick = () => {
+            realmProgress[currentUniverse - 1] = currentRealm; // Save current realm progress before switching
             currentUniverse = index + 1;
-            currentRealm = 1;
+            currentRealm = realmProgress[index]; // Restore realm progress for the selected universe
             allRealmsUnlocked = false;
-            coins = 0;
             updateLobbyDisplay();
           };
           universeButtons.appendChild(button);
@@ -469,7 +467,7 @@ Copy code
       if (allRealmsUnlocked && currentUniverse === 1 && !universeUnlocked[1]) {
         currentUniverse = 2;
         universeUnlocked[1] = true;
-        currentRealm = 1;
+        currentRealm = realmProgress[1];
         allRealmsUnlocked = false;
         coins = 0;
         updateLobbyDisplay();

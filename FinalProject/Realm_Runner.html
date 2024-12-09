@@ -34,8 +34,8 @@
     }
 
     #playerCharacter {
-      width: 108px;
-      height: 140px;
+      width: 96px;  /* Smaller width */
+      height: 120px; /* Smaller height */
       margin-bottom: 30px;
       background-color: transparent;
     }
@@ -47,7 +47,7 @@
       margin-top: 20px;
     }
 
-    #startButton, .unlockButton, #allRealmsButton, #universeButton {
+    #startButton, .unlockButton, #allRealmsButton, .universeButton {
       font-size: 24px;
       padding: 15px 30px;
       cursor: pointer;
@@ -61,7 +61,7 @@
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
-    #startButton:hover {
+    #startButton:hover, .universeButton:hover {
       background-color: #45a049;
       transform: scale(1.05);
     }
@@ -217,8 +217,8 @@
     const playerCharacterCtx = playerCharacterCanvas.getContext('2d');
     const universeButtons = document.getElementById('universeButtons');
 
-    playerCharacterCanvas.width = 108;
-    playerCharacterCanvas.height = 140;
+    playerCharacterCanvas.width = 96;  // Smaller width
+    playerCharacterCanvas.height = 120; // Smaller height
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -231,6 +231,8 @@
 
     const spriteWidth = 108;  // Width of each frame
     const spriteHeight = 140; // Height of each frame
+    const scaledWidth = 96;   // Scaled width for gameplay
+    const scaledHeight = 120; // Scaled height for gameplay
     const totalFrames = 8;    // Total frames for the animation
     let currentFrame = 0;
     let frameCounter = 0;
@@ -306,7 +308,7 @@
     ];
 
     function resetGame() {
-      player = { x: 50, y: canvas.height - spriteHeight - 100, width: spriteWidth, height: spriteHeight, dy: 0, jumps: 0, maxJumps: 2 };
+      player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];
@@ -448,19 +450,17 @@
     function updateUniverseButtons() {
       universeButtons.innerHTML = '';
       universeUnlocked.forEach((unlocked, index) => {
-        if (unlocked) {
-          const button = document.createElement('button');
-          button.textContent = universeNames[index];
-          button.className = 'universeButton';
-          button.style.backgroundColor = '#4caf50';
-          button.onclick = () => {
-            realmProgress[currentUniverse - 1].realm = currentRealm;
-            currentUniverse = index + 1;
-            currentRealm = realmProgress[index].realm;
-            updateLobbyDisplay();
-          };
-          universeButtons.appendChild(button);
-        }
+        const button = document.createElement('button');
+        button.textContent = universeNames[index];
+        button.className = 'universeButton';
+        button.style.backgroundColor = '#4caf50';
+        button.onclick = () => {
+          realmProgress[currentUniverse - 1].realm = currentRealm;
+          currentUniverse = index + 1;
+          currentRealm = realmProgress[index].realm;
+          updateLobbyDisplay();
+        };
+        universeButtons.appendChild(button);
       });
     }
 

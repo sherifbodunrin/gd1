@@ -230,6 +230,17 @@
     miniMap.width = window.innerWidth;
     miniMap.height = 100;
 
+    // Load the sprite sheet
+    const dinosaurSpriteSheet = new Image();
+    dinosaurSpriteSheet.src = 'assets/images/dinosaur_sprite_sheet.png'; // Update this path
+
+    // Define sprite properties
+    const spriteWidth = 50;  // Width of each frame (adjust as needed)
+    const spriteHeight = 50; // Height of each frame (adjust as needed)
+    const totalFrames = 5;   // Total frames for the animation (adjust as needed)
+    let currentFrame = 0;
+    let frameCounter = 0;
+
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
@@ -542,6 +553,29 @@
       }
     }
 
+    function drawPlayerSprite() {
+      ctx.clearRect(player.x, player.y, player.width, player.height);
+
+      // Draw the current frame of the sprite sheet
+      ctx.drawImage(
+        dinosaurSpriteSheet,
+        currentFrame * spriteWidth, // Source x
+        0,                          // Source y
+        spriteWidth,                // Source width
+        spriteHeight,               // Source height
+        player.x,                   // Destination x
+        player.y,                   // Destination y
+        player.width,               // Destination width
+        player.height               // Destination height
+      );
+
+      // Update frame
+      frameCounter++;
+      if (frameCounter % 10 === 0) { // Adjust for speed
+        currentFrame = (currentFrame + 1) % totalFrames;
+      }
+    }
+
     function gameLoop() {
       if (gameOver) {
         displayResults();
@@ -567,8 +601,8 @@
         ctx.lineWidth = 5;
         ctx.strokeRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
       }
-      ctx.fillStyle = universeColors[currentUniverse - 1];
-      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      drawPlayerSprite();
 
       ctx.fillStyle = 'cyan';
       projectiles.forEach((projectile, index) => {

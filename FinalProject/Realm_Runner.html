@@ -34,12 +34,13 @@
     }
 
     #playerCharacter {
-      width: 50px;
-      height: 50px;
+      width: 108px;
+      height: 140px;
       border-radius: 5px;
       border: 3px solid #fff;
       margin-bottom: 30px;
       animation: bounce 2s infinite;
+      background-color: transparent; /* Make sure any background doesn't conflict */
     }
 
     #buttonContainer {
@@ -177,7 +178,7 @@
 <body>
   <div id="lobby">
     <div id="universeText">Universe 1</div>
-    <div id="playerCharacter"></div>
+    <canvas id="playerCharacter"></canvas>
     <h1>Realm Runner</h1>
     <div id="coinsDisplay">Coins: 0</div>
     <div id="realmsDisplay">
@@ -221,8 +222,12 @@
     const miniCtx = miniMap.getContext('2d');
     const resultsScreen = document.getElementById('resultsScreen');
     const performanceDisplay = document.getElementById('performance');
-    const playerCharacter = document.getElementById('playerCharacter');
+    const playerCharacterCanvas = document.getElementById('playerCharacter');
+    const playerCharacterCtx = playerCharacterCanvas.getContext('2d');
     const universeButtons = document.getElementById('universeButtons');
+
+    playerCharacterCanvas.width = 108;
+    playerCharacterCanvas.height = 140;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -232,6 +237,17 @@
     // Load the sprite sheet
     const dinosaurSpriteSheet = new Image();
     dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png'; // Update this path
+
+    dinosaurSpriteSheet.onload = () => {
+      // Draw the first frame of the sprite sheet onto the playerCharacter canvas
+      playerCharacterCtx.drawImage(
+        dinosaurSpriteSheet,
+        0, 0, // Source x, y
+        108, 140, // Source width, height
+        0, 0, // Destination x, y
+        108, 140 // Destination width, height
+      );
+    };
 
     // Define sprite properties
     const spriteWidth = 108;  // Width of each frame
@@ -419,7 +435,14 @@
     }
 
     function updatePlayerCharacterColor() {
-      playerCharacter.style.backgroundColor = universeColors[currentUniverse - 1];
+      playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
+      playerCharacterCtx.drawImage(
+        dinosaurSpriteSheet,
+        0, 0, // Source x, y
+        108, 140, // Source width, height
+        0, 0, // Destination x, y
+        108, 140 // Destination width, height
+      );
     }
 
     function updateUniverseButtons() {

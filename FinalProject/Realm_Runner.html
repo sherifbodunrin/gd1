@@ -53,7 +53,7 @@
       padding: 15px 30px;
       cursor: pointer;
       background-color: #4b3621; /* Dark brown color for a tomb-like feel */
-      color: #008000; /* Light golden color */
+      color: #ffebcd; /* Light golden color */
       border: 2px solid #8b4513; /* SaddleBrown border */
       border-radius: 15px;
       margin: 10px;
@@ -76,14 +76,14 @@
   background-color: #000000; /* A medium gray to indicate 'disabled' */
   color: #bbb; /* Light gray for text */
   cursor: default;
-  opacity: 0.5; /* Optional: reduces the overall opacity to indicate inactivity */
+
     }
 
     #allRealmsButton:disabled {
   background-color: #000000;
   color: #bbb;
   cursor: default;
-  opacity: 0.5;
+
 }
 
     #allRealmsButton:disabled {
@@ -389,7 +389,7 @@
         }
 
         if (!unlockButton.disabled) {
-          unlockButton.style.color = '#008000';
+          unlockButton.style.color = '#ffebcd';
         }
 
         unlockButtons.appendChild(unlockButton);
@@ -463,7 +463,7 @@
         button.textContent = universeNames[index];
         button.className = 'universeButton';
         button.style.backgroundColor = unlocked ? '#4b3621' : '#2f1e14';
-        button.style.color = unlocked ? '#008000' : '#777';
+        button.style.color = unlocked ? '#ffebcd' : '#777';
         button.disabled = !unlocked;
         button.onclick = () => {
           if (unlocked) {

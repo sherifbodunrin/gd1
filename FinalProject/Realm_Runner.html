@@ -36,11 +36,8 @@
     #playerCharacter {
       width: 108px;
       height: 140px;
-      border-radius: 5px;
-      border: 3px solid #fff;
       margin-bottom: 30px;
-      animation: bounce 2s infinite;
-      background-color: transparent; /* Make sure any background doesn't conflict */
+      background-color: transparent;
     }
 
     #buttonContainer {
@@ -92,12 +89,6 @@
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
-    }
-
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-30px); }
-      60% { transform: translateY(-15px); }
     }
 
     #gameCanvas {
@@ -238,25 +229,34 @@
     const dinosaurSpriteSheet = new Image();
     dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png'; // Update this path
 
-    dinosaurSpriteSheet.onload = () => {
-      // Draw the first frame of the sprite sheet onto the playerCharacter canvas
-      playerCharacterCtx.drawImage(
-        dinosaurSpriteSheet,
-        0, 0, // Source x, y
-        108, 140, // Source width, height
-        0, 0, // Destination x, y
-        108, 140 // Destination width, height
-      );
-    };
-
-    // Define sprite properties
     const spriteWidth = 108;  // Width of each frame
-    const spriteHeight = 140; // Adjusted height to only use the top half
-    const playerDrawWidth = 108; // Canvas drawing width
-    const playerDrawHeight = 140; // Canvas drawing height
-    const totalFrames = 8;   // Total frames for the animation
+    const spriteHeight = 140; // Height of each frame
+    const totalFrames = 8;    // Total frames for the animation
     let currentFrame = 0;
     let frameCounter = 0;
+
+    dinosaurSpriteSheet.onload = () => {
+      // Start animation for player character in the lobby
+      setInterval(animatePlayerCharacter, 50); // Faster animation
+    };
+
+    function animatePlayerCharacter() {
+      playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
+
+      const srcX = currentFrame * spriteWidth;
+      playerCharacterCtx.drawImage(
+        dinosaurSpriteSheet,
+        srcX, 0,  // Source x, y
+        spriteWidth, spriteHeight,  // Source width, height
+        0, 0,  // Destination x, y
+        playerCharacterCanvas.width, playerCharacterCanvas.height  // Destination width, height
+      );
+
+      frameCounter++;
+      if (frameCounter % 5 === 0) { // Faster frame change
+        currentFrame = (currentFrame + 1) % totalFrames;
+      }
+    }
 
     // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
@@ -580,23 +580,17 @@
     function drawPlayerSprite() {
       ctx.clearRect(player.x, player.y, player.width, player.height);
 
-      // Ensure only the top row of the sprite sheet is used
       const srcX = currentFrame * spriteWidth;
-      const srcY = 0; // Adjust this if only a specific row is used
       ctx.drawImage(
         dinosaurSpriteSheet,
-        srcX,
-        srcY,
-        spriteWidth,
-        spriteHeight,
-        player.x,
-        player.y,
-        player.width,
-        player.height
+        srcX, 0,
+        spriteWidth, spriteHeight,
+        player.x, player.y,
+        player.width, player.height
       );
 
       frameCounter++;
-      if (frameCounter % 10 === 0) {
+      if (frameCounter % 5 === 0) { // Faster frame change
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }

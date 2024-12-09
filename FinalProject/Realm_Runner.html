@@ -233,7 +233,7 @@
     miniMap.height = 100;
 
     const dinosaurSpriteSheet = new Image();
-    dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png';
+    dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png'; // Update this path
 
     const spriteWidth = 108;
     const spriteHeight = 140;
@@ -275,8 +275,8 @@
 
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
-    const maxGameSpeed = 4.5;
-    const boostGameSpeed = 10;
+    const maxGameSpeed = 6;
+    const boostGameSpeed = 15;
     const maxHealth = 2;
     const obstacleSpacing = 1000;
     const healPowerUpSpacing = 7000;
@@ -295,12 +295,19 @@
     const realmCosts = [0, 50, 100, 150, 200];
     const allRealmsCost = 500;
 
-    const universeModifiers = [
-      [{ name: 'None', cost: 0, effect: () => {} }], // Universe 1 modifiers
-      [] // Universe 2 modifiers
+    let collectedHealPowerUps = 0;
+    let collectedBoostPowerUps = 0;
+    let obstaclesDestroyed = 0;
+    let coinsCollected = 0;
+
+    const modifiers = [
+      { name: 'None', cost: 0, effect: () => {} },
+      { name: 'Double Coins', cost: 100, effect: () => { coinsCollected *= 2; } },
+      { name: 'Extra Health', cost: 150, effect: () => { health = maxHealth + 1; } },
+      { name: 'Jump Boost', cost: 150, effect: () => { player.maxJumps = 3; jumpStrength -= 2; } }
     ];
 
-    let currentModifier = universeModifiers[currentUniverse - 1][0];
+    let currentModifier = modifiers[0];
     let scoreMultiplier = 1;
 
     const patterns = [
@@ -423,7 +430,7 @@
       const currentModifierText = document.getElementById('currentModifier');
       modifierButtons.innerHTML = '';
 
-      universeModifiers[currentUniverse - 1].forEach(modifier => {
+      modifiers.forEach(modifier => {
         const button = document.createElement('button');
         button.innerHTML = `${modifier.name} <span class="costText">(${modifier.cost} Coins)</span>`;
         button.disabled = coins < modifier.cost || currentModifier === modifier;
@@ -468,7 +475,6 @@
             realmProgress[currentUniverse - 1].realm = currentRealm;
             currentUniverse = index + 1;
             currentRealm = realmProgress[index].realm;
-            currentModifier = universeModifiers[currentUniverse - 1][0];
             document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
             updateLobbyDisplay();
           }
@@ -517,6 +523,7 @@
         coins -= allRealmsCost;
         realmProgress[currentUniverse - 1].allUnlocked = true;
         universeUnlocked[1] = true;
+        allRealmsButton.remove();
         updateLobbyDisplay();
       }
     });
@@ -629,7 +636,7 @@
         }
       }
 
-      ctx.fillStyle = 'black'; // Adjust the ground color here
+      ctx.fillStyle = 'black';
       ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
 
       if (boostActive) {

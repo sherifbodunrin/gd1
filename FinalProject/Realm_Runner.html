@@ -7,25 +7,25 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Uncial+Antiqua&display=swap');
 
-   body {
-  margin: 0;
-  font-family: 'Orbitron', Arial, sans-serif;
-  overflow: hidden;
-  background: no-repeat center center fixed;
-  background-size: cover;
-}
+    body {
+      margin: 0;
+      font-family: 'Orbitron', Arial, sans-serif;
+      overflow: hidden;
+      background: no-repeat center center fixed;
+      background-size: cover;
+    }
 
-#lobby {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  text-align: center;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-  background: transparent; /* Ensure no background color */
-}
+    #lobby {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      background: transparent;
+    }
 
     #universeText {
       font-size: 24px;
@@ -35,8 +35,8 @@
     }
 
     #playerCharacter {
-      width: 96px;  /* Smaller width */
-      height: 120px; /* Smaller height */
+      width: 96px;
+      height: 120px;
       margin-bottom: 30px;
       background-color: transparent;
     }
@@ -53,9 +53,9 @@
       font-size: 24px;
       padding: 15px 30px;
       cursor: pointer;
-      background-color: #4b3621; /* Dark brown color for a tomb-like feel */
-      color: #ffebcd; /* Light golden color */
-      border: 2px solid #8b4513; /* SaddleBrown border */
+      background-color: #4b3621;
+      color: #ffebcd;
+      border: 2px solid #8b4513;
       border-radius: 15px;
       margin: 10px;
       transition: background-color 0.3s, transform 0.3s;
@@ -65,7 +65,7 @@
     }
 
     #startButton:hover, .universeButton:hover {
-      background-color: #3d2b1f; /* Darker shade for hover effect */
+      background-color: #3d2b1f;
       transform: scale(1.05);
     }
 
@@ -88,7 +88,7 @@
     .costText {
       font-size: 14px;
       display: inline-block;
-      transform: translateY(2px); /* Optional adjustment to vertically align the text */
+      transform: translateY(2px);
     }
 
     @keyframes fadeIn {
@@ -98,7 +98,7 @@
 
     #gameCanvas {
       display: none;
-      background: #d9f7be;
+      background: transparent; /* Ensure the canvas background is transparent */
       width: 100%;
       height: 100vh;
     }
@@ -224,29 +224,27 @@
     const playerCharacterCtx = playerCharacterCanvas.getContext('2d');
     const universeButtons = document.getElementById('universeButtons');
 
-    playerCharacterCanvas.width = 96;  // Smaller width
-    playerCharacterCanvas.height = 120; // Smaller height
+    playerCharacterCanvas.width = 96;
+    playerCharacterCanvas.height = 120;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     miniMap.width = window.innerWidth;
     miniMap.height = 100;
 
-    // Load the sprite sheet
     const dinosaurSpriteSheet = new Image();
     dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png'; // Update this path
 
-    const spriteWidth = 108;  // Width of each frame
-    const spriteHeight = 140; // Height of each frame
-    const scaledWidth = 96;   // Scaled width for gameplay
-    const scaledHeight = 120; // Scaled height for gameplay
-    const totalFrames = 8;    // Total frames for the animation
+    const spriteWidth = 108;
+    const spriteHeight = 140;
+    const scaledWidth = 96;
+    const scaledHeight = 120;
+    const totalFrames = 8;
     let currentFrame = 0;
     let frameCounter = 0;
 
     dinosaurSpriteSheet.onload = () => {
-      // Start animation for player character in the lobby
-      setInterval(animatePlayerCharacter, 50); // Faster animation specifically for the intro
+      setInterval(animatePlayerCharacter, 50);
     };
 
     function animatePlayerCharacter() {
@@ -255,32 +253,26 @@
       const srcX = currentFrame * spriteWidth;
       playerCharacterCtx.drawImage(
         dinosaurSpriteSheet,
-        srcX, 0,  // Source x, y
-        spriteWidth, spriteHeight,  // Source width, height
-        0, 0,  // Destination x, y
-        playerCharacterCanvas.width, playerCharacterCanvas.height  // Destination width, height
+        srcX, 0,
+        spriteWidth, spriteHeight,
+        0, 0,
+        playerCharacterCanvas.width, playerCharacterCanvas.height
       );
 
       frameCounter++;
-      if (frameCounter % 5 === 0) { // Faster frame change for intro
+      if (frameCounter % 5 === 0) {
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }
 
-    // Background images for each realm
     const realmBackgrounds = [
-      'https://img.freepik.com/premium-vector/desert-day-game-background_7814-292.jpg', // Realm 1
+      'https://img.freepik.com/premium-vector/desert-day-game-background_7814-292.jpg',
       'https://www.shutterstock.com/image-vector/alien-planet-landscape-space-background-600nw-2171882971.jpg',
       'https://cdn.vectorstock.com/i/500p/21/70/game-seamless-horizontal-forest-background-vector-7342170.jpg',
       'https://static.vecteezy.com/system/resources/thumbnails/020/599/177/small/white-clouds-bright-blue-sky-background-for-wallpaper-clean-sky-on-mid-day-relaxation-concept-landscape-abstract-background-vector.jpg',
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx-rjF0p_tkmmAVdwMS_Kv608JxzzOxvaoPw&s'
-      
-      
-      
-      // Add URLs for other realm backgrounds here
     ];
 
-    // Game variables
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
     const maxGameSpeed = 6;
@@ -303,13 +295,11 @@
     const realmCosts = [0, 50, 100, 150, 200];
     const allRealmsCost = 500;
 
-    // Performance tracking
     let collectedHealPowerUps = 0;
     let collectedBoostPowerUps = 0;
     let obstaclesDestroyed = 0;
     let coinsCollected = 0;
 
-    // Modifiers
     const modifiers = [
       { name: 'None', cost: 0, effect: () => {} },
       { name: 'Double Coins', cost: 100, effect: () => { coinsCollected *= 2; } },
@@ -327,116 +317,113 @@
       { ground: false, flying: true }
     ];
 
-   function resetGame() {
-  player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
-  obstacles = [];
-  flyingObstacles = [];
-  healPowerUps = [];
-  boostPowerUps = [];
-  projectiles = [];
-  gameSpeed = initialGameSpeed;
-  gravity = 0.4;
-  jumpStrength = -10;
-  gameOver = false;
-  health = maxHealth;
-  distance = 0;
-  obstacleInterval = 0;
-  healPowerUpInterval = 0;
-  boostPowerUpInterval = 0;
-  boostActive = false;
-  boostTimer = 0;
-  abilityMeter = maxAbilityMeter;
-  collectedHealPowerUps = 0;
-  collectedBoostPowerUps = 0;
-  obstaclesDestroyed = 0;
-  scoreMultiplier = 1;
-  
-  currentModifier.effect();
+    function resetGame() {
+      player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
+      obstacles = [];
+      flyingObstacles = [];
+      healPowerUps = [];
+      boostPowerUps = [];
+      projectiles = [];
+      gameSpeed = initialGameSpeed;
+      gravity = 0.4;
+      jumpStrength = -10;
+      gameOver = false;
+      health = maxHealth;
+      distance = 0;
+      obstacleInterval = 0;
+      healPowerUpInterval = 0;
+      boostPowerUpInterval = 0;
+      boostActive = false;
+      boostTimer = 0;
+      abilityMeter = maxAbilityMeter;
+      collectedHealPowerUps = 0;
+      collectedBoostPowerUps = 0;
+      obstaclesDestroyed = 0;
+      scoreMultiplier = 1;
+      
+      currentModifier.effect();
 
-  // Set the canvas background
-  const bgImage = new Image();
-  bgImage.src = realmBackgrounds[currentRealm - 1];
-  bgImage.onload = () => {
-    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-  };
-}
+      const bgImage = new Image();
+      bgImage.src = realmBackgrounds[currentRealm - 1];
+      bgImage.onload = () => {
+        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      };
+    }
 
     function updateLobbyDisplay() {
-  coinsDisplay.textContent = `Coins: ${coins}`;
-  realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
-  unlockButtons.innerHTML = '';
+      coinsDisplay.textContent = `Coins: ${coins}`;
+      realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
+      unlockButtons.innerHTML = '';
+      document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
 
-  // Update background image based on current realm
-  document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
+      for (let i = 1; i <= 5; i++) {
+        const unlockButton = document.createElement('button');
+        unlockButton.className = 'unlockButton';
 
-  for (let i = 1; i <= 5; i++) {
-    const unlockButton = document.createElement('button');
-    unlockButton.className = 'unlockButton';
-
-    if (i === currentRealm) {
-      unlockButton.innerHTML = `Realm ${i}`;
-      unlockButton.style.backgroundColor = '#4caf50';
-      unlockButton.disabled = false;
-    } else if (realmProgress[currentUniverse - 1].allUnlocked) {
-      unlockButton.innerHTML = `Realm ${i}`;
-      unlockButton.style.backgroundColor = '#4caf50';
-      unlockButton.disabled = false;
-      unlockButton.onclick = () => {
-        currentRealm = i;
-        document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`; // Update background on click
-        updateLobbyDisplay();
-      };
-    } else {
-      unlockButton.innerHTML = `Realm ${i} <span class="costText">(${realmCosts[i - 1]} Coins)</span>`;
-      unlockButton.style.backgroundColor = '#2f1e14';
-      unlockButton.disabled = true;
-    }
-
-    if (!realmProgress[currentUniverse - 1].allUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
-      unlockButton.disabled = false;
-      unlockButton.style.backgroundColor = '#5d4037';
-      unlockButton.onclick = () => {
-        if (coins >= realmCosts[i - 1]) {
-          coins -= realmCosts[i - 1];
-          currentRealm = i;
-          document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`; // Update background on unlock
-          realmProgress[currentUniverse - 1].realm = i;
-          updateLobbyDisplay();
+        if (i === currentRealm) {
+          unlockButton.innerHTML = `Realm ${i}`;
+          unlockButton.style.backgroundColor = '#4caf50';
+          unlockButton.disabled = false;
+        } else if (realmProgress[currentUniverse - 1].allUnlocked) {
+          unlockButton.innerHTML = `Realm ${i}`;
+          unlockButton.style.backgroundColor = '#4caf50';
+          unlockButton.disabled = false;
+          unlockButton.onclick = () => {
+            currentRealm = i;
+            document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
+            updateLobbyDisplay();
+          };
+        } else {
+          unlockButton.innerHTML = `Realm ${i} <span class="costText">(${realmCosts[i - 1]} Coins)</span>`;
+          unlockButton.style.backgroundColor = '#2f1e14';
+          unlockButton.disabled = true;
         }
-      };
+
+        if (!realmProgress[currentUniverse - 1].allUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
+          unlockButton.disabled = false;
+          unlockButton.style.backgroundColor = '#5d4037';
+          unlockButton.onclick = () => {
+            if (coins >= realmCosts[i - 1]) {
+              coins -= realmCosts[i - 1];
+              currentRealm = i;
+              document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
+              realmProgress[currentUniverse - 1].realm = i;
+              updateLobbyDisplay();
+            }
+          };
+        }
+
+        if (!unlockButton.disabled) {
+          unlockButton.style.color = '#ffebcd';
+        }
+
+        unlockButtons.appendChild(unlockButton);
+      }
+
+      if (realmProgress[currentUniverse - 1].allUnlocked) {
+        if (currentUniverse === 1 && !universeUnlocked[1]) {
+          universeUnlocked[1] = true;
+        }
+        modifiersDisplay.style.display = 'block';
+        updateModifiersDisplay();
+      } else {
+        allRealmsButton.style.display = 'block';
+        modifiersDisplay.style.display = 'none';
+
+        if (currentRealm >= 5 && coins >= allRealmsCost) {
+          allRealmsButton.disabled = false;
+          allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
+          allRealmsButton.style.backgroundColor = '#6b4226';
+        } else {
+          allRealmsButton.disabled = true;
+          allRealmsButton.style.backgroundColor = '#2f1e14';
+        }
+      }
+
+      document.getElementById('universeText').textContent = universeNames[currentUniverse - 1];
+      updatePlayerCharacterColor();
+      updateUniverseButtons();
     }
-
-    if (!unlockButton.disabled) {
-      unlockButton.style.color = '#ffebcd';
-    }
-
-    unlockButtons.appendChild(unlockButton);
-  }
-
-  if (realmProgress[currentUniverse - 1].allUnlocked) {
-    if (currentUniverse === 1 && !universeUnlocked[1]) {
-      universeUnlocked[1] = true; // Unlock universe 2
-    }
-    modifiersDisplay.style.display = 'block';
-    updateModifiersDisplay();
-  } else {
-    allRealmsButton.style.display = 'block';
-    modifiersDisplay.style.display = 'none';
-
-    if (currentRealm >= 5 && coins >= allRealmsCost) {
-      allRealmsButton.disabled = false;
-      allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
-      allRealmsButton.style.backgroundColor = '#6b4226';
-    } else {
-      allRealmsButton.disabled = true;
-      allRealmsButton.style.backgroundColor = '#2f1e14';
-    }
-  }
-
-  document.getElementById('universeText').textContent = universeNames[currentUniverse - 1];
-  updatePlayerCharacterColor();
-  updateUniverseButtons();
-}
 
     function updateModifiersDisplay() {
       const modifierButtons = document.getElementById('modifierButtons');
@@ -467,10 +454,10 @@
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
       playerCharacterCtx.drawImage(
         dinosaurSpriteSheet,
-        0, 0, // Source x, y
-        spriteWidth, spriteHeight, // Source width, height
-        0, 0, // Destination x, y
-        playerCharacterCanvas.width, playerCharacterCanvas.height // Destination width, height
+        0, 0,
+        spriteWidth, spriteHeight,
+        0, 0,
+        playerCharacterCanvas.width, playerCharacterCanvas.height
       );
     }
 
@@ -525,9 +512,9 @@
     function restartGame() {
       resultsScreen.style.display = 'none';
       lobby.style.display = 'flex';
-      canvas.style.display = 'none'; // Hide the game canvas
-      miniMap.style.display = 'none'; // Hide the mini-map
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the game canvas
+      canvas.style.display = 'none';
+      miniMap.style.display = 'none';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       updateLobbyDisplay();
     }
 
@@ -535,8 +522,8 @@
       if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
         realmProgress[currentUniverse - 1].allUnlocked = true;
-        universeUnlocked[1] = true; // Unlock Universe 2
-        allRealmsButton.remove(); // Remove the button after purchase
+        universeUnlocked[1] = true;
+        allRealmsButton.remove();
         updateLobbyDisplay();
       }
     });
@@ -622,25 +609,23 @@
       );
 
       frameCounter++;
-      if (frameCounter % 10 === 0) { // Regular frame change for the main game
+      if (frameCounter % 10 === 0) {
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }
 
     function gameLoop() {
-  if (gameOver) {
-    displayResults();
-    return;
-  }
+      if (gameOver) {
+        displayResults();
+        return;
+      }
 
-  // Draw the background image at the start of each frame
-  const bgImage = new Image();
-  bgImage.src = realmBackgrounds[currentRealm - 1];
-  ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      const bgImage = new Image();
+      bgImage.src = realmBackgrounds[currentRealm - 1];
+      ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-  // Rest of the game logic and rendering
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
 
       distance += gameSpeed * 0.1;
 

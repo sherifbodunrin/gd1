@@ -327,32 +327,39 @@
       { ground: false, flying: true }
     ];
 
-    function resetGame() {
-      player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
-      obstacles = [];
-      flyingObstacles = [];
-      healPowerUps = [];
-      boostPowerUps = [];
-      projectiles = [];
-      gameSpeed = initialGameSpeed;
-      gravity = 0.4;
-      jumpStrength = -10;
-      gameOver = false;
-      health = maxHealth;
-      distance = 0;
-      obstacleInterval = 0;
-      healPowerUpInterval = 0;
-      boostPowerUpInterval = 0;
-      boostActive = false;
-      boostTimer = 0;
-      abilityMeter = maxAbilityMeter;
-      collectedHealPowerUps = 0;
-      collectedBoostPowerUps = 0;
-      obstaclesDestroyed = 0;
-      scoreMultiplier = 1;
+   function resetGame() {
+  player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
+  obstacles = [];
+  flyingObstacles = [];
+  healPowerUps = [];
+  boostPowerUps = [];
+  projectiles = [];
+  gameSpeed = initialGameSpeed;
+  gravity = 0.4;
+  jumpStrength = -10;
+  gameOver = false;
+  health = maxHealth;
+  distance = 0;
+  obstacleInterval = 0;
+  healPowerUpInterval = 0;
+  boostPowerUpInterval = 0;
+  boostActive = false;
+  boostTimer = 0;
+  abilityMeter = maxAbilityMeter;
+  collectedHealPowerUps = 0;
+  collectedBoostPowerUps = 0;
+  obstaclesDestroyed = 0;
+  scoreMultiplier = 1;
+  
+  currentModifier.effect();
 
-      currentModifier.effect();
-    }
+  // Set the canvas background
+  const bgImage = new Image();
+  bgImage.src = realmBackgrounds[currentRealm - 1];
+  bgImage.onload = () => {
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+  };
+}
 
     function updateLobbyDisplay() {
   coinsDisplay.textContent = `Coins: ${coins}`;
@@ -621,12 +628,19 @@
     }
 
     function gameLoop() {
-      if (gameOver) {
-        displayResults();
-        return;
-      }
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
+  if (gameOver) {
+    displayResults();
+    return;
+  }
+
+  // Draw the background image at the start of each frame
+  const bgImage = new Image();
+  bgImage.src = realmBackgrounds[currentRealm - 1];
+  ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+  // Rest of the game logic and rendering
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
 
       distance += gameSpeed * 0.1;
 

@@ -1,3 +1,7 @@
+html
+
+Copy code
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,15 +27,15 @@
       justify-content: center;
       height: 100vh;
       text-align: center;
-      color: white;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      color: white; /* White text for contrast against background */
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Subtle text shadow */
     }
 
     #universeText {
       font-size: 24px;
       margin-bottom: 20px;
-      color: #ffeb3b;
-      animation: fadeIn 2s ease-in-out;
+      color: #ffeb3b; /* Gold color for emphasis */
+      animation: fadeIn 2s ease-in-out; /* Fade-in animation */
     }
 
     #playerCharacter {
@@ -40,7 +44,7 @@
       border-radius: 5px;
       border: 3px solid #fff;
       margin-bottom: 30px;
-      animation: bounce 2s infinite;
+      animation: bounce 2s infinite; /* Bouncing animation */
     }
 
     #buttonContainer {
@@ -74,18 +78,18 @@
     }
 
     .unlockButton:disabled {
-      background-color: #000;
-      color: rgba(0, 0, 0, 0);
+      background-color: #000; /* Set background to black */
+      color: rgba(0, 0, 0, 0); /* Set text color to fully transparent */
       cursor: default;
     }
 
     #allRealmsButton {
-      background-color: #800080;
+      background-color: #800080; /* Purple */
     }
 
     #allRealmsButton:disabled {
-      background-color: #000;
-      color: rgba(0, 0, 0, 0);
+      background-color: #000; /* Pitch black */
+      color: rgba(0, 0, 0, 0); /* Fully transparent text */
       cursor: default;
     }
 
@@ -122,7 +126,7 @@
     }
 
     #modifiersDisplay {
-      display: none;
+      display: none; /* Hide modifiers initially */
     }
 
     #resultsScreen {
@@ -247,28 +251,11 @@
     let currentRealm = 1;
     let currentUniverse = 1;
     let allRealmsUnlocked = false;
-    const universeColors = ['rgba(0, 0, 255, 0.7)', 'rgba(255, 0, 0, 0.7)', 'rgba(0, 255, 0, 0.7)'];
-    const universeNames = ['Universe 1', 'Universe 2', 'Universe 3'];
-    const universeUnlocked = [true, false, false]; // Track which universes are unlocked
+    const universeColors = ['rgba(0, 0, 255, 0.7)', 'rgba(255, 0, 0, 0.7)'];
+    const universeNames = ['Universe 1', 'Universe 2'];
+    const universeUnlocked = [true, false]; // Track which universes are unlocked
     const realmCosts = [0, 50, 100, 150, 200];
     const allRealmsCost = 500;
-
-    // State object to manage unlocked realms per universe
-    const initialGameState = {
-      realmsUnlocked: {
-        1: [true, false, false, false, false],
-        2: [true, false, false, false, false],
-        3: [true, false, false, false, false]
-      }
-    };
-
-    // Load the game state or initialize it
-    const gameState = JSON.parse(localStorage.getItem('realmRunnerState')) || initialGameState;
-
-    // Function to save game state to localStorage
-    function saveGameState() {
-      localStorage.setItem('realmRunnerState', JSON.stringify(gameState));
-    }
 
     // Performance tracking
     let collectedHealPowerUps = 0;
@@ -334,7 +321,7 @@
           unlockButton.textContent = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
-        } else if (allRealmsUnlocked || gameState.realmsUnlocked[currentUniverse][i - 1]) {
+        } else if (allRealmsUnlocked) {
           unlockButton.textContent = `Realm ${i}`;
           unlockButton.style.backgroundColor = '#4caf50';
           unlockButton.disabled = false;
@@ -355,8 +342,6 @@
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
-              gameState.realmsUnlocked[currentUniverse][i - 1] = true;
-              saveGameState();
               updateLobbyDisplay();
             }
           };
@@ -370,8 +355,8 @@
       }
 
       if (allRealmsUnlocked) {
-        if (currentUniverse === 1 && !universeUnlocked[2]) {
-          allRealmsButton.textContent = 'Go to Universe 3';
+        if (currentUniverse === 1 && !universeUnlocked[1]) {
+          allRealmsButton.textContent = 'Go to Universe 2';
           allRealmsButton.disabled = false;
           allRealmsButton.style.display = 'block';
           allRealmsButton.style.backgroundColor = '#ffeb3b';
@@ -384,7 +369,7 @@
         allRealmsButton.style.display = 'block';
         modifiersDisplay.style.display = 'none'; // Hide modifiers until all realms are unlocked
 
-        if (gameState.realmsUnlocked[currentUniverse].every(unlocked => unlocked) && coins >= allRealmsCost) {
+        if (currentRealm >= 5 && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
           allRealmsButton.textContent = `ALL REALMS (${allRealmsCost} Coins)`;
           allRealmsButton.style.backgroundColor = '#800080';
@@ -439,7 +424,8 @@
           button.onclick = () => {
             currentUniverse = index + 1;
             currentRealm = 1;
-            allRealmsUnlocked = gameState.realmsUnlocked[currentUniverse].every(unlocked => unlocked);
+            allRealmsUnlocked = false;
+            coins = 0;
             updateLobbyDisplay();
           };
           universeButtons.appendChild(button);
@@ -480,13 +466,16 @@
     }
 
     allRealmsButton.addEventListener('click', () => {
-      if (coins >= allRealmsCost) {
+      if (allRealmsUnlocked && currentUniverse === 1 && !universeUnlocked[1]) {
+        currentUniverse = 2;
+        universeUnlocked[1] = true;
+        currentRealm = 1;
+        allRealmsUnlocked = false;
+        coins = 0;
+        updateLobbyDisplay();
+      } else if (coins >= allRealmsCost && currentRealm >= 5) {
         coins -= allRealmsCost;
         allRealmsUnlocked = true;
-        for (let i = 0; i < 5; i++) {
-          gameState.realmsUnlocked[currentUniverse][i] = true;
-        }
-        saveGameState();
         updateLobbyDisplay();
       }
     });

@@ -52,37 +52,38 @@
       font-size: 24px;
       padding: 15px 30px;
       cursor: pointer;
-      background-color: #4caf50;
-      color: white;
-      border: none;
+      background-color: #4b3621; /* Dark brown color for a tomb-like feel */
+      color: #ffebcd; /* Light golden color */
+      border: 2px solid #8b4513; /* SaddleBrown border */
       border-radius: 15px;
       margin: 10px;
       transition: background-color 0.3s, transform 0.3s;
       width: 220px;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      text-shadow: 1px 1px 2px #000;
     }
 
     #startButton:hover, .universeButton:hover {
-      background-color: #45a049;
+      background-color: #3d2b1f; /* Darker shade for hover effect */
       transform: scale(1.05);
     }
 
     .unlockButton {
-      background-color: #f44336;
+      background-color: #5d4037;
     }
 
     .unlockButton:disabled {
-      background-color: #000;
+      background-color: #2f1e14;
       color: rgba(0, 0, 0, 0);
       cursor: default;
     }
 
     #allRealmsButton {
-      background-color: #800080;
+      background-color: #6b4226;
     }
 
     #allRealmsButton:disabled {
-      background-color: #000;
+      background-color: #2f1e14;
       color: rgba(0, 0, 0, 0);
       cursor: default;
     }
@@ -366,13 +367,13 @@
           };
         } else {
           unlockButton.innerHTML = `Realm ${i} <span class="costText">(${realmCosts[i - 1]} Coins)</span>`;
-          unlockButton.style.backgroundColor = '#000';
+          unlockButton.style.backgroundColor = '#2f1e14';
           unlockButton.disabled = true;
         }
 
         if (!realmProgress[currentUniverse - 1].allUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
           unlockButton.disabled = false;
-          unlockButton.style.backgroundColor = '#f44336';
+          unlockButton.style.backgroundColor = '#5d4037';
           unlockButton.onclick = () => {
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
@@ -384,7 +385,7 @@
         }
 
         if (!unlockButton.disabled) {
-          unlockButton.style.color = 'white';
+          unlockButton.style.color = '#ffebcd';
         }
 
         unlockButtons.appendChild(unlockButton);
@@ -403,10 +404,10 @@
         if (currentRealm >= 5 && coins >= allRealmsCost) {
           allRealmsButton.disabled = false;
           allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
-          allRealmsButton.style.backgroundColor = '#800080';
+          allRealmsButton.style.backgroundColor = '#6b4226';
         } else {
           allRealmsButton.disabled = true;
-          allRealmsButton.style.backgroundColor = '#000';
+          allRealmsButton.style.backgroundColor = '#2f1e14';
         }
       }
 
@@ -457,7 +458,8 @@
         const button = document.createElement('button');
         button.textContent = universeNames[index];
         button.className = 'universeButton';
-        button.style.backgroundColor = unlocked ? '#4caf50' : '#777';
+        button.style.backgroundColor = unlocked ? '#4b3621' : '#2f1e14';
+        button.style.color = unlocked ? '#ffebcd' : '#777';
         button.disabled = !unlocked;
         button.onclick = () => {
           if (unlocked) {

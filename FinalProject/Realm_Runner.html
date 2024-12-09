@@ -7,25 +7,25 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Uncial+Antiqua&display=swap');
 
-    body {
-      margin: 0;
-      font-family: 'Orbitron', Arial, sans-serif;
-      overflow: hidden;
-      background: no-repeat center center fixed;
-      background-size: cover;
-    }
+   body {
+  margin: 0;
+  font-family: 'Orbitron', Arial, sans-serif;
+  overflow: hidden;
+  background: no-repeat center center fixed;
+  background-size: cover;
+}
 
-    #lobby {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      text-align: center;
-      color: white;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-      background-color: transparent;
-    }
+#lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  background: transparent; /* Ensure no background color */
+}
 
     #universeText {
       font-size: 24px;
@@ -355,78 +355,81 @@
     }
 
     function updateLobbyDisplay() {
-      coinsDisplay.textContent = `Coins: ${coins}`;
-      realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
-      unlockButtons.innerHTML = '';
+  coinsDisplay.textContent = `Coins: ${coins}`;
+  realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
+  unlockButtons.innerHTML = '';
 
-      for (let i = 1; i <= 5; i++) {
-        const unlockButton = document.createElement('button');
-        unlockButton.className = 'unlockButton';
+  // Update background image based on current realm
+  document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
 
-        if (i === currentRealm) {
-          unlockButton.innerHTML = `Realm ${i}`;
-          unlockButton.style.backgroundColor = '#4caf50';
-          unlockButton.disabled = false;
-        } else if (realmProgress[currentUniverse - 1].allUnlocked) {
-          unlockButton.innerHTML = `Realm ${i}`;
-          unlockButton.style.backgroundColor = '#4caf50';
-          unlockButton.disabled = false;
-          unlockButton.onclick = () => {
-            currentRealm = i;
-            document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
-            updateLobbyDisplay();
-          };
-        } else {
-          unlockButton.innerHTML = `Realm ${i} <span class="costText">(${realmCosts[i - 1]} Coins)</span>`;
-          unlockButton.style.backgroundColor = '#2f1e14';
-          unlockButton.disabled = true;
-        }
+  for (let i = 1; i <= 5; i++) {
+    const unlockButton = document.createElement('button');
+    unlockButton.className = 'unlockButton';
 
-        if (!realmProgress[currentUniverse - 1].allUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
-          unlockButton.disabled = false;
-          unlockButton.style.backgroundColor = '#5d4037';
-          unlockButton.onclick = () => {
-            if (coins >= realmCosts[i - 1]) {
-              coins -= realmCosts[i - 1];
-              currentRealm = i;
-              document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
-              realmProgress[currentUniverse - 1].realm = i;
-              updateLobbyDisplay();
-            }
-          };
-        }
-
-        if (!unlockButton.disabled) {
-          unlockButton.style.color = '#ffebcd';
-        }
-
-        unlockButtons.appendChild(unlockButton);
-      }
-
-      if (realmProgress[currentUniverse - 1].allUnlocked) {
-        if (currentUniverse === 1 && !universeUnlocked[1]) {
-          universeUnlocked[1] = true; // Unlock universe 2
-        }
-        modifiersDisplay.style.display = 'block';
-        updateModifiersDisplay();
-      } else {
-        allRealmsButton.style.display = 'block';
-        modifiersDisplay.style.display = 'none';
-
-        if (currentRealm >= 5 && coins >= allRealmsCost) {
-          allRealmsButton.disabled = false;
-          allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
-          allRealmsButton.style.backgroundColor = '#6b4226';
-        } else {
-          allRealmsButton.disabled = true;
-          allRealmsButton.style.backgroundColor = '#2f1e14';
-        }
-      }
-
-      document.getElementById('universeText').textContent = universeNames[currentUniverse - 1];
-      updatePlayerCharacterColor();
-      updateUniverseButtons();
+    if (i === currentRealm) {
+      unlockButton.innerHTML = `Realm ${i}`;
+      unlockButton.style.backgroundColor = '#4caf50';
+      unlockButton.disabled = false;
+    } else if (realmProgress[currentUniverse - 1].allUnlocked) {
+      unlockButton.innerHTML = `Realm ${i}`;
+      unlockButton.style.backgroundColor = '#4caf50';
+      unlockButton.disabled = false;
+      unlockButton.onclick = () => {
+        currentRealm = i;
+        document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`; // Update background on click
+        updateLobbyDisplay();
+      };
+    } else {
+      unlockButton.innerHTML = `Realm ${i} <span class="costText">(${realmCosts[i - 1]} Coins)</span>`;
+      unlockButton.style.backgroundColor = '#2f1e14';
+      unlockButton.disabled = true;
     }
+
+    if (!realmProgress[currentUniverse - 1].allUnlocked && i === currentRealm + 1 && coins >= realmCosts[i - 1]) {
+      unlockButton.disabled = false;
+      unlockButton.style.backgroundColor = '#5d4037';
+      unlockButton.onclick = () => {
+        if (coins >= realmCosts[i - 1]) {
+          coins -= realmCosts[i - 1];
+          currentRealm = i;
+          document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`; // Update background on unlock
+          realmProgress[currentUniverse - 1].realm = i;
+          updateLobbyDisplay();
+        }
+      };
+    }
+
+    if (!unlockButton.disabled) {
+      unlockButton.style.color = '#ffebcd';
+    }
+
+    unlockButtons.appendChild(unlockButton);
+  }
+
+  if (realmProgress[currentUniverse - 1].allUnlocked) {
+    if (currentUniverse === 1 && !universeUnlocked[1]) {
+      universeUnlocked[1] = true; // Unlock universe 2
+    }
+    modifiersDisplay.style.display = 'block';
+    updateModifiersDisplay();
+  } else {
+    allRealmsButton.style.display = 'block';
+    modifiersDisplay.style.display = 'none';
+
+    if (currentRealm >= 5 && coins >= allRealmsCost) {
+      allRealmsButton.disabled = false;
+      allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
+      allRealmsButton.style.backgroundColor = '#6b4226';
+    } else {
+      allRealmsButton.disabled = true;
+      allRealmsButton.style.backgroundColor = '#2f1e14';
+    }
+  }
+
+  document.getElementById('universeText').textContent = universeNames[currentUniverse - 1];
+  updatePlayerCharacterColor();
+  updateUniverseButtons();
+}
 
     function updateModifiersDisplay() {
       const modifierButtons = document.getElementById('modifierButtons');

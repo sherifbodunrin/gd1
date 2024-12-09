@@ -249,14 +249,6 @@
     let currentFrame = 0;
     let frameCounter = 0;
 
-    dinosaurSpriteSheet.onload = () => {
-      setInterval(animatePlayerCharacter, 50);
-    };
-
-    ninjaSpriteSheet.onload = () => {
-      setInterval(animatePlayerCharacter, 50);
-    };
-
     function animatePlayerCharacter() {
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
 
@@ -563,6 +555,7 @@
       miniMap.style.display = 'block';
       resetGame();
       gameLoop();
+      setInterval(animatePlayerCharacter, 50); // Start the animation loop
     });
 
     function spawnGroundObstacle(xOffset = 0) {
@@ -666,8 +659,8 @@
         }
       }
 
-      // Draw the ground and the area below it
-      ctx.fillStyle = 'black';
+      // Draw the ground with transparency
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
       ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
 
       if (boostActive) {

@@ -47,23 +47,24 @@
       margin-top: 20px;
     }
 
-    #startButton, .unlockButton, #allRealmsButton, .universeButton {
+    #startButton, .unlockButton, #allRealmsButton, .universeButton, .modifierButton, #resultsScreen button {
       font-size: 24px;
       padding: 15px 30px;
       cursor: pointer;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 15px;
+      background-color: #1e1e1e; /* Darker background for a sleek look */
+      color: #ffeb3b; /* Bright yellow text color */
+      border: 2px solid #ffeb3b; /* Yellow border to match text */
+      border-radius: 25px; /* More rounded corners */
       margin: 10px;
       transition: background-color 0.3s, transform 0.3s;
-      width: 220px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      width: 240px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+      text-transform: uppercase; /* Uppercase for a futuristic look */
     }
 
-    #startButton:hover, .universeButton:hover {
-      background-color: #45a049;
-      transform: scale(1.05);
+    #startButton:hover, .unlockButton:hover, #allRealmsButton:hover, .universeButton:hover, .modifierButton:hover, #resultsScreen button:hover {
+      background-color: #272727; /* Slightly lighter on hover */
+      transform: scale(1.1); /* Larger scale on hover for emphasis */
     }
 
     .unlockButton {
@@ -74,6 +75,7 @@
       background-color: #000;
       color: rgba(0, 0, 0, 0);
       cursor: default;
+      border: 2px solid rgba(0, 0, 0, 0); /* Match the disabled color */
     }
 
     #allRealmsButton {
@@ -84,6 +86,17 @@
       background-color: #000;
       color: rgba(0, 0, 0, 0);
       cursor: default;
+      border: 2px solid rgba(0, 0, 0, 0); /* Match the disabled color */
+    }
+
+    .modifierButton:disabled {
+      background-color: #777; /* Disabled state for modifiers */
+      cursor: default;
+      border: 2px solid #777; /* Match the disabled color */
+    }
+
+    #resultsScreen button {
+      background-color: #4caf50;
     }
 
     @keyframes fadeIn {
@@ -142,27 +155,6 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-    }
-    
-    .modifierButton {
-      font-size: 18px;
-      padding: 10px 20px;
-      margin: 5px;
-      background-color: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    .modifierButton:disabled {
-      background-color: #777;
-      cursor: default;
-    }
-
-    .modifierButton:not(:disabled):hover {
-      background-color: #1976d2;
     }
   </style>
 </head>
@@ -833,4 +825,4 @@
     updateLobbyDisplay();
   </script>
 </body>
-</html> 
+</html>

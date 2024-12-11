@@ -257,7 +257,10 @@
     boostEffectImage.src = 'https://opengameart.org/sites/default/files/spr_shield.png';
 
     const fireballImage = new Image();
-    fireballImage.src = 'https://www.clipartmax.com/png/small/250-2502429_fireball-clipart-pixel-sprite-pixel-transparent-fire-ball.png';
+    fireballImage.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/96269ce8-4a07-4702-936a-6860e1b5594f/dcu2f4z-0236320d-1ea8-495f-a984-6d683aa7eb66.png';
+
+    const arrowImage = new Image();
+    arrowImage.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c956398d-4c35-401e-9890-ed614ee95b06/dfhqw3i-06b4633e-7983-45f8-b3b4-b8259bf8ec15.png';
 
     const spriteWidth = 108;
     const spriteHeight = 140;
@@ -591,8 +594,8 @@
     startButton.addEventListener('click', startGame);
 
     function spawnGroundObstacle(xOffset = 0) {
-      const obstacleHeight = 30;
-      const obstacleWidth = 20;
+      const obstacleHeight = 40; // Increased size
+      const obstacleWidth = 40; // Increased size
       const groundLevel = canvas.height - 100 - obstacleHeight;
       obstacles.push({
         x: canvas.width + xOffset,
@@ -603,8 +606,8 @@
     }
 
     function spawnFlyingObstacle(xOffset = 0) {
-      const obstacleHeight = 20;
-      const obstacleWidth = 20;
+      const obstacleHeight = 40; // Increased size
+      const obstacleWidth = 40; // Increased size
       const adjustedY = canvas.height - 150;
       flyingObstacles.push({
         x: canvas.width + xOffset,
@@ -615,8 +618,8 @@
     }
 
     function spawnHealPowerUp() {
-      const powerUpHeight = 25;
-      const powerUpWidth = 25;
+      const powerUpHeight = 35; // Increased size
+      const powerUpWidth = 35; // Increased size
       const randomY = canvas.height - 200 - Math.random() * 100;
       healPowerUps.push({
         x: canvas.width,
@@ -627,8 +630,8 @@
     }
 
     function spawnBoostPowerUp() {
-      const powerUpHeight = 25;
-      const powerUpWidth = 25;
+      const powerUpHeight = 35; // Increased size
+      const powerUpWidth = 35; // Increased size
       const randomY = canvas.height - 200 - Math.random() * 100;
       boostPowerUps.push({
         x: canvas.width,
@@ -644,8 +647,8 @@
         projectiles.push({
           x: player.x + player.width, 
           y: player.y,
-          width: 20, // Set a standard width for the fireball
-          height: 20  // Set a standard height for the fireball
+          width: player.width,  // Match character width
+          height: player.height // Match character height
         });
       }
     }
@@ -782,7 +785,7 @@
 
       healPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
-        ctx.drawImage(healthPowerUpImage, powerUp.x, powerUp.y, 25, 25);
+        ctx.drawImage(healthPowerUpImage, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
 
         if (
           player.x < powerUp.x + powerUp.width &&
@@ -804,7 +807,7 @@
 
       boostPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
-        ctx.drawImage(boostPowerUpImage, powerUp.x, powerUp.y, 25, 25);
+        ctx.drawImage(boostPowerUpImage, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
 
         if (
           player.x < powerUp.x + powerUp.width &&

@@ -234,9 +234,11 @@
 
     const dinosaurSpriteSheet = new Image();
     dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png';
+    dinosaurSpriteSheet.onerror = () => console.error('Failed to load dinosaur sprite sheet.');
 
     const ninjaSpriteSheet = new Image();
     ninjaSpriteSheet.src = 'ninjarunner.png';
+    ninjaSpriteSheet.onerror = () => console.error('Failed to load ninja sprite sheet.');
 
     const spriteWidth = 108;
     const spriteHeight = 140;
@@ -355,8 +357,10 @@
     realms.forEach((realm, index) => {
       obstacleImages[`ground${index + 1}`] = new Image();
       obstacleImages[`ground${index + 1}`].src = realm.groundObstacles;
+      obstacleImages[`ground${index + 1}`].onerror = () => console.error(`Failed to load image: ${realm.groundObstacles}`);
       obstacleImages[`flying${index + 1}`] = new Image();
       obstacleImages[`flying${index + 1}`].src = realm.flyingObstacles;
+      obstacleImages[`flying${index + 1}`].onerror = () => console.error(`Failed to load image: ${realm.flyingObstacles}`);
     });
 
     function resetGame() {

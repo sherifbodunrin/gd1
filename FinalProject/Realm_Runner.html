@@ -247,6 +247,18 @@
     const groundTextureImage = new Image();
     groundTextureImage.src = 'https://i.pinimg.com/736x/71/8e/de/718edead2bd037b01ea43dfe55dae628.jpg';
 
+    const groundObstacleImage = new Image();
+    groundObstacleImage.src = 'https://opengameart.org/sites/default/files/3_spikes.png';
+
+    const skyObstacleImage = new Image();
+    skyObstacleImage.src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlyECxciXYQ05x9a-I3tfAkE_Ptvt0r6KuAQ&s';
+
+    const boostEffectImage = new Image();
+    boostEffectImage.src = 'https://opengameart.org/sites/default/files/spr_shield.png';
+
+    const fireballImage = new Image();
+    fireballImage.src = 'https://www.clipartmax.com/png/small/250-2502429_fireball-clipart-pixel-sprite-pixel-transparent-fire-ball.png';
+
     const spriteWidth = 108;
     const spriteHeight = 140;
     const scaledWidth = 96;
@@ -632,8 +644,8 @@
         projectiles.push({
           x: player.x + player.width, 
           y: player.y,
-          width: player.width, 
-          height: player.height
+          width: 20, // Set a standard width for the fireball
+          height: 20  // Set a standard height for the fireball
         });
       }
     }
@@ -686,17 +698,14 @@
       }
 
       if (boostActive) {
-        ctx.strokeStyle = 'yellow';
-        ctx.lineWidth = 5;
-        ctx.strokeRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
+        ctx.drawImage(boostEffectImage, player.x - 5, player.y - 5, player.width + 10, player.height + 10);
       }
 
       drawPlayerSprite();
 
-      ctx.fillStyle = 'cyan';
       projectiles.forEach((projectile, index) => {
         projectile.x += gameSpeed * 2;
-        ctx.fillRect(projectile.x, projectile.y, projectile.width, projectile.height);
+        ctx.drawImage(fireballImage, projectile.x, projectile.y, projectile.width, projectile.height);
 
         obstacles.forEach((obstacle, obsIndex) => {
           if (
@@ -727,10 +736,9 @@
         }
       });
 
-      ctx.fillStyle = 'red';
       obstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.drawImage(groundObstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
@@ -752,7 +760,7 @@
 
       flyingObstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.drawImage(skyObstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&

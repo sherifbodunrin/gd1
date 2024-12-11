@@ -244,17 +244,26 @@
     const boostPowerUpImage = new Image();
     boostPowerUpImage.src = 'https://wreckageuk.wordpress.com/wp-content/uploads/2015/03/speed-sprite.png';
 
+    const groundTextureImage = new Image();
+    groundTextureImage.src = 'https://i.pinimg.com/736x/71/8e/de/718edead2bd037b01ea43dfe55dae628.jpg';
+
     const spriteWidth = 108;
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
-    const ninjaSpriteWidth = 140; // Width of each frame in the second sprite sheet
+    const ninjaSpriteWidth = 140;
     const ninjaSpriteHeight = 140;
     const ninjaScaledWidth = 96;
     const ninjaScaledHeight = 120;
     const totalFrames = 8;
     let currentFrame = 0;
     let frameCounter = 0;
+    
+    let groundPattern;
+
+    groundTextureImage.onload = () => {
+      groundPattern = ctx.createPattern(groundTextureImage, 'repeat');
+    };
 
     function animatePlayerCharacter() {
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
@@ -556,17 +565,15 @@
       }
     });
 
-    // Adjusted start function
     function startGame() {
       lobby.style.display = 'none';
       canvas.style.display = 'block';
       miniMap.style.display = 'block';
-      // Set the background image of the canvas to the current realm background
       canvas.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
-      canvas.style.backgroundSize = 'cover'; // Ensure it covers the entire canvas
+      canvas.style.backgroundSize = 'cover';
       resetGame();
       gameLoop();
-      setInterval(animatePlayerCharacter, 50); // Start the animation loop
+      setInterval(animatePlayerCharacter, 50);
     }
 
     startButton.addEventListener('click', startGame);
@@ -596,8 +603,8 @@
     }
 
     function spawnHealPowerUp() {
-      const powerUpHeight = 20;
-      const powerUpWidth = 20;
+      const powerUpHeight = 25;
+      const powerUpWidth = 25;
       const randomY = canvas.height - 200 - Math.random() * 100;
       healPowerUps.push({
         x: canvas.width,
@@ -608,8 +615,8 @@
     }
 
     function spawnBoostPowerUp() {
-      const powerUpHeight = 20;
-      const powerUpWidth = 20;
+      const powerUpHeight = 25;
+      const powerUpWidth = 25;
       const randomY = canvas.height - 200 - Math.random() * 100;
       boostPowerUps.push({
         x: canvas.width,
@@ -672,9 +679,11 @@
         }
       }
 
-      // Draw the ground with transparency
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-      ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+      // Draw the ground using the texture pattern
+      if (groundPattern) {
+        ctx.fillStyle = groundPattern;
+        ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+      }
 
       if (boostActive) {
         ctx.strokeStyle = 'yellow';
@@ -763,10 +772,9 @@
         }
       });
 
-      // Draw health power-ups using the image
       healPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
-        ctx.drawImage(healthPowerUpImage, powerUp.x, powerUp.y, 20, 20); // Size matches the health box
+        ctx.drawImage(healthPowerUpImage, powerUp.x, powerUp.y, 25, 25);
 
         if (
           player.x < powerUp.x + powerUp.width &&
@@ -786,10 +794,9 @@
         }
       });
 
-      // Draw boost power-ups using the image
       boostPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
-        ctx.drawImage(boostPowerUpImage, powerUp.x, powerUp.y, 20, 20); // Size matches the health box
+        ctx.drawImage(boostPowerUpImage, powerUp.x, powerUp.y, 25, 25);
 
         if (
           player.x < powerUp.x + powerUp.width &&

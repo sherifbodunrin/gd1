@@ -243,8 +243,9 @@
     const scaledWidth = 96;
     const scaledHeight = 120;
     const ninjaSpriteWidth = 140; // Width of each frame in the second sprite sheet
-    const ninjaScaledWidth = 140; // Adjust if needed
-    const ninjaScaledHeight = 120; // Maintain aspect ratio with scale adjustments
+    const ninjaSpriteHeight = 140; // Assuming 5 frames in a column for the height
+    const ninjaScaledWidth = 96; // Maintain similar scale as the first universe
+    const ninjaScaledHeight = 120; 
     const totalFrames = 8;
     let currentFrame = 0;
     let frameCounter = 0;
@@ -254,7 +255,7 @@
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth; 
-      const height = spriteHeight; 
+      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
@@ -468,7 +469,7 @@
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = spriteHeight; 
+      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
       
@@ -629,7 +630,7 @@
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = spriteHeight; 
+      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 

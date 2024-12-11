@@ -35,8 +35,8 @@
     }
 
     #playerCharacter {
-      width: 96px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       margin-bottom: 30px;
       background-color: transparent;
     }
@@ -98,7 +98,7 @@
 
     #gameCanvas {
       display: none;
-      background: #d9f7be;
+      background: transparent; /* Ensure the game canvas is transparent */
       width: 100%;
       height: 100vh;
     }
@@ -234,22 +234,17 @@
 
     const dinosaurSpriteSheet = new Image();
     dinosaurSpriteSheet.src = 'scottpilgrimmultiple.png';
-    dinosaurSpriteSheet.onerror = () => console.error('Failed to load dinosaur sprite sheet.');
 
     const ninjaSpriteSheet = new Image();
     ninjaSpriteSheet.src = 'ninjarunner.png';
-    ninjaSpriteSheet.onerror = () => console.error('Failed to load ninja sprite sheet.');
 
     const spriteWidth = 108;
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
-    const ninjaTotalWidth = 1400; // Total width of the ninja sprite sheet
-    const ninjaTotalHeight = 700; // Total height of the ninja sprite sheet
-    const ninjaFrames = 10; // Assuming 10 frames in a row
-    const ninjaSpriteWidth = ninjaTotalWidth / ninjaFrames;
-    const ninjaScaledWidth = scaledWidth;
-    const ninjaScaledHeight = scaledHeight;
+    const ninjaSpriteWidth = 140; // Width of each frame in the second sprite sheet
+    const ninjaScaledWidth = 140; // Adjust if needed
+    const ninjaScaledHeight = 120; // Maintain aspect ratio with scale adjustments
     const totalFrames = 8;
     let currentFrame = 0;
     let frameCounter = 0;
@@ -258,8 +253,8 @@
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
-      const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : ninjaTotalHeight / ninjaFrames;
+      const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth; 
+      const height = spriteHeight; 
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
@@ -278,32 +273,12 @@
       }
     }
 
-    const realms = [
-      {
-        background: 'https://img.freepik.com/premium-vector/desert-day-game-background_7814-292.jpg',
-        groundObstacles: 'desertObstacle.png', // Example placeholder image
-        flyingObstacles: 'desertFlying.png',
-      },
-      {
-        background: 'https://www.shutterstock.com/image-vector/alien-planet-landscape-space-background-600nw-2171882971.jpg',
-        groundObstacles: 'alienObstacle.png',
-        flyingObstacles: 'alienFlying.png',
-      },
-      {
-        background: 'https://cdn.vectorstock.com/i/500p/21/70/game-seamless-horizontal-forest-background-vector-7342170.jpg',
-        groundObstacles: 'forestObstacle.png',
-        flyingObstacles: 'forestFlying.png',
-      },
-      {
-        background: 'https://static.vecteezy.com/system/resources/thumbnails/020/599/177/small/white-clouds-bright-blue-sky-background-for-wallpaper-clean-sky-on-mid-day-relaxation-concept-landscape-abstract-background-vector.jpg',
-        groundObstacles: 'skyObstacle.png',
-        flyingObstacles: 'skyFlying.png',
-      },
-      {
-        background: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx-rjF0p_tkmmAVdwMS_Kv608JxzzOxvaoPw&s',
-        groundObstacles: 'snowObstacle.png',
-        flyingObstacles: 'snowFlying.png',
-      }
+    const realmBackgrounds = [
+      'https://img.freepik.com/premium-vector/desert-day-game-background_7814-292.jpg',
+      'https://www.shutterstock.com/image-vector/alien-planet-landscape-space-background-600nw-2171882971.jpg',
+      'https://cdn.vectorstock.com/i/500p/21/70/game-seamless-horizontal-forest-background-vector-7342170.jpg',
+      'https://static.vecteezy.com/system/resources/thumbnails/020/599/177/small/white-clouds-bright-blue-sky-background-for-wallpaper-clean-sky-on-mid-day-relaxation-concept-landscape-abstract-background-vector.jpg',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx-rjF0p_tkmmAVdwMS_Kv608JxzzOxvaoPw&s'
     ];
 
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
@@ -353,16 +328,6 @@
       { ground: false, flying: true }
     ];
 
-    let obstacleImages = {};
-    realms.forEach((realm, index) => {
-      obstacleImages[`ground${index + 1}`] = new Image();
-      obstacleImages[`ground${index + 1}`].src = realm.groundObstacles;
-      obstacleImages[`ground${index + 1}`].onerror = () => console.error(`Failed to load image: ${realm.groundObstacles}`);
-      obstacleImages[`flying${index + 1}`] = new Image();
-      obstacleImages[`flying${index + 1}`].src = realm.flyingObstacles;
-      obstacleImages[`flying${index + 1}`].onerror = () => console.error(`Failed to load image: ${realm.flyingObstacles}`);
-    });
-
     function resetGame() {
       player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
@@ -395,7 +360,7 @@
       realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
       unlockButtons.innerHTML = '';
 
-      document.body.style.backgroundImage = `url(${realms[currentRealm - 1].background})`;
+      document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
 
       for (let i = 1; i <= 5; i++) {
         const unlockButton = document.createElement('button');
@@ -411,7 +376,7 @@
           unlockButton.disabled = false;
           unlockButton.onclick = () => {
             currentRealm = i;
-            document.body.style.backgroundImage = `url(${realms[i - 1].background})`;
+            document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
             updateLobbyDisplay();
           };
         } else {
@@ -427,7 +392,7 @@
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
-              document.body.style.backgroundImage = `url(${realms[i - 1].background})`;
+              document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
               realmProgress[currentUniverse - 1].realm = i;
               updateLobbyDisplay();
             }
@@ -503,7 +468,7 @@
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : ninjaTotalHeight / ninjaFrames;
+      const height = spriteHeight; 
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
       
@@ -531,7 +496,7 @@
             realmProgress[currentUniverse - 1].realm = currentRealm;
             currentUniverse = index + 1;
             currentRealm = realmProgress[index].realm;
-            document.body.style.backgroundImage = `url(${realms[currentRealm - 1].background})`;
+            document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
             updateLobbyDisplay();
           }
         };
@@ -584,15 +549,20 @@
       }
     });
 
-    startButton.addEventListener('click', () => {
+    // Adjusted start function
+    function startGame() {
       lobby.style.display = 'none';
       canvas.style.display = 'block';
       miniMap.style.display = 'block';
+      // Set the background image of the canvas to the current realm background
+      canvas.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
+      canvas.style.backgroundSize = 'cover'; // Ensure it covers the entire canvas
       resetGame();
-      updateLobbyDisplay();
       gameLoop();
-      setInterval(animatePlayerCharacter, 50);
-    });
+      setInterval(animatePlayerCharacter, 50); // Start the animation loop
+    }
+
+    startButton.addEventListener('click', startGame);
 
     function spawnGroundObstacle(xOffset = 0) {
       const obstacleHeight = 30;
@@ -659,7 +629,7 @@
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : ninjaTotalHeight / ninjaFrames;
+      const height = spriteHeight; 
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
@@ -695,8 +665,8 @@
         }
       }
 
-      // Set realm-specific background
-      ctx.fillStyle = realms[currentRealm - 1].backgroundColor || 'rgba(0, 0, 0, 0.75)';
+      // Draw the ground with transparency
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
       ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
 
       if (boostActive) {
@@ -744,10 +714,7 @@
       ctx.fillStyle = 'red';
       obstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.drawImage(
-          obstacleImages[`ground${currentRealm}`],
-          obstacle.x, obstacle.y, obstacle.width, obstacle.height
-        );
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
@@ -769,10 +736,7 @@
 
       flyingObstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.drawImage(
-          obstacleImages[`flying${currentRealm}`],
-          obstacle.x, obstacle.y, obstacle.width, obstacle.height
-        );
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&

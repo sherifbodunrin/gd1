@@ -257,7 +257,7 @@
     boostEffectImage.src = 'https://opengameart.org/sites/default/files/spr_shield.png';
 
     const fireballImage = new Image();
-    fireballImage.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/96269ce8-4a07-4702-936a-6860e1b5594f/dcu2f4z-0236320d-1ea8-495f-a984-6d683aa7eb66.png';
+    fireballImage.src = 'https://freesvg.org/img/Fireball--Arvin61r58.png';
 
     const arrowImage = new Image();
     arrowImage.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c956398d-4c35-401e-9890-ed614ee95b06/dfhqw3i-06b4633e-7983-45f8-b3b4-b8259bf8ec15.png';
@@ -594,8 +594,8 @@
     startButton.addEventListener('click', startGame);
 
     function spawnGroundObstacle(xOffset = 0) {
-      const obstacleHeight = 40; // Increased size
-      const obstacleWidth = 40; // Increased size
+      const obstacleHeight = 50; // Increased size
+      const obstacleWidth = 50; // Increased size
       const groundLevel = canvas.height - 100 - obstacleHeight;
       obstacles.push({
         x: canvas.width + xOffset,
@@ -606,8 +606,8 @@
     }
 
     function spawnFlyingObstacle(xOffset = 0) {
-      const obstacleHeight = 40; // Increased size
-      const obstacleWidth = 40; // Increased size
+      const obstacleHeight = 50; // Increased size
+      const obstacleWidth = 50; // Increased size
       const adjustedY = canvas.height - 150;
       flyingObstacles.push({
         x: canvas.width + xOffset,
@@ -618,8 +618,8 @@
     }
 
     function spawnHealPowerUp() {
-      const powerUpHeight = 35; // Increased size
-      const powerUpWidth = 35; // Increased size
+      const powerUpHeight = 45; // Increased size
+      const powerUpWidth = 45; // Increased size
       const randomY = canvas.height - 200 - Math.random() * 100;
       healPowerUps.push({
         x: canvas.width,
@@ -630,8 +630,8 @@
     }
 
     function spawnBoostPowerUp() {
-      const powerUpHeight = 35; // Increased size
-      const powerUpWidth = 35; // Increased size
+      const powerUpHeight = 45; // Increased size
+      const powerUpWidth = 45; // Increased size
       const randomY = canvas.height - 200 - Math.random() * 100;
       boostPowerUps.push({
         x: canvas.width,

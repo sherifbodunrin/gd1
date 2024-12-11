@@ -273,12 +273,32 @@
       }
     }
 
-    const realmBackgrounds = [
-      'https://img.freepik.com/premium-vector/desert-day-game-background_7814-292.jpg',
-      'https://www.shutterstock.com/image-vector/alien-planet-landscape-space-background-600nw-2171882971.jpg',
-      'https://cdn.vectorstock.com/i/500p/21/70/game-seamless-horizontal-forest-background-vector-7342170.jpg',
-      'https://static.vecteezy.com/system/resources/thumbnails/020/599/177/small/white-clouds-bright-blue-sky-background-for-wallpaper-clean-sky-on-mid-day-relaxation-concept-landscape-abstract-background-vector.jpg',
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx-rjF0p_tkmmAVdwMS_Kv608JxzzOxvaoPw&s'
+    const realms = [
+      {
+        background: 'https://img.freepik.com/premium-vector/desert-day-game-background_7814-292.jpg',
+        groundObstacles: 'desertObstacle.png', // Example placeholder image
+        flyingObstacles: 'desertFlying.png',
+      },
+      {
+        background: 'https://www.shutterstock.com/image-vector/alien-planet-landscape-space-background-600nw-2171882971.jpg',
+        groundObstacles: 'alienObstacle.png',
+        flyingObstacles: 'alienFlying.png',
+      },
+      {
+        background: 'https://cdn.vectorstock.com/i/500p/21/70/game-seamless-horizontal-forest-background-vector-7342170.jpg',
+        groundObstacles: 'forestObstacle.png',
+        flyingObstacles: 'forestFlying.png',
+      },
+      {
+        background: 'https://static.vecteezy.com/system/resources/thumbnails/020/599/177/small/white-clouds-bright-blue-sky-background-for-wallpaper-clean-sky-on-mid-day-relaxation-concept-landscape-abstract-background-vector.jpg',
+        groundObstacles: 'skyObstacle.png',
+        flyingObstacles: 'skyFlying.png',
+      },
+      {
+        background: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx-rjF0p_tkmmAVdwMS_Kv608JxzzOxvaoPw&s',
+        groundObstacles: 'snowObstacle.png',
+        flyingObstacles: 'snowFlying.png',
+      }
     ];
 
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
@@ -328,6 +348,14 @@
       { ground: false, flying: true }
     ];
 
+    let obstacleImages = {};
+    realms.forEach((realm, index) => {
+      obstacleImages[`ground${index + 1}`] = new Image();
+      obstacleImages[`ground${index + 1}`].src = realm.groundObstacles;
+      obstacleImages[`flying${index + 1}`] = new Image();
+      obstacleImages[`flying${index + 1}`].src = realm.flyingObstacles;
+    });
+
     function resetGame() {
       player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
@@ -360,7 +388,7 @@
       realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
       unlockButtons.innerHTML = '';
 
-      document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
+      document.body.style.backgroundImage = `url(${realms[currentRealm - 1].background})`;
 
       for (let i = 1; i <= 5; i++) {
         const unlockButton = document.createElement('button');
@@ -376,7 +404,7 @@
           unlockButton.disabled = false;
           unlockButton.onclick = () => {
             currentRealm = i;
-            document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
+            document.body.style.backgroundImage = `url(${realms[i - 1].background})`;
             updateLobbyDisplay();
           };
         } else {
@@ -392,7 +420,7 @@
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
-              document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
+              document.body.style.backgroundImage = `url(${realms[i - 1].background})`;
               realmProgress[currentUniverse - 1].realm = i;
               updateLobbyDisplay();
             }
@@ -496,7 +524,7 @@
             realmProgress[currentUniverse - 1].realm = currentRealm;
             currentUniverse = index + 1;
             currentRealm = realmProgress[index].realm;
-            document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
+            document.body.style.backgroundImage = `url(${realms[currentRealm - 1].background})`;
             updateLobbyDisplay();
           }
         };
@@ -554,8 +582,9 @@
       canvas.style.display = 'block';
       miniMap.style.display = 'block';
       resetGame();
+      updateLobbyDisplay();
       gameLoop();
-      setInterval(animatePlayerCharacter, 50); // Start the animation loop
+      setInterval(animatePlayerCharacter, 50);
     });
 
     function spawnGroundObstacle(xOffset = 0) {
@@ -659,8 +688,8 @@
         }
       }
 
-      // Draw the ground with transparency
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      // Set realm-specific background
+      ctx.fillStyle = realms[currentRealm - 1].backgroundColor || 'rgba(0, 0, 0, 0.75)';
       ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
 
       if (boostActive) {
@@ -708,7 +737,10 @@
       ctx.fillStyle = 'red';
       obstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.drawImage(
+          obstacleImages[`ground${currentRealm}`],
+          obstacle.x, obstacle.y, obstacle.width, obstacle.height
+        );
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
@@ -730,7 +762,10 @@
 
       flyingObstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.drawImage(
+          obstacleImages[`flying${currentRealm}`],
+          obstacle.x, obstacle.y, obstacle.width, obstacle.height
+        );
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&

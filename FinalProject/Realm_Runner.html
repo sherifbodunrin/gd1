@@ -35,8 +35,8 @@
     }
 
     #playerCharacter {
-      width: 100px;
-      height: 100px;
+      width: 96px;
+      height: 120px;
       margin-bottom: 30px;
       background-color: transparent;
     }
@@ -242,9 +242,12 @@
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
-    const ninjaSpriteWidth = 1400 / 10; // Assuming 10 frames in a row
-    const ninjaScaledWidth = ninjaSpriteWidth; // Adjust if needed
-    const ninjaScaledHeight = ninjaSpriteWidth * (spriteHeight / spriteWidth); // Maintain aspect ratio
+    const ninjaTotalWidth = 1400; // Total width of the ninja sprite sheet
+    const ninjaTotalHeight = 700; // Total height of the ninja sprite sheet
+    const ninjaFrames = 10; // Assuming 10 frames in a row
+    const ninjaSpriteWidth = ninjaTotalWidth / ninjaFrames;
+    const ninjaScaledWidth = scaledWidth;
+    const ninjaScaledHeight = scaledHeight;
     const totalFrames = 8;
     let currentFrame = 0;
     let frameCounter = 0;
@@ -254,7 +257,7 @@
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : spriteHeight; // Adjust if ninja sprite height differs
+      const height = currentUniverse === 1 ? spriteHeight : ninjaTotalHeight / ninjaFrames;
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
@@ -496,7 +499,7 @@
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : spriteHeight; // Adjust if ninja sprite height differs
+      const height = currentUniverse === 1 ? spriteHeight : ninjaTotalHeight / ninjaFrames;
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
       
@@ -652,7 +655,7 @@
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
       const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : spriteHeight; // Adjust if ninja sprite height differs
+      const height = currentUniverse === 1 ? spriteHeight : ninjaTotalHeight / ninjaFrames;
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 

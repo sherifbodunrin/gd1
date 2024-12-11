@@ -238,14 +238,20 @@
     const ninjaSpriteSheet = new Image();
     ninjaSpriteSheet.src = 'ninjarunner.png';
 
+    const healthPowerUpImage = new Image();
+    healthPowerUpImage.src = 'https://png.pngtree.com/png-vector/20240807/ourmid/pngtree-medical-bag-in-pixel-art-style-png-image_13102202.png';
+
+    const boostPowerUpImage = new Image();
+    boostPowerUpImage.src = 'https://wreckageuk.wordpress.com/wp-content/uploads/2015/03/speed-sprite.png';
+
     const spriteWidth = 108;
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
     const ninjaSpriteWidth = 140; // Width of each frame in the second sprite sheet
-    const ninjaSpriteHeight = 140; // Assuming 5 frames in a column for the height
-    const ninjaScaledWidth = 96; // Maintain similar scale as the first universe
-    const ninjaScaledHeight = 120; 
+    const ninjaSpriteHeight = 140;
+    const ninjaScaledWidth = 96;
+    const ninjaScaledHeight = 120;
     const totalFrames = 8;
     let currentFrame = 0;
     let frameCounter = 0;
@@ -757,10 +763,10 @@
         }
       });
 
-      ctx.fillStyle = 'green';
+      // Draw health power-ups using the image
       healPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
-        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+        ctx.drawImage(healthPowerUpImage, powerUp.x, powerUp.y, 20, 20); // Size matches the health box
 
         if (
           player.x < powerUp.x + powerUp.width &&
@@ -780,10 +786,10 @@
         }
       });
 
-      ctx.fillStyle = 'orange';
+      // Draw boost power-ups using the image
       boostPowerUps.forEach((powerUp, index) => {
         powerUp.x -= gameSpeed;
-        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+        ctx.drawImage(boostPowerUpImage, powerUp.x, powerUp.y, 20, 20); // Size matches the health box
 
         if (
           player.x < powerUp.x + powerUp.width &&

@@ -266,16 +266,24 @@
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
-    const ninjaSpriteWidth = 96; // Width of a single frame for ninja from the sprite sheet
-    const ninjaSpriteHeight = 120; // Height of a single frame for ninja
-    const ninjaScaledWidth = 96; // Scaled width for the player character box
-    const ninjaScaledHeight = 96; // Scaled height for the player character box
-    const totalFrames = 10; // Assume there are 10 frames in the top row
+
+    // Configure the ninja sprite size based on the sprite sheet dimensions
+    const ninjaSpriteSheetWidth = 1400;
+    const ninjaSpriteSheetHeight = 700;
+    const ninjaFramesAcross = 10;
+    const ninjaFramesDown = 5;
+
+    const ninjaSpriteWidth = ninjaSpriteSheetWidth / ninjaFramesAcross; // Width of each ninja frame
+    const ninjaSpriteHeight = ninjaSpriteSheetHeight / ninjaFramesDown; // Height of each ninja frame
+    const ninjaScaledWidth = scaledWidth; // Desired scaled width in player box
+    const ninjaScaledHeight = scaledHeight; // Desired scaled height in player box
+
+    const totalFrames = 10;
     let currentFrame = 0;
     let frameCounter = 0;
-    const animationInterval = 5; // Controls the animation speed
-    let animationIntervalId; // Store interval ID to clear it
-    
+    const animationInterval = 5;
+    let animationIntervalId;
+
     let groundPattern;
     groundTextureImage.onload = () => {
       groundPattern = ctx.createPattern(groundTextureImage, 'repeat');
@@ -290,18 +298,20 @@
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
-      const srcX = currentFrame * width;
+      const srcX = currentFrame % ninjaFramesAcross * width;
+      const srcY = Math.floor(currentFrame / ninjaFramesAcross) * height;
+
       playerCharacterCtx.drawImage(
         spriteSheet,
-        srcX, 0,
-        width, height,
-        0, 0,
-        scaledW, scaledH
+        srcX, srcY,  // Source X and Y
+        width, height,  // Source width and height
+        0, 0,  // Destination X and Y
+        scaledW, scaledH // Destination width and height
       );
 
       frameCounter++;
       if (frameCounter % animationInterval === 0) {
-        currentFrame = (currentFrame + 1) % totalFrames;
+        currentFrame = (currentFrame + 1) % (ninjaFramesAcross * ninjaFramesDown);
       }
     }
 
@@ -315,8 +325,8 @@
 
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
-    const maxGameSpeed = 6;  // Cap regular game speed
-    const boostGameSpeed = 9;  // Set boost speed to a controllable level
+    const maxGameSpeed = 6;
+    const boostGameSpeed = 9;
     const maxHealth = 2;
     const obstacleSpacing = 1000;
     const healPowerUpSpacing = 7000;
@@ -384,7 +394,7 @@
       obstaclesDestroyed = 0;
       scoreMultiplier = 1;
       currentFrame = 0;
-      frameCounter = 0; // Reset frame counter for consistent animation
+      frameCounter = 0;
 
       currentModifier.effect();
     }
@@ -506,11 +516,14 @@
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
       
-      const srcX = currentFrame * width;
+      const srcX = currentFrame % ninjaFramesAcross * width;
+      const srcY = Math.floor(currentFrame / ninjaFramesAcross) * height;
+
       playerCharacterCtx.drawImage(
         spriteSheet,
-        srcX, 0,
-        width, height,0, 0,
+        srcX, srcY,
+        width, height,
+        0, 0,
         scaledW, scaledH
       );
     }
@@ -597,8 +610,8 @@
     startButton.addEventListener('click', startGame);
 
     function spawnGroundObstacle(xOffset = 0) {
-      const obstacleHeight = 50; // Increased size
-      const obstacleWidth = 50; // Increased size
+      const obstacleHeight = 50;
+      const obstacleWidth = 50;
       const groundLevel = canvas.height - 100 - obstacleHeight;
       obstacles.push({
         x: canvas.width + xOffset,
@@ -609,8 +622,8 @@
     }
 
     function spawnFlyingObstacle(xOffset = 0) {
-      const obstacleHeight = 50; // Increased size
-      const obstacleWidth = 50; // Increased size
+      const obstacleHeight = 50;
+      const obstacleWidth = 50;
       const adjustedY = canvas.height - 150;
       flyingObstacles.push({
         x: canvas.width + xOffset,
@@ -621,8 +634,8 @@
     }
 
     function spawnHealPowerUp() {
-      const powerUpHeight = 45; // Increased size
-      const powerUpWidth = 45; // Increased size
+      const powerUpHeight = 45;
+      const powerUpWidth = 45;
       const randomY = canvas.height - 200 - Math.random() * 100;
       healPowerUps.push({
         x: canvas.width,
@@ -633,8 +646,8 @@
     }
 
     function spawnBoostPowerUp() {
-      const powerUpHeight = 45; // Increased size
-      const powerUpWidth = 45; // Increased size
+      const powerUpHeight = 45;
+      const powerUpWidth = 45;
       const randomY = canvas.height - 200 - Math.random() * 100;
       boostPowerUps.push({
         x: canvas.width,
@@ -650,8 +663,8 @@
         projectiles.push({
           x: player.x + player.width, 
           y: player.y,
-          width: player.width,  // Match character width
-          height: player.height // Match character height
+          width: player.width,
+          height: player.height
         });
       }
     }
@@ -665,10 +678,12 @@
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
-      const srcX = currentFrame * width;
+      const srcX = currentFrame % ninjaFramesAcross * width;
+      const srcY = Math.floor(currentFrame / ninjaFramesAcross) * height;
+
       ctx.drawImage(
         spriteSheet,
-        srcX, 0,
+        srcX, srcY,
         width, height,
         player.x, player.y,
         scaledW, scaledH
@@ -676,7 +691,7 @@
 
       frameCounter++;
       if (frameCounter % animationInterval === 0) {
-        currentFrame = (currentFrame + 1) % totalFrames;
+        currentFrame = (currentFrame + 1) % (ninjaFramesAcross * ninjaFramesDown);
       }
     }
 
@@ -697,7 +712,6 @@
         }
       }
 
-      // Draw the ground using the texture pattern
       if (groundPattern) {
         ctx.fillStyle = groundPattern;
         ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
@@ -822,7 +836,7 @@
           collectedBoostPowerUps++;
           boostActive = true;
           boostTimer = boostDuration;
-          gameSpeed = boostGameSpeed;  // Set game speed to boost speed
+          gameSpeed = boostGameSpeed;
         }
 
         if (powerUp.x + powerUp.width < 0) {
@@ -834,7 +848,7 @@
         boostTimer--;
         if (boostTimer <= 0) {
           boostActive = false;
-          gameSpeed = initialGameSpeed + (distance / 250);  // Reset to normal game speed
+          gameSpeed = initialGameSpeed + (distance / 250);
           if (gameSpeed > maxGameSpeed) {
             gameSpeed = maxGameSpeed;
           }

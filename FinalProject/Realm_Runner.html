@@ -262,11 +262,13 @@
     const shurikenImage = new Image();
     shurikenImage.src = 'https://png.pngtree.com/png-clipart/20220725/ourmid/pngtree-shuriken-ninja-kunai-star-png-image_6060895.png';
 
-    const spriteWidth = 108;
-    const spriteHeight = 140;
-    const scaledWidth = 96;
-    const scaledHeight = 120;
+    // Original dinosaur sprite dimensions
+    const dinosaurSpriteWidth = 108;
+    const dinosaurSpriteHeight = 140;
+    const dinosaurScaledWidth = 72;
+    const dinosaurScaledHeight = 96;
 
+    // Adjusted for ninja sprite dimensions
     const ninjaSpriteSheetWidth = 1400;
     const ninjaSpriteSheetHeight = 700;
     const ninjaFramesAcross = 10;
@@ -355,10 +357,10 @@
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
-      const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth; 
-      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
-      const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
-      const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
+      const width = currentUniverse === 1 ? dinosaurSpriteWidth : ninjaSpriteWidth; 
+      const height = currentUniverse === 1 ? dinosaurSpriteHeight : ninjaSpriteHeight; 
+      const scaledW = currentUniverse === 1 ? dinosaurScaledWidth : ninjaScaledWidth;
+      const scaledH = currentUniverse === 1 ? dinosaurScaledHeight : ninjaScaledHeight;
 
       const srcX = currentFrame % ninjaFramesAcross * width;
       const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
@@ -366,7 +368,7 @@
       playerCharacterCtx.drawImage(
         spriteSheet,
         srcX, srcY,
-        width, height / 2, // Only use the top half of the sprite for ninja
+        width, height / (currentUniverse === 1 ? 1 : 2), // Only use the top half of the sprite for ninja
         0, 0,
         scaledW, scaledH
       );
@@ -378,7 +380,7 @@
     }
 
     function resetGame() {
-      player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
+      player = { x: 50, y: canvas.height - dinosaurScaledHeight - 100, width: dinosaurScaledWidth, height: dinosaurScaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];
@@ -519,10 +521,10 @@
     function updatePlayerCharacterColor() {
       playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
-      const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
-      const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
-      const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
+      const width = currentUniverse === 1 ? dinosaurSpriteWidth : ninjaSpriteWidth;
+      const height = currentUniverse === 1 ? dinosaurSpriteHeight : ninjaSpriteHeight; 
+      const scaledW = currentUniverse === 1 ? dinosaurScaledWidth : ninjaScaledWidth;
+      const scaledH = currentUniverse === 1 ? dinosaurScaledHeight : ninjaScaledHeight;
       
       const srcX = currentFrame % ninjaFramesAcross * width;
       const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
@@ -530,7 +532,7 @@
       playerCharacterCtx.drawImage(
         spriteSheet,
         srcX, srcY,
-        width, height / 2, // Only use the top half of the sprite for ninja
+        width, height / (currentUniverse === 1 ? 1 : 2), // Only use the top half of the sprite for ninja
         0, 0,
         scaledW, scaledH
       );
@@ -684,10 +686,10 @@
       ctx.clearRect(player.x, player.y, player.width, player.height);
 
       const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
-      const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth;
-      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
-      const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
-      const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
+      const width = currentUniverse === 1 ? dinosaurSpriteWidth : ninjaSpriteWidth;
+      const height = currentUniverse === 1 ? dinosaurSpriteHeight : ninjaSpriteHeight; 
+      const scaledW = currentUniverse === 1 ? dinosaurScaledWidth : ninjaScaledWidth;
+      const scaledH = currentUniverse === 1 ? dinosaurScaledHeight : ninjaScaledHeight;
 
       const srcX = currentFrame % ninjaFramesAcross * width;
       const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
@@ -695,7 +697,7 @@
       ctx.drawImage(
         spriteSheet,
         srcX, srcY,
-        width, height / 2, // Only use the top half of the sprite for ninja
+        width, height / (currentUniverse === 1 ? 1 : 2), // Only use the top half of the sprite for ninja
         player.x, player.y,
         scaledW, scaledH
       );

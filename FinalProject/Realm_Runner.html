@@ -474,6 +474,13 @@
         allRealmsButton.style.backgroundColor = '#2f1e14';
       }
 
+      // Unlock all modifiers when all realms are unlocked
+      if (realmProgress[currentUniverse - 1].allUnlocked && realmProgress[currentUniverse - 1].unlockedModifiers.length === 0) {
+        modifiers.forEach(modifier => {
+          unlockModifier(modifier);
+        });
+      }
+
       document.getElementById('universeText').textContent = universeNames[currentUniverse - 1];
       updatePlayerCharacterColor();
       updateUniverseButtons();

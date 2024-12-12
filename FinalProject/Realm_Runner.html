@@ -274,8 +274,8 @@
     const ninjaFramesAcross = 10;
     const ninjaSpriteWidth = ninjaSpriteSheetWidth / ninjaFramesAcross;
     const ninjaSpriteHeight = ninjaSpriteSheetHeight;
-    const ninjaScaledWidth = 150;  // Increased width
-    const ninjaScaledHeight = 90;  // Increased height
+    const ninjaScaledWidth = 130;  // Slightly reduced width for zoom-out effect
+    const ninjaScaledHeight = 80;  // Slightly reduced height for zoom-out effect
 
     const totalFrames = 10;
     let currentFrame = 0;
@@ -363,7 +363,7 @@
       const scaledH = currentUniverse === 1 ? dinosaurScaledHeight : ninjaScaledHeight;
 
       const srcX = currentFrame % ninjaFramesAcross * width;
-      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
+      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2 - 10; // Shift up slightly for the ninja
 
       playerCharacterCtx.drawImage(
         spriteSheet,
@@ -521,7 +521,7 @@
       const scaledH = currentUniverse === 1 ? dinosaurScaledHeight : ninjaScaledHeight;
       
       const srcX = currentFrame % ninjaFramesAcross * width;
-      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
+      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2 - 10; // Shift up slightly for the ninja
 
       playerCharacterCtx.drawImage(
         spriteSheet,
@@ -685,7 +685,7 @@
       const scaledH = currentUniverse === 1 ? dinosaurScaledHeight : ninjaScaledHeight;
 
       const srcX = currentFrame % ninjaFramesAcross * width;
-      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
+      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2 - 10; // Shift up slightly for the ninja
 
       ctx.drawImage(
         spriteSheet,

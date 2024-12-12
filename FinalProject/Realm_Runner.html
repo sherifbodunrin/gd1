@@ -380,7 +380,9 @@
     }
 
     function resetGame() {
-      player = { x: 50, y: canvas.height - dinosaurScaledHeight - 100, width: dinosaurScaledWidth, height: dinosaurScaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
+      const characterWidth = currentUniverse === 1 ? dinosaurScaledWidth : ninjaScaledWidth;
+      const characterHeight = currentUniverse === 1 ? dinosaurScaledHeight : ninjaScaledHeight;
+      player = { x: 50, y: canvas.height - characterHeight - 100, width: characterWidth, height: characterHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
       flyingObstacles = [];
       healPowerUps = [];
@@ -460,24 +462,16 @@
         unlockButtons.appendChild(unlockButton);
       }
 
-      if (realmProgress[currentUniverse - 1].allUnlocked) {
-        if (currentUniverse === 1 && !universeUnlocked[1]) {
-          universeUnlocked[1] = true;
-        }
-        modifiersDisplay.style.display = 'block';
-        updateModifiersDisplay();
-      } else {
-        allRealmsButton.style.display = 'block';
-        modifiersDisplay.style.display = 'none';
+      allRealmsButton.style.display = realmProgress[currentUniverse - 1].allUnlocked ? 'none' : 'block';
+      modifiersDisplay.style.display = realmProgress[currentUniverse - 1].allUnlocked ? 'block' : 'none';
 
-        if (currentRealm >= 5 && coins >= allRealmsCost) {
-          allRealmsButton.disabled = false;
-          allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
-          allRealmsButton.style.backgroundColor = '#6b4226';
-        } else {
-          allRealmsButton.disabled = true;
-          allRealmsButton.style.backgroundColor = '#2f1e14';
-        }
+      if (!realmProgress[currentUniverse - 1].allUnlocked && currentRealm >= 5 && coins >= allRealmsCost) {
+        allRealmsButton.disabled = false;
+        allRealmsButton.innerHTML = `<span class="costText">ALL REALMS (${allRealmsCost} Coins)</span>`;
+        allRealmsButton.style.backgroundColor = '#6b4226';
+      } else {
+        allRealmsButton.disabled = true;
+        allRealmsButton.style.backgroundColor = '#2f1e14';
       }
 
       document.getElementById('universeText').textContent = universeNames[currentUniverse - 1];
@@ -600,7 +594,6 @@
         coins -= allRealmsCost;
         realmProgress[currentUniverse - 1].allUnlocked = true;
         universeUnlocked[1] = true;
-        allRealmsButton.remove();
         updateLobbyDisplay();
       }
     });

@@ -279,7 +279,7 @@
     const totalFrames = 10;
     let currentFrame = 0;
     let frameCounter = 0;
-    const animationInterval = 2; // Faster animation speed
+    const animationInterval = 5; // Adjusted for smoother animation
     let animationIntervalId;
 
     let groundPattern;
@@ -601,7 +601,7 @@
       canvas.style.backgroundSize = 'cover';
       resetGame();  // Reset game state and animation
       clearInterval(animationIntervalId); // Clear any existing animation intervals
-      animationIntervalId = setInterval(animatePlayerCharacter, 50); // Start a new animation interval
+      animationIntervalId = setInterval(animatePlayerCharacter, 1000 / 24); // Start a new animation interval at 24 FPS
       gameLoop();
     }
 

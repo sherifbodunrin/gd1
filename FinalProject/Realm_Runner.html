@@ -266,16 +266,22 @@
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
-    const ninjaSpriteWidth = 96; // Width of a single frame for ninja from the sprite sheet
-    const ninjaSpriteHeight = 120; // Height of a single frame for ninja
-    const ninjaScaledWidth = 96; // Scaled width for the player character box
-    const ninjaScaledHeight = 96; // Scaled height for the player character box
-    const totalFrames = 10; // Assume there are 10 frames in the top row
+
+    // Assume ninja sprite sheet has 10 frames horizontally
+    const ninjaSpriteSheetWidth = 1400;
+    const ninjaSpriteSheetHeight = 700;
+    const ninjaFramesAcross = 10;
+    const ninjaSpriteWidth = ninjaSpriteSheetWidth / ninjaFramesAcross; // Width of each ninja frame
+    const ninjaSpriteHeight = ninjaSpriteSheetHeight; // Full height of each ninja frame
+    const ninjaScaledWidth = 72; // Smaller scaled width
+    const ninjaScaledHeight = 72; // Smaller scaled height
+
+    const totalFrames = 10;
     let currentFrame = 0;
     let frameCounter = 0;
-    const animationInterval = 5; // Controls the animation speed
-    let animationIntervalId; // Store interval ID to clear it
-    
+    const animationInterval = 2; // Faster animation speed
+    let animationIntervalId;
+
     let groundPattern;
     groundTextureImage.onload = () => {
       groundPattern = ctx.createPattern(groundTextureImage, 'repeat');
@@ -290,13 +296,15 @@
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
-      const srcX = currentFrame * width;
+      const srcX = currentFrame % ninjaFramesAcross * width;
+      const srcY = 0; // Assuming all frames are on one row
+
       playerCharacterCtx.drawImage(
         spriteSheet,
-        srcX, 0,
-        width, height,
-        0, 0,
-        scaledW, scaledH
+        srcX, srcY,  // Source X and Y
+        width, height,  // Source width and height
+        0, 0,  // Destination X and Y
+        scaledW, scaledH // Destination width and height
       );
 
       frameCounter++;
@@ -506,11 +514,14 @@
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
       
-      const srcX = currentFrame * width;
+      const srcX = currentFrame % ninjaFramesAcross * width;
+      const srcY = 0; // Assuming all frames are on one row
+
       playerCharacterCtx.drawImage(
         spriteSheet,
-        srcX, 0,
-        width, height,0, 0,
+        srcX, srcY,
+        width, height,
+        0, 0,
         scaledW, scaledH
       );
     }
@@ -665,10 +676,12 @@
       const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
-      const srcX = currentFrame * width;
+      const srcX = currentFrame % ninjaFramesAcross * width;
+      const srcY = 0; // Assuming all frames are on one row
+
       ctx.drawImage(
         spriteSheet,
-        srcX, 0,
+        srcX, srcY,
         width, height,
         player.x, player.y,
         scaledW, scaledH

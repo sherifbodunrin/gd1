@@ -35,8 +35,8 @@
     }
 
     #playerCharacter {
-      width: 96px; /* Match the scaled width */
-      height: 96px; /* Match the scaled height */
+      width: 96px;
+      height: 96px;
       margin-bottom: 30px;
       background-color: transparent;
     }
@@ -98,7 +98,7 @@
 
     #gameCanvas {
       display: none;
-      background: transparent; /* Ensure the game canvas is transparent */
+      background: transparent;
       width: 100%;
       height: 100vh;
     }
@@ -272,7 +272,7 @@
     const ninjaFramesAcross = 10;
     const ninjaSpriteWidth = ninjaSpriteSheetWidth / ninjaFramesAcross;
     const ninjaSpriteHeight = ninjaSpriteSheetHeight;
-    const ninjaScaledWidth = 144;  // Increased scaled width (72 * 2)
+    const ninjaScaledWidth = 144;  
     const ninjaScaledHeight = 72;
 
     const totalFrames = 10;
@@ -286,39 +286,23 @@
       groundPattern = ctx.createPattern(groundTextureImage, 'repeat');
     };
 
-    function animatePlayerCharacter() {
-      playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
-
-      const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
-      const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth; 
-      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
-      const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
-      const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
-
-      const srcX = currentFrame % ninjaFramesAcross * width;
-      const srcY = 0;
-
-      playerCharacterCtx.drawImage(
-        spriteSheet,
-        srcX, srcY,
-        width, height,
-        0, 0,
-        scaledW, scaledH
-      );
-
-      frameCounter++;
-      if (frameCounter % animationInterval === 0) {
-        currentFrame = (currentFrame + 1) % totalFrames;
-      }
-    }
-
-    const realmBackgrounds = [
+    const universe1Backgrounds = [
       'https://img.freepik.com/premium-vector/desert-day-game-background_7814-292.jpg',
       'https://www.shutterstock.com/image-vector/alien-planet-landscape-space-background-600nw-2171882971.jpg',
       'https://cdn.vectorstock.com/i/500p/21/70/game-seamless-horizontal-forest-background-vector-7342170.jpg',
       'https://static.vecteezy.com/system/resources/thumbnails/020/599/177/small/white-clouds-bright-blue-sky-background-for-wallpaper-clean-sky-on-mid-day-relaxation-concept-landscape-abstract-background-vector.jpg',
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSx-rjF0p_tkmmAVdwMS_Kv608JxzzOxvaoPw&s'
     ];
+
+    const universe2Backgrounds = [
+      'https://pressstart.vip/images/uploads/assets/bluemoon.png',
+      'https://static.vecteezy.com/system/resources/thumbnails/006/316/482/small_2x/alien-planet-game-background-free-vector.jpg',
+      'https://static.vecteezy.com/system/resources/thumbnails/003/303/295/small/mountains-background-game-vector.jpg',
+      'https://st2.depositphotos.com/3759469/6798/v/450/depositphotos_67982979-stock-illustration-horizontally-seamless-game-background.jpg',
+      'https://forums.terraria.org/index.php?attachments/n-4-png.31586'
+    ];
+
+    const realmBackgrounds = [universe1Backgrounds, universe2Backgrounds];
 
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
@@ -367,6 +351,32 @@
       { ground: false, flying: true }
     ];
 
+    function animatePlayerCharacter() {
+      playerCharacterCtx.clearRect(0, 0, playerCharacterCanvas.width, playerCharacterCanvas.height);
+
+      const spriteSheet = currentUniverse === 1 ? dinosaurSpriteSheet : ninjaSpriteSheet;
+      const width = currentUniverse === 1 ? spriteWidth : ninjaSpriteWidth; 
+      const height = currentUniverse === 1 ? spriteHeight : ninjaSpriteHeight; 
+      const scaledW = currentUniverse === 1 ? scaledWidth : ninjaScaledWidth;
+      const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
+
+      const srcX = currentFrame % ninjaFramesAcross * width;
+      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
+
+      playerCharacterCtx.drawImage(
+        spriteSheet,
+        srcX, srcY,
+        width, height / 2, // Only use the top half of the sprite for ninja
+        0, 0,
+        scaledW, scaledH
+      );
+
+      frameCounter++;
+      if (frameCounter % animationInterval === 0) {
+        currentFrame = (currentFrame + 1) % totalFrames;
+      }
+    }
+
     function resetGame() {
       player = { x: 50, y: canvas.height - scaledHeight - 100, width: scaledWidth, height: scaledHeight, dy: 0, jumps: 0, maxJumps: 2 };
       obstacles = [];
@@ -401,7 +411,8 @@
       realmsDisplay.querySelector('div').textContent = `Current Realm: ${currentRealm}`;
       unlockButtons.innerHTML = '';
 
-      document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
+      // Set the background based on the current universe and realm
+      document.body.style.backgroundImage = `url(${realmBackgrounds[currentUniverse - 1][currentRealm - 1]})`;
 
       for (let i = 1; i <= 5; i++) {
         const unlockButton = document.createElement('button');
@@ -417,7 +428,7 @@
           unlockButton.disabled = false;
           unlockButton.onclick = () => {
             currentRealm = i;
-            document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
+            document.body.style.backgroundImage = `url(${realmBackgrounds[currentUniverse - 1][i - 1]})`;
             updateLobbyDisplay();
           };
         } else {
@@ -433,7 +444,7 @@
             if (coins >= realmCosts[i - 1]) {
               coins -= realmCosts[i - 1];
               currentRealm = i;
-              document.body.style.backgroundImage = `url(${realmBackgrounds[i - 1]})`;
+              document.body.style.backgroundImage = `url(${realmBackgrounds[currentUniverse - 1][i - 1]})`;
               realmProgress[currentUniverse - 1].realm = i;
               updateLobbyDisplay();
             }
@@ -514,12 +525,12 @@
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
       
       const srcX = currentFrame % ninjaFramesAcross * width;
-      const srcY = 0;
+      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
 
       playerCharacterCtx.drawImage(
         spriteSheet,
         srcX, srcY,
-        width, height,
+        width, height / 2, // Only use the top half of the sprite for ninja
         0, 0,
         scaledW, scaledH
       );
@@ -539,7 +550,7 @@
             realmProgress[currentUniverse - 1].realm = currentRealm;
             currentUniverse = index + 1;
             currentRealm = realmProgress[index].realm;
-            document.body.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
+            document.body.style.backgroundImage = `url(${realmBackgrounds[currentUniverse - 1][currentRealm - 1]})`;
             updateLobbyDisplay();
           }
         };
@@ -596,8 +607,11 @@
       lobby.style.display = 'none';
       canvas.style.display = 'block';
       miniMap.style.display = 'block';
-      canvas.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
+
+      // Set the game background based on the current universe and realm
+      canvas.style.backgroundImage = `url(${realmBackgrounds[currentUniverse - 1][currentRealm - 1]})`;
       canvas.style.backgroundSize = 'cover';
+
       resetGame();
       clearInterval(animationIntervalId);
       animationIntervalId = setInterval(animatePlayerCharacter, 1000 / 24);
@@ -676,12 +690,12 @@
       const scaledH = currentUniverse === 1 ? scaledHeight : ninjaScaledHeight;
 
       const srcX = currentFrame % ninjaFramesAcross * width;
-      const srcY = 0;
+      const srcY = currentUniverse === 1 ? 0 : ninjaSpriteHeight / 2; // Shift down by half the height for ninja
 
       ctx.drawImage(
         spriteSheet,
         srcX, srcY,
-        width, height,
+        width, height / 2, // Only use the top half of the sprite for ninja
         player.x, player.y,
         scaledW, scaledH
       );

@@ -266,8 +266,8 @@
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
-    const ninjaSpriteWidth = 60; // Width of a single frame for ninja from the sprite sheet
-    const ninjaSpriteHeight = 60; // Height of a single frame for ninja
+    const ninjaSpriteWidth = 24; // Width of a single frame for ninja from the sprite sheet
+    const ninjaSpriteHeight = 24; // Height of a single frame for ninja
     const ninjaScaledWidth = 32; // Scaled width for the player character box
     const ninjaScaledHeight = 32; // Scaled height for the player character box
     const totalFrames = 10; // Assume there are 10 frames in the top row
@@ -511,8 +511,7 @@
       playerCharacterCtx.drawImage(
         spriteSheet,
         srcX, 0,
-        width, height,
-        0, 0,
+        width, height,0, 0,
         scaledW, scaledH
       );
     }

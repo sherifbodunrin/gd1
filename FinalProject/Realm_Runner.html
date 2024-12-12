@@ -244,14 +244,20 @@
     const boostPowerUpImage = new Image();
     boostPowerUpImage.src = 'https://wreckageuk.wordpress.com/wp-content/uploads/2015/03/speed-sprite.png';
 
-    const groundTextureImage = new Image();
-    groundTextureImage.src = 'https://i.pinimg.com/736x/71/8e/de/718edead2bd037b01ea43dfe55dae628.jpg';
+    const groundTextureImages = [
+      'https://i.pinimg.com/736x/71/8e/de/718edead2bd037b01ea43dfe55dae628.jpg', // Universe 1
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMznGCeKizSpWZNEQeGL4CR381B0oveMxz-w&s'  // Universe 2
+    ];
 
-    const groundObstacleImage = new Image();
-    groundObstacleImage.src = 'https://opengameart.org/sites/default/files/3_spikes.png';
+    const groundObstacleImages = [
+      'https://opengameart.org/sites/default/files/3_spikes.png', // Universe 1
+      'https://img.itch.zone/aW1nLzgwMDc3NDEuZ2lm/315x250%23cm/x%2Fi%2Bos.gif'  // Universe 2
+    ];
 
-    const skyObstacleImage = new Image();
-    skyObstacleImage.src = 'https://svgsilh.com/png-512/150966.png';
+    const skyObstacleImages = [
+      'https://svgsilh.com/png-512/150966.png', // Universe 1
+      'https://img.itch.zone/aW1nLzI4NzE4MTcucG5n/315x250%23c/gvu%2BaV.png'  // Universe 2
+    ];
 
     const boostEffectImage = new Image();
     boostEffectImage.src = 'https://opengameart.org/sites/default/files/spr_shield.png';
@@ -261,6 +267,24 @@
 
     const shurikenImage = new Image();
     shurikenImage.src = 'https://png.pngtree.com/png-clipart/20220725/ourmid/pngtree-shuriken-ninja-kunai-star-png-image_6060895.png';
+
+    const groundTextureImagesObj = groundTextureImages.map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
+
+    const groundObstacleImagesObj = groundObstacleImages.map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
+
+    const skyObstacleImagesObj = skyObstacleImages.map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
 
     // Original dinosaur sprite dimensions
     const dinosaurSpriteWidth = 108;
@@ -274,8 +298,8 @@
     const ninjaFramesAcross = 10;
     const ninjaSpriteWidth = ninjaSpriteSheetWidth / ninjaFramesAcross;
     const ninjaSpriteHeight = ninjaSpriteSheetHeight;
-    const ninjaScaledWidth = 90;  // Slightly reduced width for zoom-out effect
-    const ninjaScaledHeight = 120;  // Slightly reduced height for zoom-out effect
+    const ninjaScaledWidth = 100;  // Slightly reduced width for zoom-out effect
+    const ninjaScaledHeight = 130;  // Slightly reduced height for zoom-out effect
 
     const totalFrames = 8;
     let currentFrame = 0;
@@ -284,8 +308,8 @@
     let animationIntervalId;
 
     let groundPattern;
-    groundTextureImage.onload = () => {
-      groundPattern = ctx.createPattern(groundTextureImage, 'repeat');
+    groundTextureImagesObj[0].onload = () => {
+      groundPattern = ctx.createPattern(groundTextureImagesObj[currentUniverse - 1], 'repeat');
     };
 
     const universe1Backgrounds = [
@@ -407,6 +431,7 @@
       currentFrame = 0;
       frameCounter = 0;
 
+      groundPattern = ctx.createPattern(groundTextureImagesObj[currentUniverse - 1], 'repeat');
       currentModifier.effect();
     }
 
@@ -772,7 +797,8 @@
 
       obstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.drawImage(groundObstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        const obstacleImage = groundObstacleImagesObj[currentUniverse - 1];
+        ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&
@@ -794,7 +820,8 @@
 
       flyingObstacles.forEach((obstacle, index) => {
         obstacle.x -= gameSpeed;
-        ctx.drawImage(skyObstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        const obstacleImage = skyObstacleImagesObj[currentUniverse - 1];
+        ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
         if (!boostActive &&
           player.x < obstacle.x + obstacle.width &&

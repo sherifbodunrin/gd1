@@ -274,6 +274,7 @@
     let currentFrame = 0;
     let frameCounter = 0;
     const animationInterval = 5; // Controls the animation speed
+    let animationIntervalId; // Store interval ID to clear it
     
     let groundPattern;
 
@@ -590,7 +591,8 @@
       canvas.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
       canvas.style.backgroundSize = 'cover';
       resetGame();  // Reset game state and animation
-      setInterval(animatePlayerCharacter, 50);
+      clearInterval(animationIntervalId); // Clear any existing animation intervals
+      animationIntervalId = setInterval(animatePlayerCharacter, 50); // Start a new animation interval
       gameLoop();
     }
 

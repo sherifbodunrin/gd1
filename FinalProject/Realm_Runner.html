@@ -251,7 +251,7 @@
     groundObstacleImage.src = 'https://opengameart.org/sites/default/files/3_spikes.png';
 
     const skyObstacleImage = new Image();
-    skyObstacleImage.src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlyECxciXYQ05x9a-I3tfAkE_Ptvt0r6KuAQ&s';
+    skyObstacleImage.src = 'https://svgsilh.com/png-512/150966.png';
 
     const boostEffectImage = new Image();
     boostEffectImage.src = 'https://opengameart.org/sites/default/files/spr_shield.png';
@@ -273,6 +273,7 @@
     const totalFrames = 8;
     let currentFrame = 0;
     let frameCounter = 0;
+    const animationInterval = 5; // Controls the animation speed
     
     let groundPattern;
 
@@ -299,7 +300,7 @@
       );
 
       frameCounter++;
-      if (frameCounter % 5 === 0) {
+      if (frameCounter % animationInterval === 0) {
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }
@@ -382,6 +383,8 @@
       collectedBoostPowerUps = 0;
       obstaclesDestroyed = 0;
       scoreMultiplier = 1;
+      currentFrame = 0;
+      frameCounter = 0; // Reset frame counter for consistent animation
 
       currentModifier.effect();
     }
@@ -586,9 +589,9 @@
       miniMap.style.display = 'block';
       canvas.style.backgroundImage = `url(${realmBackgrounds[currentRealm - 1]})`;
       canvas.style.backgroundSize = 'cover';
-      resetGame();
-      gameLoop();
+      resetGame();  // Reset game state and animation
       setInterval(animatePlayerCharacter, 50);
+      gameLoop();
     }
 
     startButton.addEventListener('click', startGame);
@@ -672,7 +675,7 @@
       );
 
       frameCounter++;
-      if (frameCounter % 10 === 0) {
+      if (frameCounter % animationInterval === 0) {
         currentFrame = (currentFrame + 1) % totalFrames;
       }
     }

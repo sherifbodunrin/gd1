@@ -266,10 +266,10 @@
     const spriteHeight = 140;
     const scaledWidth = 96;
     const scaledHeight = 120;
-    const ninjaSpriteWidth = 24; // Width of a single frame for ninja from the sprite sheet
-    const ninjaSpriteHeight = 24; // Height of a single frame for ninja
-    const ninjaScaledWidth = 32; // Scaled width for the player character box
-    const ninjaScaledHeight = 32; // Scaled height for the player character box
+    const ninjaSpriteWidth = 96; // Width of a single frame for ninja from the sprite sheet
+    const ninjaSpriteHeight = 120; // Height of a single frame for ninja
+    const ninjaScaledWidth = 96; // Scaled width for the player character box
+    const ninjaScaledHeight = 96; // Scaled height for the player character box
     const totalFrames = 10; // Assume there are 10 frames in the top row
     let currentFrame = 0;
     let frameCounter = 0;
@@ -277,7 +277,6 @@
     let animationIntervalId; // Store interval ID to clear it
     
     let groundPattern;
-
     groundTextureImage.onload = () => {
       groundPattern = ctx.createPattern(groundTextureImage, 'repeat');
     };

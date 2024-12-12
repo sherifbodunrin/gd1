@@ -35,8 +35,8 @@
     }
 
     #playerCharacter {
-      width: 140px; /* Match the width of a single frame */
-      height: 140px; /* Match the height of a single frame */
+      width: 96px; /* Match the scaled width */
+      height: 96px; /* Match the scaled height */
       margin-bottom: 30px;
       background-color: transparent;
     }
@@ -224,8 +224,8 @@
     const playerCharacterCtx = playerCharacterCanvas.getContext('2d');
     const universeButtons = document.getElementById('universeButtons');
 
-    playerCharacterCanvas.width = 140;
-    playerCharacterCanvas.height = 140;
+    playerCharacterCanvas.width = 96;
+    playerCharacterCanvas.height = 96;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -268,9 +268,9 @@
     const scaledHeight = 120;
     const ninjaSpriteWidth = 140; // Width of a single frame for ninja
     const ninjaSpriteHeight = 140; // Height of a single frame for ninja
-    const ninjaScaledWidth = 140;
-    const ninjaScaledHeight = 140;
-    const totalFrames = 10; // Adjust if the ninja sprite sheet has a different number of frames
+    const ninjaScaledWidth = 96; // Scaled width for the player character box
+    const ninjaScaledHeight = 96; // Scaled height for the player character box
+    const totalFrames = 10; // Assume there are 10 frames in the top row
     let currentFrame = 0;
     let frameCounter = 0;
     const animationInterval = 5; // Controls the animation speed

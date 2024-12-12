@@ -272,7 +272,7 @@
     const ninjaFramesAcross = 10;
     const ninjaSpriteWidth = ninjaSpriteSheetWidth / ninjaFramesAcross;
     const ninjaSpriteHeight = ninjaSpriteSheetHeight;
-    const ninjaScaledWidth = 72;
+    const ninjaScaledWidth = 144;  // Increased scaled width (72 * 2)
     const ninjaScaledHeight = 72;
 
     const totalFrames = 10;
@@ -828,7 +828,7 @@
           player.x < powerUp.x + powerUp.width &&
           player.x + player.width > powerUp.x &&
           player.y < powerUp.y + powerUp.height &&
-          player.y + player.height > powerUp.y
+          player.y + powerUp.height > powerUp.y
         ) {
           boostPowerUps.splice(index, 1);
           collectedBoostPowerUps++;

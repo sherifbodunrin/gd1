@@ -316,8 +316,8 @@
 
     let player, obstacles, flyingObstacles, healPowerUps, boostPowerUps, projectiles, gameSpeed, gravity, jumpStrength, gameOver, health, distance, obstacleInterval, healPowerUpInterval, boostPowerUpInterval, boostActive, boostTimer;
     const initialGameSpeed = 3.5;
-    const maxGameSpeed = 6;
-    const boostGameSpeed = 15;
+    const maxGameSpeed = 6;  // Cap regular game speed
+    const boostGameSpeed = 9;  // Set boost speed to a controllable level
     const maxHealth = 2;
     const obstacleSpacing = 1000;
     const healPowerUpSpacing = 7000;
@@ -824,7 +824,7 @@
           collectedBoostPowerUps++;
           boostActive = true;
           boostTimer = boostDuration;
-          gameSpeed = boostGameSpeed;
+          gameSpeed = boostGameSpeed;  // Set game speed to boost speed
         }
 
         if (powerUp.x + powerUp.width < 0) {
@@ -836,7 +836,10 @@
         boostTimer--;
         if (boostTimer <= 0) {
           boostActive = false;
-          gameSpeed = initialGameSpeed + (distance / 250);
+          gameSpeed = initialGameSpeed + (distance / 250);  // Reset to normal game speed
+          if (gameSpeed > maxGameSpeed) {
+            gameSpeed = maxGameSpeed;
+          }
         }
       }
 
